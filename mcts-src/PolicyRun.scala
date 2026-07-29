@@ -276,8 +276,15 @@ object PolicyRun {
         // sample of the bootstrap bot corpus (hard move-targets + real win/loss labels), so
         // the policy can never drift far below the bots' competent play. Sample size ~half
         // an iteration's self-play volume so anchoring guides without dominating.
-        val anchorPolN = math.min(polAll.length,  math.max(2000, polAll.length / 2))
-        val anchorValN = math.min(valBoot.length, math.max(2000, valBoot.length / 2))
+        // Anchor is a REGULARIZER, not a training set — it only needs enough bot samples
+        // to keep the policy from drifting below competent play. Sizing it at corpus/2
+        // (old) made a 200-game bootstrap anchor on ~75k targets EVERY epoch, exploding
+        // per-iter runtime (~2h/iter) with no accuracy benefit. Cap at a fixed absolute
+        // sample so anchor cost is O(1) in bootstrap size; a fresh random subsample is
+        // drawn each epoch, so over many epochs the whole corpus is still seen.
+        val AnchorCap  = 6000
+        val anchorPolN = math.min(polAll.length,  AnchorCap)
+        val anchorValN = math.min(valBoot.length, AnchorCap)
         println(f"anchor: reusing $anchorPolN%d bot move-targets + $anchorValN%d bot value-states each iter\n")
 
         // ANTI-COLLAPSE #2 — BEST CHECKPOINT. Keep a snapshot of the best net so a later
