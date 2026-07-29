@@ -170,19 +170,37 @@ class MCTSPolicy(
     }
 
     // Degenerate-move filter (Option A). ControlGateAction on a gate the faction
-    // ALREADY controls is a pure unit-swap no-op: it costs 0 power, leaves the board
-    // in an identical state, and returns to the same control menu — an infinite free
-    // loop the brain cannot escape (the value net sees the same state value before and
-    // after, so nothing discourages it). The stall trace confirmed this is the stall:
-    // 576/1600 decisions were exactly this swap, alternating with the menu it returns
-    // to. We never hand these to the search. TAKING control of an ABANDONED gate
-    // (f.gates.has(r) == false) is real progress and is kept. Faction-agnostic: read
-    // only from the acting faction's own gate set. If filtering would empty the set
-    // (shouldn't happen — the menu always also offers done/EndTurn), we keep the
-    // originals so the game never deadlocks.
+    // ALREADY controls is USUALLY a pure unit-swap no-op: it costs 0 power, leaves the
+    // board in an identical state, and returns to the same control menu — an infinite
+    // free loop the brain cannot escape (the value net sees the same state value before
+    // and after, so nothing discourages it). The stall trace confirmed this is the
+    // stall: 576/1600 decisions were exactly this swap, alternating with the menu it
+    // returns to.
+    //
+    // BUT one swap on an owned gate is REAL progress, not a no-op: UPGRADING the unit on
+    // the gate to a stronger one — e.g. BG replacing a cultist on the gate with a Dark
+    // Young. That is a genuine strategic gain (a stronger gate keeper), so it must reach
+    // the search. We distinguish upgrade from no-op by unit COST (Acolyte 1, HighPriest
+    // 3, Dark Young 3, GOOs higher): a strictly higher-cost unit than the one currently
+    // on the gate is an upgrade and is KEPT; an equal-or-lower-cost swap is the free-loop
+    // no-op and is dropped. Because the reverse leg (placing the weaker unit back) is
+    // equal-or-lower cost, it is filtered too — so the loop cannot re-form after an
+    // upgrade. Cost is faction-agnostic (a universal UnitClass attribute), so this
+    // transfers to bot-less factions.
+    //
+    // TAKING control of an ABANDONED/unowned gate (f.gates.has(r) == false) is real
+    // progress and is always kept. If filtering would empty the set (shouldn't happen —
+    // the menu always also offers done/EndTurn), we keep the originals so the game never
+    // deadlocks.
     private def isDegenerate(game : Game, a : Action) : Boolean = a.unwrap match {
-        case ControlGateAction(f, r, _, _) => game.players(f).gates.has(r)
-        case _                             => false
+        case ControlGateAction(f, r, u, _) =>
+            val p = game.players(f)
+            if (!p.gates.has(r)) false   // taking an abandoned/unowned gate — real progress, keep
+            else p.at(r).find(_.onGate).map(_.uclass.cost) match {
+                case Some(c) => u.uclass.cost <= c   // no-op/downgrade swap unless a strict upgrade
+                case None    => false                // gate owned but nothing on it — keep (re-man it)
+            }
+        case _ => false
     }
 
     def decide(game : Game, faction : Faction, actionsIn : $[Action]) : Action = {
