@@ -288,7 +288,14 @@ final class Trajectory(factions : $[Faction]) {
         // Gate events (cap at 4 over a game so a big-board spree can't dominate).
         val takenN     = c01(gatesTaken(f) / 4.0)
         val defendedN  = c01(gatesDefended(f) / 4.0)
-        val abandonN   = c01(gatesAbandoned(f) / 4.0)
+        // ABANDON is a voluntary walk-off — a real mistake with NO natural ceiling, unlike a
+        // reward. It was c01-capped at 4 abandonments (the 5th+ dropped gate was FREE), which
+        // let self-play take-and-drop gates while avgEndGates stayed flat at ~1.4 (R2). Remove
+        // the sub-cap: per-gate penalty stays LINEAR so every abandoned gate keeps subtracting.
+        // The TOTAL score is still c01-clamped to [0,1] in score() (required — it's the sigmoid
+        // value-net label), so a game that abandons enough simply floors at 0; the live gradient
+        // is in the 0..~5 abandons range where "hold 2" vs "drop them" is the actual decision.
+        val abandonN   = gatesAbandoned(f) / 4.0          // UNBOUNDED (was c01-capped at 4)
         val lostN      = c01(gatesLostToEnemy(f) / 4.0)
 
         // DOMINANT: the win-condition drivers get the lion's share of the weight.
@@ -314,7 +321,7 @@ final class Trajectory(factions : $[Faction]) {
             "b:sbUse"      ->  0.02 * sbUse,
             "b:powerUse"   ->  0.02 * powUse,
             // PENALTIES (subtract) — immediate-detection, delivered in the game-end label.
-            "p:abandon"    -> -0.20 * abandonN,     // abandoning a gate — 2x gateTaken (strict anti-farm)
+            "p:abandon"    -> -0.20 * abandonN,     // abandoning a gate — 2x gateTaken, now LINEAR/uncapped
             "p:lostGate"   -> -0.24 * lostN         // losing a gate to an enemy (worse than abandon)
         )
     }
