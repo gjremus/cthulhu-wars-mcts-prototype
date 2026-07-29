@@ -39,6 +39,13 @@ object SelfPlay {
     def newGame() : Game =
         new Game(EarthMap4v35, RitualTrack.for4, fixedSeating, false, $())
 
+    /** Same board/seating as newGame() but with logging ON and the MapEarth35 option
+     *  set, so `perform` emits the HTML game-log lines and the Options line carries the
+     *  map token build-replay.py detects (earth35). Used only for producing watchable
+     *  replay traces — never inside search/self-play (logging has per-perform overhead). */
+    def newGameLogged() : Game =
+        new Game(EarthMap4v35, RitualTrack.for4, fixedSeating, true, $(MapEarth35))
+
     /**
      * Play ONE full self-play game with `searcher` in every seat, recording an
      * Example at each genuine decision. Returns (examples, winners, decisionCount).

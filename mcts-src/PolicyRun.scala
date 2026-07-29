@@ -37,7 +37,7 @@ object PolicyRun {
         //   clone    <games> <epochs> <hidden> [par] [lr]                     — behavior-clone + move-match test
         //   arena    <games> <epochs> <hidden> [par] [lr] [sims] [perSeat]    — clone, then greedy & PUCT (policy only) vs bots
         //   combined <games> <epochs> <hidden> [par] [lr] [sims] [perSeat]    — train BOTH heads, then PUCT (policy prior + value net) vs bots
-        val modes = Set("clone", "arena", "combined", "selfplay", "stalltrace")
+        val modes = Set("clone", "arena", "combined", "selfplay", "stalltrace", "replaygame")
         val mode = if (args.nonEmpty && modes(args(0))) args(0) else "clone"
         val a    = if (args.nonEmpty && modes(args(0))) args.drop(1) else args
 
@@ -71,6 +71,20 @@ object PolicyRun {
 
         if (mode == "combined") {
             runCombined(nGames, epochs, hidden, lr, parallel, sims, perSeat)
+            println(f"\ntotal time ${(System.nanoTime() - t0) / 1e9}%.0fs")
+            return
+        }
+
+        if (mode == "replaygame") {
+            // replaygame <bootGames> <bootEpochs> <hidden> [par] [lr] [sims] [gamesPerSeat] [outDir]
+            //   Bootstrap both heads from the bots (same as self-play iter-0), then play
+            //   `gamesPerSeat` LOGGED brain-vs-3-bots games in EACH seat, pick the best
+            //   brain game, and write its replay trace (action-strings + blank + HTML log)
+            //   to `outDir` for build-replay.py. No net is persisted anywhere else, so this
+            //   is the only way to get a watchable brain game onto disk.
+            val gamesPerSeat = intArg(a, 6, 4)
+            val outDir = if (a.length > 7) a(7) else "replay-traces"
+            runReplayGame(nGames, epochs, hidden, lr, parallel, sims, gamesPerSeat, outDir)
             println(f"\ntotal time ${(System.nanoTime() - t0) / 1e9}%.0fs")
             return
         }
@@ -374,6 +388,118 @@ object PolicyRun {
         print("   arena @ BEST: ")
         reportPerSeat(Arena.evaluatePerSeatBrain(
             () => new MCTSPolicy(sims = sims, leaf = PolicyValueEval(bestPolicy, bestValue)), perSeat))
+    }
+
+    /**
+     * REPLAY-GAME PRODUCER — bootstrap the two-headed brain from the bots (exactly the
+     * self-play iter-0 net), then play `gamesPerSeat` LOGGED games in each of the four
+     * seats (1 brain vs 3 hand-tuned bots), and save the BEST brain game as a trace the
+     * Python replay engine (build-replay.py) can render into a watchable HTML.
+     *
+     * "Best" = the game where the brain's seat did best: prefer a game the brain WON;
+     * otherwise the game where the brain reached the highest doom (the tempo the runs
+     * showed topping out at ~15-21 vs the bots' 30). This is the game to watch to see
+     * WHERE the brain loses tempo.
+     *
+     * The trace format matches SimRunner's win-log dump precisely:
+     *   <serialized action>\n … \n\n <div class='p'>log line</div>\n …
+     * so no changes to build-replay.py are needed.
+     */
+    def runReplayGame(bootGames : Int, bootEpochs : Int, hidden : Int, lr : Double,
+                      parallel : Boolean, sims : Int, gamesPerSeat : Int, outDir : String) : Unit = {
+        println("========== REPLAY-GAME PRODUCER ==========")
+        println(f"bootstrap: $bootGames bot games -> clone policy+value; then $gamesPerSeat logged games/seat (sims=$sims)\n")
+
+        // --- bootstrap both heads (identical to runSelfPlay's iter-0) ---------------
+        val tb = System.nanoTime()
+        val games   = collectBoth(bootGames, parallel)
+        val polAll  = games.flatMap(_._1).toArray
+        val valBoot = games.flatMap(_._2).toArray
+        val randomBaseline = 100.0 * polAll.map(e => 1.0 / e.actions.length).sum / polAll.length
+        println(f"bootstrap corpus: ${polAll.length}%d move-decisions + ${valBoot.length}%d value-states in ${(System.nanoTime() - tb) / 1e9}%.0fs")
+
+        val policy = PolicyModel.initial(Features.dim, ActionFeatures.dim, hidden)
+        val value  = MLPModel.initial(Features.dim, hidden)
+        val rng = new scala.util.Random(12345L)
+        var e = 0
+        while (e < bootEpochs) {
+            val order = rng.shuffle(polAll.indices.toList).toArray
+            var k = 0
+            while (k < order.length) { val ex = polAll(order(k)); policy.trainDecision(ex.state, ex.actions, ex.chosen, lr); k += 1 }
+            e += 1
+        }
+        var ve = 0
+        while (ve < math.max(bootEpochs, 6)) {
+            val order = rng.shuffle(valBoot.indices.toList).toArray
+            var k = 0
+            while (k < order.length) { val ex = valBoot(order(k)); value.train(ex.features, ex.label, lr); k += 1 }
+            ve += 1
+        }
+        println(f"bootstrapped: policy move-match ${matchAccuracy(policy, polAll)}%.1f%% (vs random ${randomBaseline}%.1f%%), value confidence ${confidencePct(SelfPlay.logLoss(value, valBoot))}%.0f%%\n")
+
+        // --- play logged brain-vs-bots games, one seat at a time -------------------
+        new java.io.File(outDir).mkdirs()
+        // A candidate replay: which seat the brain played, whether it won, its doom, the
+        // leader's doom, the serialized action lines and the HTML log lines.
+        final case class Cand(seat : Faction, brainWon : Boolean, brainDoom : Int, leaderDoom : Int,
+                              actionLines : Seq[String], logLines : Seq[String], decisions : Int)
+
+        val cands = ArrayBuffer[Cand]()
+        SelfPlay.fixedSeating.toList.foreach { seat =>
+            var gi = 0
+            while (gi < gamesPerSeat) {
+                val g = SelfPlay.newGameLogged()
+                val brain = new MCTSPolicy(sims = sims, leaf = PolicyValueEval(policy, value))
+                val routing : Map[Faction, DecisionPolicy] =
+                    g.setup.map(f => f -> (if (f == seat) (brain : DecisionPolicy) else BotPolicy)).toMap
+                val policyMix = new MixedPolicy(routing)
+                val serializer = new Serialize(g)
+
+                // Capture the full trace: startLogged feeds the start/Options/setup block
+                // into `sink`; rolloutLogged returns its OWN action/log buffers for the rest
+                // of the game. Concatenate the two, in order.
+                val startActions = ArrayBuffer[Action]()
+                val startLog     = ArrayBuffer[String]()
+                val sink : (Action, $[String]) => Unit = (act, ls) => { startActions += act; startLog ++= ls.toList }
+                val startSit = Engine.startLogged(g, sink)
+                val (winners, hitCap, acts, log) =
+                    Engine.rolloutLogged(g, startSit, policyMix, Arena.ArenaDecisionCap)
+
+                val actionLines = (startActions.toList ++ acts.toList).map(serializer.write)
+                val logLines    = (startLog.toList ++ log.toList)
+
+                val brainDoom  = g.players(seat).doom
+                val leaderDoom = g.setup.map(f => g.players(f).doom).max
+                val brainWon   = winners.nonEmpty && winners.contains(seat)
+                val decisions  = acts.length
+                cands += Cand(seat, brainWon, brainDoom, leaderDoom, actionLines, logLines, decisions)
+                println(f"  ${seat.short}%2s game ${gi + 1}%d/$gamesPerSeat%d: brainDoom=$brainDoom%2d leaderDoom=$leaderDoom%2d won=$brainWon%-5s cap=$hitCap%-5s decisions=$decisions%d logLines=${logLines.length}%d")
+                gi += 1
+            }
+        }
+
+        if (cands.isEmpty) { println("no games produced"); return }
+
+        // Pick the best: wins first, then highest brain doom, then closest to leader.
+        val best = cands.sortBy(c => (if (c.brainWon) 0 else 1, -c.brainDoom, c.leaderDoom - c.brainDoom)).head
+        val label = if (best.brainWon) "WIN" else "best"
+        println(f"\n>>> BEST brain game: seat=${best.seat.short} won=${best.brainWon} brainDoom=${best.brainDoom} leaderDoom=${best.leaderDoom} decisions=${best.decisions}")
+
+        // Write the trace in build-replay.py format: actions, blank line, HTML-wrapped log.
+        val fname = outDir + "/brain-" + best.seat.short.toLowerCase + "-" + label + "-d" + best.brainDoom + ".txt"
+        val body = best.actionLines.mkString("\n") + "\n\n" +
+                   best.logLines.map(l => "<div class='p'>" + l + "</div>").mkString("\n")
+        java.nio.file.Files.write(java.nio.file.Paths.get(fname), body.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+        println(s">>> TRACE SAVED: $fname")
+        println(f"    (${best.actionLines.length}%d action lines + ${best.logLines.length}%d log lines)")
+
+        // Also dump a compact index of every candidate so the user can pick a different one.
+        val idx = cands.zipWithIndex.map { case (c, i) =>
+            f"$i%2d ${c.seat.short}%2s won=${c.brainWon}%-5s brainDoom=${c.brainDoom}%2d leaderDoom=${c.leaderDoom}%2d decisions=${c.decisions}%d"
+        }.mkString("\n")
+        java.nio.file.Files.write(java.nio.file.Paths.get(outDir + "/candidates-index.txt"),
+            idx.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+        println(s">>> candidate index: $outDir/candidates-index.txt")
     }
 
     /** Play one self-play game with the CURRENT two-headed brain in all four seats,

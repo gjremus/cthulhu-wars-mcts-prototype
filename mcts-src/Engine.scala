@@ -1,6 +1,7 @@
 package cws
 
 import hrf.colmat._
+import scala.collection.mutable.ArrayBuffer
 
 // Option A, Phase 1 — the engine harness.
 //
@@ -150,6 +151,98 @@ object Engine {
             }
         }
         throw new IllegalStateException("unreachable")
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // LOGGED VARIANTS — identical control flow to the plain engine, but they
+    // ACCUMULATE (a) the serialized action string of every performed action and
+    // (b) the HTML game-log lines every `perform` returns. This is exactly what
+    // SimRunner does to produce a trace the Python replay engine can render
+    // (build-replay.py: action-strings block + blank line + <div class='p'> log
+    // block). The plain engine discards both (`val (_, next) = ...`) because
+    // self-play/search only need the winners + recorded feature vectors. The
+    // game MUST be constructed with logging=true for the HTML block to populate.
+    //
+    // `sink` receives every performed Action (for serialization by the caller,
+    // which owns the Serialize instance) and its returned log lines, in order.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /** advanceToDecision that reports each performed action + its log lines to `sink`. */
+    def advanceToDecisionLogged(game : Game, from : Continue,
+                                sink : (Action, $[String]) => Unit) : Situation = {
+        var c = from
+        var guard = 0
+        while (true) {
+            guard += 1
+            if (guard > 100000) throw new RuntimeException("advanceToDecisionLogged: step cap (engine loop?)")
+            c match {
+                case GameOver(winners) => return Ended(winners)
+                case DelayedContinue(_, inner) => c = inner
+                case MultiAsk(asks) => c = asks.head
+                case Ask(faction, rawActions) =>
+                    val choices = Explode.explode(game, rawActions)
+                    choices.num match {
+                        case 0 =>
+                            rawActions match {
+                                case List(a) =>
+                                    val (l, n) = game.perform(a.unwrap); sink(a.unwrap, l); c = n
+                                case _ => throw new RuntimeException(
+                                    "advanceToDecisionLogged: Ask exploded to 0 choices, faction=" + faction + " raw=" + rawActions.num)
+                            }
+                        case 1 =>
+                            val (l, n) = game.perform(choices.head.unwrap); sink(choices.head.unwrap, l); c = n
+                        case _ =>
+                            return Decision(faction, choices, c)
+                    }
+                case _ =>
+                    resolveChance(game, c) match {
+                        case Some(action) =>
+                            val (l, next) = game.perform(action.unwrap); sink(action.unwrap, l); c = next
+                        case None =>
+                            throw new RuntimeException("advanceToDecisionLogged: unhandled continue " + c.getClass.getName)
+                    }
+            }
+        }
+        throw new IllegalStateException("unreachable")
+    }
+
+    /** Start + advance, logging every performed action (StartAction included). */
+    def startLogged(game : Game, sink : (Action, $[String]) => Unit) : Situation = {
+        val (l, c0) = game.perform(StartAction); sink(StartAction, l)
+        advanceToDecisionLogged(game, c0, sink)
+    }
+
+    /**
+     * rolloutCapped that records the full trace. Returns (winners, hitCap, actions, htmlLog)
+     * where `actions` is every performed Action IN ORDER and `htmlLog` is every log line
+     * IN ORDER. Caller serializes the actions (it owns the board-bound Serialize) and
+     * wraps the log lines in <div class='p'>…</div> for build-replay.py.
+     */
+    def rolloutLogged(game : Game, sit : Situation, policy : DecisionPolicy,
+                      maxDecisions : Int = 20000) : ($[Faction], Boolean, IndexedSeq[Action], IndexedSeq[String]) = {
+        val actions = ArrayBuffer[Action]()
+        val htmlLog = ArrayBuffer[String]()
+        val sink : (Action, $[String]) => Unit = (a, ls) => { actions += a; htmlLog ++= ls.toList }
+
+        var s = sit
+        var decisions = 0
+        var winners : $[Faction] = $()
+        var hitCap = false
+        var running = true
+        while (running) {
+            s match {
+                case Ended(w) => winners = w; running = false
+                case Decision(faction, acts, c) =>
+                    decisions += 1
+                    if (decisions > maxDecisions) { hitCap = true; running = false }
+                    else {
+                        val a = policy.decide(game, faction, acts)
+                        val (l, next) = game.perform(a.unwrap); sink(a.unwrap, l)
+                        s = advanceToDecisionLogged(game, next, sink)
+                    }
+            }
+        }
+        (winners, hitCap, actions.toIndexedSeq, htmlLog.toIndexedSeq)
     }
 }
 
