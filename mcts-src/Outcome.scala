@@ -31,47 +31,32 @@ object Outcome {
         0.5 * (mine / leader)
     }
 
-    // Non-winner partial credit. A true winner is always 1.0. For everyone else the
-    // label reflects progress toward the game's TWO HARD WIN CONDITIONS plus a smaller
-    // "means-to-an-end" milestone term.
+    // Non-winner partial credit. A true winner is ALWAYS 1.0 (the engine decides who won;
+    // the reward does not second-guess it — so a WINNING bot at 32 doom + 6 SB always beats
+    // a LOSING "well-behaved" bot at 29 doom + 6 SB, no matter how clean the loser played).
     //
-    // BOTH hard conditions weighted EQUALLY (user directive 2026-07-27): you cannot win
-    // without ALL 6 SPELLBOOKS, and you cannot win without the MOST DOOM — neither is
-    // optional, so the reward must value them the same. The old blend gave doom 0.75
-    // and buried spellbooks as 1/10 of a 0.25 shaping term (~0.025 — ~1/30th of doom),
-    // which taught the brain to chase doom and neglect spellbooks, so it reached high
-    // doom but never FINISHED (a win needs both). Now:
-    //   - spellbook progress (x/6) and doom progress are co-equal, HardWeight each,
-    //   - the ten secondary milestones (gates/power/ES/…) share the small remainder.
-    // Winner still = 1.0 and the non-winner band is capped (NonWinnerCeiling), so a win
-    // always dominates any loss — but the gradient now points at BOTH win conditions.
+    // REDESIGN 2026-07-29 (user directive): doom must be rewarded in exactly ONE place. It
+    // now lives in the shaping score (Shaping.scoreBreakdown "doomEarned", 1 doom = 0.01 on
+    // this [0,1] scale), so the old end-game doom+spellbook blend here is REMOVED — keeping
+    // it would double-count doom and break the calibrated doom-equivalent ratios. The terminal
+    // label for a non-winner is therefore simply the shaping score, held below a win by the
+    // ceiling. shaping already encodes the full doom-equivalent picture the user specified:
+    //   1 doom = 0.01, 1 SB = 8 doom, 1 ES earned = 1.66 doom, results ≫ behavior, losses
+    //   subtract. A full-win-shaped game lands ≈0.78, and the ceiling guarantees a non-winner
+    //   can NEVER reach 1.0 — so "results, capped below a real win" is exactly what trains.
     //
-    // These are only the STARTING weights for the label. The value net trained on real
-    // won/lost games self-tunes its own per-feature weights from outcomes (see the
-    // win-loss training mode) — this hand-set blend just seeds a sane gradient.
-    // 2026-07-28 (user directive): the brain is running WAY low on spellbooks (self-play
-    // SB 3.5/6 vs the bots' 5.6), so boost the SBR/spellbook term above doom. Every
-    // spellbook requirement met earns a book, and a win needs ALL 6 — the co-equal blend
-    // wasn't pulling the brain toward finishing them, so make the spellbook hard-condition
-    // the DOMINANT reward term. Doom stays a strong secondary (you still can't win without
-    // the lead), shaping shrinks to the small remainder.
-    private val DoomWeight       = 0.30    // doom hard-condition (strong secondary)
-    private val SpellbookWeight  = 0.55    // spellbook/SBR hard-condition (boosted, dominant)
-    private val ShapingWeight    = 0.15    // secondary milestones (means to an end)
-    private val NonWinnerCeiling = 0.6
+    // NonWinnerCeiling caps the whole losing band strictly below 1.0. Set to 0.90: high enough
+    // that a near-win (≈0.78 shaping) reads as "almost there", but a real win (1.0) still wins.
+    private val NonWinnerCeiling = 0.90
 
-    /** Terminal label combining progress toward BOTH hard win conditions (doom lead and
-     *  6 spellbooks, weighted equally) with the secondary milestone shaping score.
-     *  `shaping` is Trajectory.score(game) for `me`, already in [0,1]. Winner => 1.0. */
+    /** Terminal label for `me`: a true WINNER is 1.0 (unconditional — the win itself
+     *  guarantees the top score); every non-winner gets the doom-equivalent shaping score
+     *  (`shaping` = Trajectory.score, already in [0,1]) held below 1.0 by NonWinnerCeiling,
+     *  so 1.0 is unreachable without actually winning. Doom/spellbooks are counted once, in
+     *  the shaping score — no separate end-game doom reward. */
     def valueShaped(game : Game, winners : $[Faction], me : Faction, shaping : Double) : Double = {
         if (winners.contains(me)) return 1.0
-        val doomsByFaction = game.setup.map(f => game.players(f).doom.toDouble)
-        val leader   = math.max(1.0, doomsByFaction.max)
-        val doomPart = game.players(me).doom.toDouble / leader              // toward doom-lead condition
-        val sbPart   = math.min(1.0, game.players(me).spellbooks.num / 6.0) // toward 6-spellbook condition
-        val blended  = DoomWeight * doomPart + SpellbookWeight * sbPart + ShapingWeight * shaping
-        // Hold the whole non-winner band well below 1.0 so a loss never rivals a win.
-        NonWinnerCeiling * math.max(0.0, math.min(1.0, blended))
+        NonWinnerCeiling * math.max(0.0, math.min(1.0, shaping))
     }
 
     // ─── STATE POTENTIAL Φ(s) — the immediate-reward fix (2026-07-29) ──────────────

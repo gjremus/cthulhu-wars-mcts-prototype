@@ -130,6 +130,16 @@ final class Trajectory(factions : $[Faction]) {
     // ownGOO reward by that turn in scoreBreakdown. -1 = not awakened.
     private val gooAwakenTurn = mutable.Map[Faction, Int]().withDefaultValue(-1)
 
+    // ELDER SIGNS EARNED, cumulative (user directive 2026-07-29). "count earning an ES mid
+    // game as a reward as well, worth about 1.66 the reward for 1 doom." An ES earned this
+    // turn can be spent/converted later, so a game-end snapshot of the current ES stock would
+    // MISS signs that were earned and used. We therefore accumulate the UPWARD drift of the
+    // faction's total elder-sign holding (unrevealed p.es + revealed p.revealed) between
+    // observations — the same event-diff mechanism as gatesTaken/rituals — so every ES ever
+    // earned is credited once, whether or not it survives to the end. Faction-agnostic.
+    private val esEarned = mutable.Map[Faction, Int]().withDefaultValue(0)
+    private val lastEs   = mutable.Map[Faction, Int]()
+
     private def inner(m : mutable.Map[Faction, mutable.Map[Int, Int]], f : Faction) : mutable.Map[Int, Int] =
         m.getOrElseUpdate(f, mutable.Map[Int, Int]())
 
@@ -201,6 +211,14 @@ final class Trajectory(factions : $[Faction]) {
                     goodRituals(f) = goodRituals(f) + (ritNow - ritPrev)
             }
             lastRituals(f) = ritNow
+
+            // ELDER SIGNS EARNED (user directive 2026-07-29): credit each NEW elder sign the
+            // instant the faction's total sign holding rises, so signs earned then spent still
+            // count. Total = unrevealed (p.es) + revealed (p.revealed). Event-diff, uncapped by
+            // later spending — same as gatesTaken/ritualValue.
+            val esNow = p.es.num + p.revealed.num
+            lastEs.get(f).foreach(prev => if (esNow > prev) esEarned(f) = esEarned(f) + (esNow - prev))
+            lastEs(f) = esNow
 
             // UNIT-LOSS pain (user directive 2026-07-29). Count this faction's units sitting
             // in its RESERVE pool, per class, and charge replacement cost for each NEW arrival
@@ -285,6 +303,8 @@ final class Trajectory(factions : $[Faction]) {
 
     /** Total replacement-cost of every unit this faction lost (killed/eliminated/sacrificed). */
     def unitLossCostTotal(f : Faction) : Double = unitLossCost(f)
+    /** Total Elder Signs this faction EARNED over the game (incl. ones later spent). */
+    def esEarnedTotal(f : Faction) : Int = esEarned(f)
     /** Turn (AP proxy) the faction first awakened an own GOO, or -1 if never. */
     def gooAwakenAP(f : Faction) : Int = gooAwakenTurn(f)
 
@@ -309,101 +329,108 @@ final class Trajectory(factions : $[Faction]) {
     private def mean(xs : Iterable[Int], fallback : Double) : Double =
         if (xs.isEmpty) fallback else xs.map(_.toDouble).sum / xs.size
 
-    /** Named contribution of every shaping component for one faction, in score order.
-     *  EXPLICITLY WEIGHTED (rebalanced 2026-07-28): the earlier version weighted 11
-     *  milestone terms equally (each 1/11), which let the EASY passive terms (start-power,
-     *  units-on-map, spellbooks) dominate the score while the terms that actually WIN games
-     *  — controlled gates and rituals — sat at the floor. Self-play then climbed the passive
-     *  terms and abandoned gates ~5x the baseline (aband/AP 3.4 vs 0.65) with ~0 rituals.
-     *  Fix: give gate-control + ritual terms the dominant weight, shrink the passive terms,
-     *  and add the four gate-EVENT signals the user directed:
-     *    + gateTaken    reward the ACT of taking a gate (build/control), anti-farm capped.
-     *    + gateDefended reward holding a contested gate against an aggressor.
-     *    - p:abandon    PENALTY for abandoning a gate (walked off / AbandonGateAction).
-     *    - p:lostGate   PENALTY for losing a gate to an enemy (harder than abandon).
-     *  Anti-farming: the per-gate ABANDON penalty >= the per-gate TAKE reward, so a
-     *  take->abandon->retake cycle nets <= a single honest hold — the reward-driven analog
-     *  of the free-action loop we blocked in the engine. Penalties SUBTRACT and score() then
-     *  clamps to [0,1], so they can't drive the label negative but they do erase easy credit.
-     *  Terms are returned with SIGNED values; the scorecard printer sorts by contribution. */
+    // ─── REWARD SCALE (user directive 2026-07-29) ──────────────────────────────────
+    // The whole score lives on the [0,1] value-net label scale. Every weight below is
+    // written as "how many DOOM is this thing worth" × DoomUnit, so the table is a plain
+    // doom-equivalent audit: 1 doom = 0.01, so a full-win-shaped game (≈30 doom + 6 SB)
+    // lands at ≈0.30 + 0.48 = ~0.78 — the "0.80 range" the user anchored, and a near-win
+    // lands in the same band. RESULTS (doom, spellbooks, elder signs) carry the dominant
+    // weight; every BEHAVIOR term is ≤ ~1 doom and capped, so behavior fine-tunes play
+    // toward the big signals but can NEVER overturn a single result (1 SB = 8 doom beats
+    // any behavior). Non-winners are hard-capped below a win by Outcome.NonWinnerCeiling,
+    // so it is impossible to score 1.0 without actually winning — a faction that "lucks"
+    // into a strong losing finish still outscores a well-behaved poor finisher, because
+    // that luck may be winning behavior we never hand-coded.
+    private val DoomUnit = 0.01   // value of 1 doom on the [0,1] label scale
+
+    /** Named contribution of every shaping component for one faction, on the [0,1] label
+     *  scale, expressed in DOOM-EQUIVALENT points (× DoomUnit). Fully rescaled 2026-07-29
+     *  to the user's anchors so the reward is a transparent, auditable, LINEAR combination
+     *  where RESULTS dominate BEHAVIOR:
+     *
+     *    RESULTS (dominant, linear in the raw quantity):
+     *      doomEarned  = 1.00 doom each   → realized doom, THE objective, counted ONCE here
+     *                                        (the old end-game doom blend was removed).
+     *      spellbooks  = 8.00 doom each   → a spellbook is worth ~8 doom (user's ratio); a
+     *                                        single SB therefore beats ANY stack of behavior.
+     *      elderSigns  = 1.66 doom each   → an ES EARNED mid-game (even if later spent).
+     *      ritualValue = 1.00 doom / yield→ the doom a ritual actually produced (act credit).
+     *
+     *    BEHAVIOR (fine-tuning nudges, each ≤ ~1 doom, capped — steer toward the big signals
+     *    and away from devastating losses, but never overturn a result):
+     *      ownGOO 2 doom×AP-factor, goodRitual 1, gateTaken/gateDefended 1/3 doom each,
+     *      endAP1Gates 1/3, preDoomPower up to 1, unitsOnMap up to 1, sbUse/powerUse 1/3.
+     *
+     *    PENALTIES (the "away from devastating losses" signal, subtract):
+     *      unitLoss 0.10 doom per replacement-cost point (a 1-cost unit = 0.1 doom, a Shub
+     *      round-trip of 10 = 1 doom), gate lost-to-enemy 1/2 doom, gate abandoned 1/3 doom
+     *      (abandon ≥ gateTaken keeps the anti-farm invariant), capture 1/3 doom per unit.
+     *
+     *  Orderings the user required all hold arithmetically (behavior/ES equal):
+     *    27D+6SB (27+48=75) > 30D+5SB (30+40=70);  27D+5SB (67) > 26D+5SB (66);
+     *    equal D+SB but fewer unit losses ⇒ smaller penalty ⇒ higher;
+     *    a lucky 6-SB second place (≥0.48) outscores a well-behaved poor finisher.
+     *  The whole non-winner score is hard-capped below a win by Outcome.NonWinnerCeiling,
+     *  so 1.0 is UNREACHABLE without actually winning. Values are SIGNED; the scorecard
+     *  printer sorts by contribution. Sub-scores read RAW quantities (no ÷cap), so the
+     *  doom-equivalent ratios stay exactly linear. */
     def scoreBreakdown(g : Game, f : Faction) : Seq[(String, Double)] = {
         val p  = g.players(f)
-        val sp = startPow.getOrElse(f, mutable.Map.empty[Int, Int])
         val eg = endGates.getOrElse(f, mutable.Map.empty[Int, Int])
-        val powNow = p.power.toDouble
+        def D(doomEquiv : Double) : Double = doomEquiv * DoomUnit   // doom-equivalents → label scale
 
-        // Normalized sub-scores in [0,1] (targets chosen so "good base-4 play" ~= 1.0).
-        val sbook      = c01(p.spellbooks.num / 6.0)
-        // DOOM EARNED (user directive 2026-07-29): doom is THE scoring objective (win at 30),
-        // yet the shaping breakdown only rewarded its PROXIES (gates, rituals). Reward realized
-        // doom directly, normalized to the 30 win threshold. This captures doom from EVERY path
-        // (rituals, faction powers, Elder-Sign conversions), not just the gate/ritual proxies,
-        // and it is the term the terminal label + Φ(s) already lean on — now present per-game too.
-        val doomN      = c01(p.doom.toDouble / 30.0)
-        // PRE-DOOM bankroll replaces the old across-AP start-power terms (which punished
-        // ritualing). Target ~10 power entering doom = ritual cost (5) + a buffer to keep
-        // playing. Rewarding this makes the brain SAVE for the ritual instead of hoarding.
-        val preDoom    = c01(avgPreDoomPow(f) / 10.0)
-        val ap1Gates   = c01(eg.getOrElse(1, 0) / 2.0)
-        val avgGates   = c01(mean(eg.values, p.allGates.num.toDouble) / 2.0)   // cap-at-2 (per faction fingerprint)
-        // ownGOO is now AP-SCALED (user directive 2026-07-29): awakened = 1.0 baseline, times
-        // the AP factor (AP2 highest, AP1≈AP3, AP4+ flat). Rewards awakening in the strong
-        // window, not just awakening at all.
-        val ownGoo     = if (p.goos.factionGOOs.nonEmpty) gooAwakenFactor(gooAwakenAP(f)) else 0.0
-        // UNIT-LOSS: total replacement cost lost this game, normalized. Target 20 ≈ a heavily
-        // bleeding game (a Shub round-trip is 10; several Dark Young are 3 each). Penalized.
-        val lossN      = c01(unitLossCostTotal(f) / 20.0)
-        val eldSigns   = c01((p.es.num + p.revealed.num) / 8.0)
-        val unitsKept  = 1.0 - c01(unitsCaptured(f) / 6.0)
-        val onMap      = c01(p.allInPlay.num / 12.0)
-        val ritVal     = c01(ritualValue(f) / 30.0)
-        val goodRit    = c01(goodRituals(f) / 2.0)
-        val sbUse       = c01(sbUses(f) / 3.0)
-        val powUse      = c01(powerUses(f) / 3.0)
-        // Gate events (cap at 4 over a game so a big-board spree can't dominate).
-        val takenN     = c01(gatesTaken(f) / 4.0)
-        val defendedN  = c01(gatesDefended(f) / 4.0)
-        val abandonN   = c01(gatesAbandoned(f) / 4.0)
-        val lostN      = c01(gatesLostToEnemy(f) / 4.0)
+        // ── RESULTS (raw quantities, linear) ──────────────────────────────────────────
+        val doom       = p.doom.toDouble                       // realized doom (the objective)
+        val sbooks     = p.spellbooks.num.toDouble             // spellbooks earned (≤6)
+        val esE        = esEarnedTotal(f).toDouble             // elder signs EARNED (incl. spent)
+        val ritY       = ritualValue(f)                        // cumulative ritual doom-yield
+        // ── BEHAVIOR (bounded nudges) ───────────────────────────────────────────────
+        val ownGoo     = if (p.goos.factionGOOs.nonEmpty) gooAwakenFactor(gooAwakenAP(f)) else 0.0  // [0,1]
+        val goodRit    = math.min(2.0, goodRituals(f).toDouble)            // cap 2 rituals
+        val takenN     = math.min(4.0, gatesTaken(f).toDouble)            // cap 4
+        val defendedN  = math.min(4.0, gatesDefended(f).toDouble)         // cap 4
+        val ap1Gates   = math.min(2.0, eg.getOrElse(1, 0).toDouble)       // cap 2
+        val preDoom    = c01(avgPreDoomPow(f) / 10.0)                     // [0,1], target 10 power
+        val onMap      = c01(p.allInPlay.num / 12.0)                      // [0,1], target 12 units
+        val sbUse      = math.min(3.0, sbUses(f).toDouble)               // cap 3
+        val powUse     = math.min(3.0, powerUses(f).toDouble)            // cap 3
+        // ── PENALTIES (raw, subtract) ───────────────────────────────────────────────
+        val lossPts    = unitLossCostTotal(f)                            // sum of replacement costs lost
+        val abandonN   = math.min(6.0, gatesAbandoned(f).toDouble)       // cap 6
+        val lostN      = math.min(6.0, gatesLostToEnemy(f).toDouble)     // cap 6
+        val capturedN  = math.min(6.0, unitsCaptured(f).toDouble)        // cap 6
 
-        // DOMINANT: the win-condition drivers get the lion's share of the weight.
-        // Penalties SUBTRACT and score() clamps to [0,1]. Anti-farming is now STRICT:
-        // p:abandon per-gate (0.20/4) is DOUBLE gateTaken per-gate (0.10/4), so a
-        // take->abandon round-trip is net NEGATIVE — "take and hold" strictly beats
-        // "take and drop". Power reward moved to pre-doom (see preDoom above), so
-        // ritualing no longer costs the brain on the power term. GOO awakening boosted
-        // (0.07->0.12) — it gates Elder Signs and the biggest rituals.
-        // AUDIT NOTE (each term: WEIGHT × [0,1] sub-score; note says what is REWARDED + any
-        // condition). Positives sum then penalties subtract, all clamped to [0,1] in score().
-        // Anti-farm invariant: per-gate abandon penalty (0.20) ≥ per-gate take reward (0.10),
-        // and lost-to-enemy (0.24) is harshest, so churning gates is never net-positive.
+        // Each entry: label × DoomUnit. The comment states the DOOM-EQUIVALENT weight, what
+        // is rewarded, and any condition. Positives sum, penalties subtract; the whole thing
+        // is clamped to [0,1] in score() and then held below a win by NonWinnerCeiling.
         List(
-            // ── win-condition drivers (the lion's share of the weight) ──────────────────
-            "doomEarned"   ->  0.18 * doomN,        // REWARD: realized doom / 30 (THE win objective). All doom paths, no condition.
-            "avgEndGates"  ->  0.15 * avgGates,     // REWARD: avg AP-end controlled gates / 2 (the doom ENGINE). Proxy, trimmed since doomEarned now scores the result.
-            "ritualValue"  ->  0.15 * ritVal,       // REWARD: cumulative ritual yield (gates+ES per ritual) / 30. The ACT that makes doom; fires when ritual count rises.
-            "ownGOO"       ->  0.12 * ownGoo,       // REWARD: GOO awakened, ×AP factor (AP2=1.0, AP1=AP3=0.7, AP4+=0.45). Cond: own GOO in play. Enables ES + big rituals.
-            "spellbooks"   ->  0.12 * sbook,        // REWARD: spellbooks / 6 (hard win condition — need all 6). No condition.
-            "gateTaken"    ->  0.10 * takenN,       // REWARD: the ACT of taking a gate / 4 (capped). Fires on a region newly entering my control (build/capture).
-            "b:goodRitual" ->  0.08 * goodRit,      // REWARD: rituals / 2 done WHILE holding 2+ gates AND an awakened GOO — the convergence shape. Cond: both hold at ritual time.
-            "preDoomPower" ->  0.07 * preDoom,      // REWARD: avg power entering doom phase / 10 (~ritual cost + buffer). Rewards SAVING to afford the ritual, not hoarding.
-            "gateDefended" ->  0.06 * defendedN,    // REWARD: gates defended / 4. Cond: a gate I held was contested by an enemy unit and the threat cleared while I kept control.
-            "elderSigns"   ->  0.06 * eldSigns,     // REWARD: (Elder Signs + revealed) / 8. The doom accelerant from awakened GOOs.
-            "endAP1Gates"  ->  0.05 * ap1Gates,     // REWARD: gates at END of AP1 / 2. Rewards gating up EARLY (tempo).
-            "unitsKept"    ->  0.04 * unitsKept,    // REWARD: 1 − captured/6. Inverted: fewer units in enemy prisons = higher.
-            "unitsOnMap"   ->  0.03 * onMap,        // REWARD: units in play / 12. Passive board presence (means to an end, small).
-            "b:sbUse"      ->  0.02 * sbUse,        // NUDGE: spellbook uses / 3. Small exploration incentive to TRY faction books, not an objective.
-            "b:powerUse"   ->  0.02 * powUse,       // NUDGE: innate/GOO power uses / 3. Small exploration incentive to TRY special powers.
-            // ── PENALTIES (subtract) — event-detected, delivered in the game-end label ──
-            "p:abandon"    -> -0.20 * abandonN,     // PENALTY: gates abandoned (walked off / AbandonGateAction, nobody controls after) / 4. 2× gateTaken (strict anti-farm).
-            "p:lostGate"   -> -0.24 * lostN,        // PENALTY: gates lost to an ENEMY / 4 (an aggressor now controls it). Harshest — worse than abandon.
-            "p:unitLoss"   -> -0.18 * lossN         // PENALTY: total replacement-cost of units killed/eliminated/sacrificed / 20. Scales pain by summon cost.
+            // ── RESULTS — dominant, counted once, linear ───────────────────────────────
+            "spellbooks"   ->  D(8.00 * sbooks),    // 8 doom / SB. Hard win condition; a single SB outweighs all behavior.
+            "doomEarned"   ->  D(1.00 * doom),      // 1 doom / doom. THE objective; realized doom from EVERY path. Doom is scored ONLY here.
+            "elderSigns"   ->  D(1.66 * esE),       // 1.66 doom / ES EARNED (incl. later spent). The doom accelerant from GOOs.
+            "ritualValue"  ->  D(1.00 * ritY),      // 1 doom / unit of ritual yield (gates+ES the ritual made). Act-of-ritualing credit.
+            // ── BEHAVIOR — bounded nudges (steer toward big signals; can't overturn a result) ──
+            "ownGOO"       ->  D(2.00 * ownGoo),    // ≤2 doom, ×AP factor (AP2=1.0, AP1=AP3=0.7, AP4+=0.45). Cond: own GOO in play. Enables ES+rituals.
+            "b:goodRitual" ->  D(0.50 * goodRit),   // 0.5 doom / ritual (cap 2) done WHILE 2+ gates AND awakened GOO — the convergence shape.
+            "gateTaken"    ->  D(0.33 * takenN),    // 1/3 doom / gate taken (cap 4). The ACT of taking a gate (build/capture).
+            "gateDefended" ->  D(0.33 * defendedN), // 1/3 doom / gate defended (cap 4). Cond: held a contested gate; threat cleared.
+            "endAP1Gates"  ->  D(0.33 * ap1Gates),  // 1/3 doom / AP1-end gate (cap 2). Rewards early tempo.
+            "preDoomPower" ->  D(1.00 * preDoom),   // ≤1 doom. Avg power entering doom phase /10 — saving to AFFORD the ritual.
+            "unitsOnMap"   ->  D(1.00 * onMap),     // ≤1 doom. Units in play /12. Passive board presence (means to an end).
+            "b:sbUse"      ->  D(0.33 * sbUse),     // 1/3 doom / spellbook use (cap 3). Exploration nudge to TRY faction books.
+            "b:powerUse"   ->  D(0.33 * powUse),    // 1/3 doom / power use (cap 3). Exploration nudge to TRY innate/GOO powers.
+            // ── PENALTIES — the "away from devastating losses" signal (subtract) ────────
+            "p:unitLoss"   -> -D(0.10 * lossPts),   // 0.10 doom per replacement-cost pt (1-cost unit=0.1, Shub round-trip 10=1 doom).
+            "p:lostGate"   -> -D(0.50 * lostN),     // 1/2 doom / gate lost to an ENEMY (cap 6). Harshest gate event.
+            "p:abandon"    -> -D(0.33 * abandonN),  // 1/3 doom / gate abandoned (cap 6). ≥ gateTaken ⇒ churning never nets positive.
+            "p:capture"    -> -D(0.33 * capturedN)  // 1/3 doom / own unit captured to a prison (cap 6).
         )
     }
 
-    /** Per-faction shaping score in [0,1] at game end: the weighted milestone/gate terms
-     *  minus the gate penalties, clamped to [0,1] (single source of truth, so the reward
-     *  and its reported breakdown can never drift apart). */
+    /** Per-faction shaping score in [0,1] at game end: the doom-equivalent reward terms
+     *  minus the penalties, clamped to [0,1] (single source of truth, so the reward and its
+     *  reported breakdown can never drift apart). Held below a true win by NonWinnerCeiling
+     *  in Outcome.valueShaped, so 1.0 is unreachable without actually winning. */
     def score(g : Game) : Map[Faction, Double] =
         factions.map(f => f -> c01(scoreBreakdown(g, f).map(_._2).sum)).toMap
 }
