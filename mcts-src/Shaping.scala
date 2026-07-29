@@ -334,6 +334,12 @@ final class Trajectory(factions : $[Faction]) {
 
         // Normalized sub-scores in [0,1] (targets chosen so "good base-4 play" ~= 1.0).
         val sbook      = c01(p.spellbooks.num / 6.0)
+        // DOOM EARNED (user directive 2026-07-29): doom is THE scoring objective (win at 30),
+        // yet the shaping breakdown only rewarded its PROXIES (gates, rituals). Reward realized
+        // doom directly, normalized to the 30 win threshold. This captures doom from EVERY path
+        // (rituals, faction powers, Elder-Sign conversions), not just the gate/ritual proxies,
+        // and it is the term the terminal label + Φ(s) already lean on — now present per-game too.
+        val doomN      = c01(p.doom.toDouble / 30.0)
         // PRE-DOOM bankroll replaces the old across-AP start-power terms (which punished
         // ritualing). Target ~10 power entering doom = ritual cost (5) + a buffer to keep
         // playing. Rewarding this makes the brain SAVE for the ritual instead of hoarding.
@@ -367,25 +373,31 @@ final class Trajectory(factions : $[Faction]) {
         // "take and drop". Power reward moved to pre-doom (see preDoom above), so
         // ritualing no longer costs the brain on the power term. GOO awakening boosted
         // (0.07->0.12) — it gates Elder Signs and the biggest rituals.
+        // AUDIT NOTE (each term: WEIGHT × [0,1] sub-score; note says what is REWARDED + any
+        // condition). Positives sum then penalties subtract, all clamped to [0,1] in score().
+        // Anti-farm invariant: per-gate abandon penalty (0.20) ≥ per-gate take reward (0.10),
+        // and lost-to-enemy (0.24) is harshest, so churning gates is never net-positive.
         List(
-            "avgEndGates"  ->  0.20 * avgGates,     // holding ~2 controlled gates (doom base)
-            "ritualValue"  ->  0.18 * ritVal,       // the act that makes doom
-            "ownGOO"       ->  0.12 * ownGoo,       // awakened GOO (enables ES + big rituals) — BOOSTED
-            "spellbooks"   ->  0.12 * sbook,        // hard win condition (all 6)
-            "gateTaken"    ->  0.10 * takenN,       // ACT of taking a gate (anti-farm capped)
-            "b:goodRitual" ->  0.08 * goodRit,      // 2+ gates + awakened GOO ritual (target shape)
-            "preDoomPower" ->  0.07 * preDoom,      // bankroll entering doom (afford the ritual)
-            "gateDefended" ->  0.06 * defendedN,    // held a contested gate vs an aggressor
-            "elderSigns"   ->  0.06 * eldSigns,
-            "endAP1Gates"  ->  0.05 * ap1Gates,     // gate up early
-            "unitsKept"    ->  0.04 * unitsKept,
-            "unitsOnMap"   ->  0.03 * onMap,        // (shrunk — passive means-to-end)
-            "b:sbUse"      ->  0.02 * sbUse,
-            "b:powerUse"   ->  0.02 * powUse,
-            // PENALTIES (subtract) — immediate-detection, delivered in the game-end label.
-            "p:abandon"    -> -0.20 * abandonN,     // abandoning a gate — 2x gateTaken (strict anti-farm)
-            "p:lostGate"   -> -0.24 * lostN,        // losing a gate to an enemy (worse than abandon)
-            "p:unitLoss"   -> -0.18 * lossN         // units killed/eliminated/sacrificed, scaled by replacement cost
+            // ── win-condition drivers (the lion's share of the weight) ──────────────────
+            "doomEarned"   ->  0.18 * doomN,        // REWARD: realized doom / 30 (THE win objective). All doom paths, no condition.
+            "avgEndGates"  ->  0.15 * avgGates,     // REWARD: avg AP-end controlled gates / 2 (the doom ENGINE). Proxy, trimmed since doomEarned now scores the result.
+            "ritualValue"  ->  0.15 * ritVal,       // REWARD: cumulative ritual yield (gates+ES per ritual) / 30. The ACT that makes doom; fires when ritual count rises.
+            "ownGOO"       ->  0.12 * ownGoo,       // REWARD: GOO awakened, ×AP factor (AP2=1.0, AP1=AP3=0.7, AP4+=0.45). Cond: own GOO in play. Enables ES + big rituals.
+            "spellbooks"   ->  0.12 * sbook,        // REWARD: spellbooks / 6 (hard win condition — need all 6). No condition.
+            "gateTaken"    ->  0.10 * takenN,       // REWARD: the ACT of taking a gate / 4 (capped). Fires on a region newly entering my control (build/capture).
+            "b:goodRitual" ->  0.08 * goodRit,      // REWARD: rituals / 2 done WHILE holding 2+ gates AND an awakened GOO — the convergence shape. Cond: both hold at ritual time.
+            "preDoomPower" ->  0.07 * preDoom,      // REWARD: avg power entering doom phase / 10 (~ritual cost + buffer). Rewards SAVING to afford the ritual, not hoarding.
+            "gateDefended" ->  0.06 * defendedN,    // REWARD: gates defended / 4. Cond: a gate I held was contested by an enemy unit and the threat cleared while I kept control.
+            "elderSigns"   ->  0.06 * eldSigns,     // REWARD: (Elder Signs + revealed) / 8. The doom accelerant from awakened GOOs.
+            "endAP1Gates"  ->  0.05 * ap1Gates,     // REWARD: gates at END of AP1 / 2. Rewards gating up EARLY (tempo).
+            "unitsKept"    ->  0.04 * unitsKept,    // REWARD: 1 − captured/6. Inverted: fewer units in enemy prisons = higher.
+            "unitsOnMap"   ->  0.03 * onMap,        // REWARD: units in play / 12. Passive board presence (means to an end, small).
+            "b:sbUse"      ->  0.02 * sbUse,        // NUDGE: spellbook uses / 3. Small exploration incentive to TRY faction books, not an objective.
+            "b:powerUse"   ->  0.02 * powUse,       // NUDGE: innate/GOO power uses / 3. Small exploration incentive to TRY special powers.
+            // ── PENALTIES (subtract) — event-detected, delivered in the game-end label ──
+            "p:abandon"    -> -0.20 * abandonN,     // PENALTY: gates abandoned (walked off / AbandonGateAction, nobody controls after) / 4. 2× gateTaken (strict anti-farm).
+            "p:lostGate"   -> -0.24 * lostN,        // PENALTY: gates lost to an ENEMY / 4 (an aggressor now controls it). Harshest — worse than abandon.
+            "p:unitLoss"   -> -0.18 * lossN         // PENALTY: total replacement-cost of units killed/eliminated/sacrificed / 20. Scales pain by summon cost.
         )
     }
 
