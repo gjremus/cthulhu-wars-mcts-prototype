@@ -74,6 +74,39 @@ object Outcome {
         NonWinnerCeiling * math.max(0.0, math.min(1.0, blended))
     }
 
+    // ─── STATE POTENTIAL Φ(s) — the immediate-reward fix (2026-07-29) ──────────────
+    // The value net was trained on ONE terminal label smeared across all ~1000 states of
+    // a game, so it could not tell a good move from a bad one WITHIN a game — the core
+    // reason self-play never reached winning play (internal metrics climbed, arena flat,
+    // doom topped out ~15-24 vs the bots' 30+). Φ(s) is a PURE FUNCTION of the live board
+    // for one seat, in [0,1], built only from the universal win-condition quantities (no
+    // faction named, so it transfers to bot-less factions). It measures "how good is THIS
+    // position right now", independent of how the game ended.
+    //
+    // Weights: the two HARD win conditions (doom lead, 6 spellbooks) dominate, matching
+    // valueShaped's blend; gates (the doom engine), an awakened GOO, and power round it
+    // out. Doom is scored against 30 (the base-4 win threshold), capped at 1.0.
+    private val PotDoom  = 0.35   // doom / 30 (the doom-lead hard condition)
+    private val PotSB    = 0.35   // spellbooks / 6 (the 6-spellbook hard condition)
+    private val PotGates = 0.15   // controlled gates, cap 2 (the doom-generation base)
+    private val PotGOO   = 0.10   // own GOO awakened (enables Elder Signs + big rituals)
+    private val PotPower = 0.05   // power on hand, cap 10 (bankroll to act/ritual)
+
+    /** Position-quality potential Φ(s) in [0,1] for `me`, read purely from the live game.
+     *  Used to give EACH recorded state its own value target (see PolicyRun.selfPlayGame),
+     *  so the value net learns per-move position quality instead of a single smeared
+     *  terminal label. Faction-agnostic. */
+    def statePotential(game : Game, me : Faction) : Double = {
+        val p = game.players(me)
+        val doomN  = math.min(1.0, p.doom.toDouble / 30.0)
+        val sbN    = math.min(1.0, p.spellbooks.num / 6.0)
+        val gatesN = math.min(1.0, p.allGates.num.toDouble / 2.0)
+        val gooN   = if (p.goos.factionGOOs.nonEmpty) 1.0 else 0.0
+        val powN   = math.min(1.0, p.power.toDouble / 10.0)
+        val v = PotDoom * doomN + PotSB * sbN + PotGates * gatesN + PotGOO * gooN + PotPower * powN
+        math.max(0.0, math.min(1.0, v))
+    }
+
     /** Pure win/loss label (1.0 winner, 0.0 otherwise). This is the ground-truth signal
      *  that lets the value net SELF-OPTIMIZE how much weight each intermediate goal
      *  deserves: with real wins in the bot corpus, gradient descent discovers from
@@ -81,4 +114,24 @@ object Outcome {
      *  actually precede victory — no hand-set blend imposed. */
     def winLoss(game : Game, winners : $[Faction], me : Faction) : Double =
         if (winners.contains(me)) 1.0 else 0.0
+
+    // ─── PROGRESS-BLENDED per-state label (2026-07-29) ─────────────────────────────
+    // Blend a state's OWN potential Φ(s_t) with the game's TERMINAL label by how deep
+    // into the game the state sat (progress = t / total decisions, in [0,1]):
+    //
+    //   label(s_t) = (1 - w(progress)) * Φ(s_t)  +  w(progress) * terminal
+    //
+    // Early states (progress→0) are judged mostly by their LOCAL position quality — the
+    // per-move gradient the smeared terminal label never gave. Late states (progress→1)
+    // are judged mostly by the ACTUAL result — so the net still learns what actually
+    // won/lost. This is the discounted-return idea (credit decays toward the outcome as
+    // the horizon shrinks) expressed as a supervised label, keeping the existing sigmoid
+    // value net and its [0,1] target unchanged (no RL rewrite). w(progress) uses a mild
+    // convex ramp so mid-game keeps meaningful local signal.
+    def progressBlended(potential : Double, terminal : Double, progress : Double) : Double = {
+        val pr = math.max(0.0, math.min(1.0, progress))
+        val w  = pr * pr                     // convex: terminal weight grows late, local signal survives mid-game
+        val v  = (1.0 - w) * potential + w * terminal
+        math.max(0.0, math.min(1.0, v))
+    }
 }

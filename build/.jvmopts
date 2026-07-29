@@ -1,0 +1,4 @@
+-Xmx22g
+-Xms4g
+-Xss32m
+-XX:+UseG1GC

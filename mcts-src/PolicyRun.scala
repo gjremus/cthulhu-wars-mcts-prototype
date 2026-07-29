@@ -534,10 +534,19 @@ object PolicyRun {
         val trajectory = new Trajectory(g.setup)
         var decisions = 0
 
+        // Decision index of each recorded example, so we can compute its position in the
+        // game (progress = idx / total) for the progress-blended label below.
+        val exIdx = scala.collection.mutable.ArrayBuffer[Int]()
         val recording = new DecisionPolicy {
             def decide(game : Game, faction : Faction, actions : $[Action]) : Action = {
                 trajectory.observe(game)
-                vals += new Example(Features.of(game, faction), faction)
+                val ex = new Example(Features.of(game, faction), faction)
+                // Capture Φ(s) from the LIVE board now — the per-move position quality the
+                // smeared terminal label never provided. (Read here, not at game end, so it
+                // reflects THIS state, not the final one.)
+                ex.potential = Outcome.statePotential(game, faction)
+                vals += ex
+                exIdx += decisions
                 decisions += 1
                 brain.decide(game, faction, actions)
             }
@@ -545,7 +554,24 @@ object PolicyRun {
         val s0 = Engine.start(g)
         val (winners, _) = Engine.rolloutCapped(g, s0, recording, decisionCap, throwOnCap = false)
         val shaping = trajectory.score(g)
-        vals.foreach(ex => ex.label = Outcome.valueShaped(g, winners, ex.faction, shaping.getOrElse(ex.faction, 0.0)))
+        // PROGRESS-BLENDED per-state label (2026-07-29): each state's target blends its own
+        // captured potential Φ(s_t) with the terminal outcome, weighted by how deep into the
+        // game it sat. This replaces the old single terminal label smeared across every state
+        // — the value net now gets a per-move gradient (early states judged by local position,
+        // late states by the actual result). The terminal value is the same valueShaped label
+        // used before (win=1.0, else doom/spellbook/shaping blend), so a true win still anchors
+        // the endgame at 1.0. Falls back to pure terminal if potential wasn't captured.
+        val total = math.max(1, decisions)
+        val vArr = vals.toArray
+        var vi = 0
+        while (vi < vArr.length) {
+            val ex = vArr(vi)
+            val terminal = Outcome.valueShaped(g, winners, ex.faction, shaping.getOrElse(ex.faction, 0.0))
+            ex.label =
+                if (ex.potential < 0.0) terminal
+                else Outcome.progressBlended(ex.potential, terminal, exIdx(vi).toDouble / total)
+            vi += 1
+        }
         // Same 10 faction-agnostic intermediate metrics the all-bot baseline emits, so the
         // brain's self-play games are measured by identical code — this is the diagnostic
         // for WHERE the brain falls short of the bots (SBs, GOOs, rituals, doom/AP, etc.).

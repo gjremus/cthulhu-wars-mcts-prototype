@@ -1,0 +1,2684 @@
+StartingRegionAction(CC, SouthAsia)
+StartingRegionAction(TS, NorthPacific)
+StartingRegionAction(AN, NorthAtlantic)
+StartingRegionAction(FB, Australia)
+PlayDirectionAction(FB, [FB, AN, CC, TS])
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+FBWritheMainAction(FB)
+FBWritheRollResultAction(FB, 8, [Pain, Miss, Pain, Pain, Kill, Pain, Kill, Miss])
+FBWritheKeepAction(FB, [Pain, Miss, Pain, Pain, Kill, Pain, Kill, Miss])
+FBWritheKillUnitAction(FB, FB/Acolyte/6, 2, 4)
+FBWritheKillUnitAction(FB, FB/Acolyte/3, 1, 4)
+FBWritheChoosePainUnitAction(FB, FB/Desiccated/1, 4, [])
+FBWritheChoosePainUnitAction(FB, FB/Desiccated/2, 3, [FB/Desiccated/1])
+FBWritheChoosePainUnitAction(FB, FB/Acolyte/1, 2, [FB/Desiccated/1, FB/Desiccated/2])
+FBWritheChoosePainUnitAction(FB, FB/Acolyte/2, 1, [FB/Desiccated/1, FB/Desiccated/2, FB/Acolyte/1])
+FBWritheMoveSeparatelyAction(FB, [FB/Desiccated/1, FB/Desiccated/2, FB/Acolyte/1, FB/Acolyte/2])
+FBWritheMoveOneToRegionAction(FB, FB/Desiccated/1, EastAfrica, [FB/Desiccated/2, FB/Acolyte/1, FB/Acolyte/2])
+FBWritheMoveOneToRegionAction(FB, FB/Desiccated/2, Antarctica, [FB/Acolyte/1, FB/Acolyte/2])
+FBWritheMoveOneJoinAction(FB, FB/Acolyte/1, EastAfrica, [FB/Acolyte/2], "Desiccated")
+FBWritheMoveOneJoinAction(FB, FB/Acolyte/2, Antarctica, [], "Desiccated")
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+MoveAction(AN, AN/Acolyte/2, NorthAtlantic, Europe, 1)
+MoveDoneAction(AN)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+MoveAction(CC, CC/Acolyte/4, SouthAsia, ArcticOcean, 1)
+MoveDoneAction(CC)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+SummonAction(TS, TombHerd, NorthPacific)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+BuildGateAction(FB, Antarctica)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+BuildCathedralAction(AN, Europe)
+SpellbookAction(AN, Festival, PreMainAction(AN))
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+BuildGateAction(CC, ArcticOcean)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/TombHerd/1, NorthPacific, ArcticOcean, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+BuildGateAction(FB, EastAfrica)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+MoveAction(AN, AN/Acolyte/6, NorthAtlantic, WestAfrica, 1)
+MoveDoneAction(AN)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+SummonAction(CC, Nightgaunt, ArcticOcean)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+AttackAction(TS, ArcticOcean, CC, None)
+PreBattleDoneAction(TS, DefenderPreBattle)
+PreBattleDoneAction(CC, PreRoll)
+BattleRollAction(TS, [Miss, Miss, Pain], RollDefenders)
+BattleRollAction(CC, [], ChannelPowerPhase)
+AssignPainAction(CC, 1, CC, CC/Acolyte/4)
+RetreatUnitAction(CC, CC/Acolyte/4, NorthAmerica)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+BuildGateAction(AN, Europe)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+BuildGateAction(CC, NorthAmerica)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Acolyte/3, NorthPacific, ArcticOcean, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+BuildCathedralAction(AN, WestAfrica)
+SpellbookAction(AN, Brainless, PreMainAction(AN))
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+SummonAction(TS, TombHerd, NorthPacific)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+GiveWorstMonsterMainAction(AN)
+GiveWorstMonsterSelectMonsterAction(CC, AN, Nightgaunt, [SouthAsia, NorthAmerica], [TS, FB])
+GiveWorstMonsterAskAction(CC, AN, Nightgaunt, NorthAmerica, [TS, FB])
+GiveWorstMonsterSelectMonsterAction(TS, AN, TombHerd, [NorthPacific, ArcticOcean], [FB])
+GiveWorstMonsterAskAction(TS, AN, TombHerd, NorthPacific, [FB])
+GiveWorstMonsterSelectMonsterAction(FB, AN, Desiccated, [Australia, Antarctica, EastAfrica], [])
+GiveWorstMonsterAskAction(FB, AN, Desiccated, EastAfrica, [])
+SpellbookAction(AN, Extinction, PreMainAction(AN))
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/TombHerd/2, NorthPacific, NorthAmerica, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+MoveAction(AN, AN/Acolyte/5, NorthAtlantic, SouthAmerica, 1)
+MoveDoneAction(AN)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+DragonAscendingInstantAction(DragonAscendingUpAction("power gather", EndPhasePromptsAction(CC, [CC, TS, FB, AN])))
+PowerGatherAction(CC)
+FirstPlayerAction(FB, AN)
+PlayDirectionAction(AN, [AN, FB, TS, CC])
+DoomPhaseAction
+SpellbookAction(FB, CyclopeanGaze, DoomNextPlayerAction(AN))
+DoomNextPlayerAction(AN)
+DoomDoneAction(AN)
+DoomDoneAction(FB)
+DoomDoneAction(TS)
+DoomDoneAction(CC)
+ActionPhaseAction
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+BuildCathedralAction(AN, SouthAmerica)
+SpellbookAction(AN, UnholyGround, PreMainAction(AN))
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+FBAwakenGhatanothoaAction(FB, 6)
+SpellbookAction(FB, DevilsMark, EndAction(FB))
+EndAction(FB)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+TSAwakenGlaakiPayAction(TS, NorthPacific, 7, 0)
+SpellbookAction(TS, Undulate, PreMainAction(TS))
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+AwakenAction(CC, Nyarlathotep, SouthAsia, 10)
+SpellbookAction(CC, Emissary, PreMainAction(CC))
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+BuildGateAction(AN, WestAfrica)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+SummonAction(FB, RevenantOfKnaa, Antarctica)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, NorthPacific, NorthAmerica, 1)
+TSUndulateCarryAction(TS, TS/TombHerd/3, NorthPacific, NorthAmerica, 2)
+TSUndulateCarryAction(TS, TS/Acolyte/4, NorthPacific, NorthAmerica, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+BuildGateAction(AN, SouthAmerica)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+RecruitAction(FB, Acolyte, Antarctica)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, NorthAmerica, SouthAmerica, 1)
+TSUndulateCarryAction(TS, TS/TombHerd/3, NorthAmerica, SouthAmerica, 2)
+TSUndulateCarryAction(TS, TS/Acolyte/4, NorthAmerica, SouthAmerica, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+MoveAction(AN, AN/Acolyte/5, SouthAmerica, SouthPacific, 1)
+MoveDoneAction(AN)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/TombHerd/2, NorthAmerica, SouthAmerica, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+SummonAction(AN, UnMan, Europe)
+FestivalUnManSummonAction(AN, TS)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+AttackAction(TS, ArcticOcean, CC, None)
+PreBattleDoneAction(TS, DefenderPreBattle)
+PreBattleDoneAction(CC, PreRoll)
+BattleRollAction(TS, [Pain, Kill, Miss], RollDefenders)
+BattleRollAction(CC, [], ChannelPowerPhase)
+BattleProceedAction(AssignAttackerKills)
+BattleProceedAction(AssignAttackerPains)
+SpellbookAction(TS, GreenDecay, PreMainAction(TS))
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+SummonAction(AN, UnMan, NorthAtlantic)
+FestivalUnManSummonAction(AN, TS)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Acolyte/5, NorthPacific, SouthAmerica, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+MoveAction(AN, AN/UnMan/2, NorthAtlantic, NorthPacific, 1)
+MoveDoneAction(AN)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainAction(TS)
+NextPlayerAction(TS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+CaptureAction(AN, NorthPacific, TS, None)
+CaptureTargetAction(TS, NorthPacific, AN, TS/Acolyte/2, None)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+DragonAscendingInstantAction(DragonAscendingUpAction("power gather", EndPhasePromptsAction(FB, [FB, TS, CC, AN])))
+PowerGatherAction(FB)
+TSShepherdGatherAction(TS, SouthAmerica, [ArcticOcean])
+FirstPlayerAction(AN, TS)
+PlayDirectionAction(TS, [TS, FB, AN, CC])
+DoomPhaseAction
+DoomNextPlayerAction(TS)
+TSDeathMarchAction(TS, NorthPacific)
+DoomAction(TS)
+DoomDoneAction(TS)
+RitualAction(FB, 5, 1)
+ElderSignAction(FB, 1, 1, false, DoomAction(FB))
+DoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkPlaceCraterAction(FB, EastAfrica)
+ElderSignAction(FB, 1, 1, false, DoomAction(FB))
+DoomAction(FB)
+DoomDoneAction(FB)
+DoomDoneAction(AN)
+DoomDoneAction(CC)
+ActionPhaseAction
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+SummonAction(TS, DeepTendril, SouthAmerica)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+FBWritheMainAction(FB)
+FBWritheRollResultAction(FB, 6, [Kill, Pain, Pain, Kill, Miss, Miss])
+FBWritheKeepAction(FB, [Kill, Pain, Pain, Kill, Miss, Miss])
+FBWritheKillUnitAction(FB, FB/Desiccated/1, 2, 2)
+FBWritheKillUnitAction(FB, FB/Desiccated/3, 1, 2)
+FBWritheChoosePainUnitAction(FB, FB/Ghatanothoa/1, 2, [])
+FBWritheChoosePainUnitAction(FB, FB/Acolyte/1, 1, [FB/Ghatanothoa/1])
+FBWritheMoveAllToRegionAction(FB, WestAfrica, [FB/Ghatanothoa/1, FB/Acolyte/1])
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+BuildGateAction(AN, SouthPacific)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+MoveAction(CC, CC/Nyarlathotep/1, SouthAsia, Australia, 1)
+MoveDoneAction(CC)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+RecruitAction(TS, Acolyte, ArcticOcean)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+SummonAction(FB, RevenantOfKnaa, Australia)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+MoveAction(AN, AN/Acolyte/6, WestAfrica, SouthAtlantic, 1)
+MoveDoneAction(AN)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+CaptureAction(CC, Australia, FB, None)
+CaptureTargetAction(FB, Australia, CC, FB/Acolyte/5, None)
+FBCyclopeanGazePainUnitAction(CC, CC, CC/Nyarlathotep/1, Australia, RevenantOfKnaa, [], false)
+FBCyclopeanGazeDestinationAction(FB, CC/Nyarlathotep/1, SouthPacific, RevenantOfKnaa, [], CC, false)
+AfterAction(CC)
+SpellbookAction(CC, ThousandForms, PreMainAction(CC))
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/TombHerd/4, NorthPacific, NorthAtlantic, 1)
+TSUndulateCarryAction(TS, TS/Acolyte/6, NorthPacific, NorthAtlantic, 1)
+MoveAction(TS, TS/TombHerd/2, SouthAmerica, NorthPacific, 1)
+TSUndulateCarryAction(TS, TS/Acolyte/4, SouthAmerica, NorthPacific, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+RecruitAction(FB, Acolyte, Australia)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+SummonAction(AN, Yothan, NorthAtlantic)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+CaptureAction(CC, SouthPacific, AN, None)
+CaptureTargetAction(AN, SouthPacific, CC, AN/Acolyte/5, None)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+SummonAction(TS, TombHerd, SouthAmerica)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+SummonAction(AN, Yothan, Europe)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+MoveAction(CC, CC/Nyarlathotep/1, SouthPacific, NorthPacific, 1)
+MoveDoneAction(CC)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/TombHerd/2, NorthPacific, SouthAsia, 1)
+TSUndulateCarryAction(TS, TS/Acolyte/1, NorthPacific, SouthAsia, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+CaptureAction(AN, NorthPacific, TS, None)
+CaptureTargetAction(TS, NorthPacific, AN, TS/Acolyte/4, None)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+SummonAction(CC, Nightgaunt, SouthAsia)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+AttackAction(TS, SouthAsia, CC, None)
+PreBattleDoneAction(TS, DefenderPreBattle)
+PreBattleDoneAction(CC, PreRoll)
+BattleRollAction(TS, [Miss, Kill, Miss], RollDefenders)
+BattleRollAction(CC, [], ChannelPowerPhase)
+AssignKillAction(CC, 1, CC, CC/Acolyte/1)
+SpellbookAction(TS, ElevenRevelations, PreMainAction(TS))
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+MoveAction(AN, AN/Acolyte/6, SouthAtlantic, SouthPacific, 1)
+MoveDoneAction(AN)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+RecruitAction(CC, Acolyte, NorthPacific)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, SouthAmerica, SouthPacific, 1)
+TSUndulateCarryAction(TS, TS/DeepTendril/1, SouthAmerica, SouthPacific, 3)
+TSUndulateCarryAction(TS, TS/TombHerd/3, SouthAmerica, SouthPacific, 2)
+TSUndulateCarryAction(TS, TS/Acolyte/5, SouthAmerica, SouthPacific, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+MoveAction(AN, AN/Acolyte/6, SouthPacific, SouthAtlantic, 1)
+MoveDoneAction(AN)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+MoveAction(CC, CC/Nyarlathotep/1, NorthPacific, Europe, 1)
+MoveDoneAction(CC)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, SouthPacific, Antarctica, 1)
+TSUndulateSkipAction(TS)
+MoveDoneAction(TS)
+FBCyclopeanGazePainUnitAction(TS, TS, TS/Glaaki/1, Antarctica, RevenantOfKnaa, [], false)
+FBCyclopeanGazeDestinationAction(FB, TS/Glaaki/1, SouthPacific, RevenantOfKnaa, [], TS, false)
+AfterAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+CaptureAction(CC, Europe, AN, None)
+CaptureTargetAction(AN, Europe, CC, AN/Acolyte/2, None)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/TombHerd/5, SouthAmerica, SouthPacific, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+ThousandFormsMainAction(CC)
+ThousandFormsRollAction(CC, 2)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainAction(TS)
+NextPlayerAction(TS)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+MoveAction(CC, CC/Acolyte/2, SouthAsia, Europe, 1)
+MoveDoneAction(CC)
+SpellbookAction(CC, Madness, PreMainAction(CC))
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainAction(TS)
+NextPlayerAction(TS)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+MoveAction(CC, CC/Acolyte/3, SouthAsia, SouthAmerica, 1)
+MoveDoneAction(CC)
+SpellbookAction(CC, SeekAndDestroy, PreMainAction(CC))
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainAction(TS)
+NextPlayerAction(TS)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+SummonAction(CC, FlyingPolyp, Europe)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+DragonAscendingInstantAction(DragonAscendingUpAction("power gather", EndPhasePromptsAction(TS, [TS, FB, AN, CC])))
+PowerGatherAction(TS)
+TSShepherdGatherAction(TS, SouthPacific, [ArcticOcean, NorthAtlantic, SouthAsia])
+PlayDirectionAction(CC, [CC, AN, FB, TS])
+DoomPhaseAction
+DoomNextPlayerAction(CC)
+DoomDoneAction(CC)
+DoomDoneAction(AN)
+RitualAction(FB, 6, 1)
+ElderSignAction(FB, 1, 3, false, DoomAction(FB))
+DoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkDoomAction(FB)
+FBDevilsMarkPlaceCraterAction(FB, WestAfrica)
+ElderSignAction(FB, 1, 1, false, DoomAction(FB))
+DoomAction(FB)
+DoomDoneAction(FB)
+TSDeathMarchAction(TS, SouthAtlantic)
+DoomAction(TS)
+DoomDoneAction(TS)
+ActionPhaseAction
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+MoveAction(CC, CC/Nyarlathotep/1, Europe, SouthAtlantic, 1)
+MoveAction(CC, CC/Nightgaunt/1, SouthAsia, NorthPacific, 1)
+MoveDoneAction(CC)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+AttackAction(AN, Europe, CC, None)
+PreBattleDoneAction(AN, DefenderPreBattle)
+PreBattleDoneAction(CC, PreRoll)
+BattleRollAction(AN, [Kill, Kill, Kill, Pain, Miss, Pain, Kill], RollDefenders)
+BattleRollAction(CC, [Miss], ChannelPowerPhase)
+BattleProceedAction(AssignAttackerKills)
+UnholyGroundAction(AN, CC, SouthAmerica)
+BattleDoneAction(AN)
+UnholyGroundAction(AN, CC, Europe)
+BattleDoneAction(AN)
+BattleProceedAction(AssignAttackerPains)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+FBWritheMainAction(FB)
+FBWritheRollResultAction(FB, 7, [Miss, Miss, Miss, Pain, Miss, Pain, Pain])
+FBWritheRerollAction(FB, [Miss, Miss, Miss, Pain, Miss, Pain, Pain])
+FBWritheRollResultAction(FB, 7, [Miss, Kill, Kill, Pain, Kill, Miss, Pain])
+FBWritheKillUnitAction(FB, FB/Ghatanothoa/1, 3, 2)
+FBWritheKillUnitAction(FB, FB/Acolyte/1, 2, 2)
+FBWritheKillUnitAction(FB, FB/Desiccated/1, 1, 2)
+FBWritheChoosePainUnitAction(FB, FB/Desiccated/2, 2, [])
+FBWritheChoosePainUnitAction(FB, FB/Acolyte/2, 1, [FB/Desiccated/2])
+FBWritheMoveAllToRegionAction(FB, Arabia, [FB/Desiccated/2, FB/Acolyte/2])
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+CaptureAction(TS, SouthAsia, CC, None)
+CaptureTargetAction(CC, SouthAsia, TS, CC/Acolyte/5, None)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+Pay4PowerMainAction(CC)
+SpellbookAction(CC, Invisibility, PreMainAction(CC))
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+RecruitAction(AN, Acolyte, Europe)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+FBAwakenGhatanothoaAction(FB, 4)
+SpellbookAction(FB, CallOfTheFaithful, EndAction(FB))
+EndAction(FB)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, SouthPacific, Antarctica, 1)
+TSUndulateCarryAction(TS, TS/DeepTendril/1, SouthPacific, Antarctica, 3)
+TSUndulateCarryAction(TS, TS/TombHerd/3, SouthPacific, Antarctica, 2)
+TSUndulateCarryAction(TS, TS/Acolyte/5, SouthPacific, Antarctica, 1)
+MoveDoneAction(TS)
+FBCyclopeanGazePainUnitAction(TS, TS, TS/DeepTendril/1, Antarctica, RevenantOfKnaa, [], false)
+FBCyclopeanGazeDestinationAction(FB, TS/DeepTendril/1, IndianOcean, RevenantOfKnaa, [], TS, false)
+AfterAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+Pay6PowerMainAction(CC)
+SpellbookAction(CC, Abduct, PreMainAction(CC))
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+MoveAction(AN, AN/Acolyte/6, SouthAtlantic, SouthAmerica, 1)
+MoveAction(AN, AN/Yothan/2, Europe, NorthAtlantic, 1)
+MoveDoneAction(AN)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+RecruitAction(FB, Acolyte, Australia)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+CaptureAction(TS, Antarctica, FB, None)
+CaptureTargetAction(FB, Antarctica, TS, FB/Acolyte/3, None)
+FBCyclopeanGazePainUnitAction(TS, TS, TS/TombHerd/3, Antarctica, RevenantOfKnaa, [], false)
+FBCyclopeanGazeDestinationAction(FB, TS/TombHerd/3, SouthPacific, RevenantOfKnaa, [], TS, false)
+AfterAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+MoveAction(CC, CC/Acolyte/6, SouthAsia, Scandinavia, 1)
+MoveDoneAction(CC)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+SummonAction(AN, Yothan, Europe)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, Antarctica, SouthAtlantic, 1)
+TSUndulateCarryAction(TS, TS/Acolyte/5, Antarctica, SouthAtlantic, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+SummonAction(CC, HuntingHorror, SouthAmerica)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+RecruitAction(AN, Acolyte, Europe)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, SouthAtlantic, SouthAmerica, 1)
+TSUndulateCarryAction(TS, TS/Acolyte/5, SouthAtlantic, SouthAmerica, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+ThousandFormsMainAction(CC)
+ThousandFormsRollAction(CC, 3)
+ThousandFormsAskAction(CC, 3, [], [TS, AN], 6, AN, 1)
+ThousandFormsAskAction(CC, 3, [AN->1], [AN, TS], 6, TS, 0)
+ThousandFormsAskAction(CC, 3, [TS->0], [TS, AN], 5, AN, 0)
+ThousandFormsAskAction(CC, 3, [AN->0], [AN, TS], 4, TS, 2)
+ThousandFormsAskAction(CC, 3, [TS->2], [TS, AN], 4, AN, 0)
+ThousandFormsAskAction(CC, 3, [AN->0], [AN, TS], 4, TS, 2)
+ThousandFormsAskAction(CC, 3, [TS->2], [TS, AN], 3, AN, 0)
+ThousandFormsAskAction(CC, 3, [AN->0], [AN, TS], 2, TS, 0)
+ThousandFormsAskAction(CC, 3, [TS->0], [TS, AN], 1, AN, 0)
+ThousandFormsAskAction(CC, 3, [AN->0], [AN, TS], 1, TS, 2)
+ThousandFormsAskAction(CC, 3, [TS->2], [TS, AN], 0, AN, 0)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+MoveAction(AN, AN/Acolyte/6, SouthAmerica, NorthPacific, 1)
+MoveDoneAction(AN)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+CaptureAction(TS, SouthAmerica, CC, None)
+CaptureTargetAction(CC, SouthAmerica, TS, CC/Acolyte/3, None)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+SummonAction(CC, HuntingHorror, NorthPacific)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, SouthAmerica, NorthPacific, 1)
+TSUndulateCarryAction(TS, TS/Acolyte/5, SouthAmerica, NorthPacific, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+RecruitAction(CC, Acolyte, SouthAmerica)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, NorthPacific, SouthAmerica, 1)
+TSUndulateCarryAction(TS, TS/Acolyte/5, NorthPacific, SouthAmerica, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, SouthAmerica, NorthPacific, 1)
+TSUndulateCarryAction(TS, TS/Acolyte/5, SouthAmerica, NorthPacific, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, NorthPacific, SouthAmerica, 1)
+TSUndulateCarryAction(TS, TS/Acolyte/5, NorthPacific, SouthAmerica, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, SouthAmerica, NorthPacific, 1)
+TSUndulateCarryAction(TS, TS/Acolyte/5, SouthAmerica, NorthPacific, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+CaptureAction(TS, NorthPacific, CC, None)
+CaptureTargetAction(CC, NorthPacific, TS, CC/Acolyte/1, None)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+CaptureAction(TS, NorthPacific, AN, None)
+CaptureTargetAction(AN, NorthPacific, TS, AN/Acolyte/6, None)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+DragonAscendingInstantAction(DragonAscendingUpAction("power gather", EndPhasePromptsAction(CC, [CC, AN, FB, TS])))
+PowerGatherAction(CC)
+TSShepherdGatherAction(TS, SouthPacific, [ArcticOcean, NorthAtlantic, SouthAtlantic, SouthAsia])
+PlayDirectionAction(TS, [TS, CC, AN, FB])
+ElderSignAction(TS, 5, 1, false, DoomPhaseAction)
+ElderSignAction(TS, 4, 3, false, DoomPhaseAction)
+ElderSignAction(TS, 3, 1, false, DoomPhaseAction)
+ElderSignAction(TS, 2, 2, false, DoomPhaseAction)
+ElderSignAction(TS, 1, 1, false, DoomPhaseAction)
+DoomPhaseAction
+DoomNextPlayerAction(TS)
+DoomDoneAction(TS)
+DoomDoneAction(CC)
+DoomDoneAction(AN)
+DoomDoneAction(FB)
+ActionPhaseAction
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, NorthPacific, SouthAmerica, 1)
+TSUndulateCarryAction(TS, TS/Acolyte/5, NorthPacific, SouthAmerica, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+RecruitAction(CC, Acolyte, NorthPacific)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+BuildCathedralAction(AN, NorthAtlantic)
+SpellbookAction(AN, Consecration, PreMainAction(AN))
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+FBCallOfTheFaithfulAction(FB, Antarctica)
+FBWritheMainAction(FB)
+FBWritheRollResultAction(FB, 8, [Pain, Miss, Pain, Miss, Pain, Pain, Pain, Miss])
+FBWritheRerollAction(FB, [Pain, Miss, Pain, Miss, Pain, Pain, Pain, Miss])
+FBWritheRollResultAction(FB, 8, [Miss, Pain, Pain, Kill, Miss, Kill, Kill, Pain])
+FBWritheKillUnitAction(FB, FB/Ghatanothoa/1, 3, 3)
+FBWritheKillUnitAction(FB, FB/Acolyte/1, 2, 3)
+FBWritheKillUnitAction(FB, FB/Acolyte/6, 1, 3)
+FBWritheChoosePainUnitAction(FB, FB/Desiccated/2, 3, [])
+FBWritheChoosePainUnitAction(FB, FB/Acolyte/2, 2, [FB/Desiccated/2])
+FBWritheChoosePainUnitAction(FB, FB/Acolyte/4, 1, [FB/Desiccated/2, FB/Acolyte/2])
+FBWritheMoveAllToRegionAction(FB, Arabia, [FB/Desiccated/2, FB/Acolyte/2, FB/Acolyte/4])
+SpellbookAction(FB, TheEyeOpens, PreMainAction(FB))
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+FBCallOfTheFaithfulAction(FB, Australia)
+EndTurnAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+CaptureAction(TS, SouthAmerica, CC, None)
+CaptureTargetAction(CC, SouthAmerica, TS, CC/Acolyte/2, None)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+SummonAction(CC, FlyingPolyp, NorthPacific)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+BuildCathedralAction(AN, Europe)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+FBAwakenGhatanothoaAction(FB, 4)
+SpellbookAction(FB, Carnage, EndAction(FB))
+EndAction(FB)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, SouthAmerica, NorthAmerica, 1)
+TSUndulateCarryAction(TS, TS/Acolyte/5, SouthAmerica, NorthAmerica, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+RecruitAction(CC, Acolyte, SouthAmerica)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+RecruitAction(AN, Acolyte, NorthAtlantic)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+RecruitAction(FB, Acolyte, Antarctica)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+CaptureAction(TS, NorthAmerica, CC, None)
+CaptureTargetAction(CC, NorthAmerica, TS, CC/Acolyte/4, None)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+SummonAction(CC, FlyingPolyp, SouthAmerica)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+AttackAction(CC, NorthPacific, AN, None)
+SeekAndDestroyAction(CC, HuntingHorror, SouthAmerica)
+InvisibilityAction(CC, CC/FlyingPolyp/1, CC/Nightgaunt/1)
+PreBattleDoneAction(CC, DefenderPreBattle)
+PreBattleDoneAction(AN, PreRoll)
+BattleRollAction(CC, [Miss, Pain, Kill, Pain, Miss], RollDefenders)
+BattleRollAction(AN, [], ChannelPowerPhase)
+BattleProceedAction(AssignAttackerKills)
+BattleProceedAction(AssignAttackerPains)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+GiveBestMonsterMainAction(AN)
+GiveBestMonsterSelectMonsterAction(FB, AN, Desiccated, [Antarctica, Australia], [TS, CC])
+GiveBestMonsterAskAction(FB, AN, Desiccated, Antarctica, [TS, CC])
+GiveBestMonsterSelectMonsterAction(TS, AN, DeepTendril, [ArcticOcean, SouthAsia, NorthAmerica], [CC])
+GiveBestMonsterAskAction(TS, AN, DeepTendril, NorthAmerica, [CC])
+GiveBestMonsterSelectMonsterAction(CC, AN, FlyingPolyp, [NorthPacific, SouthAmerica], [])
+GiveBestMonsterAskAction(CC, AN, FlyingPolyp, SouthAmerica, [])
+SpellbookAction(AN, WorshipServices, PreMainAction(AN))
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+RecruitAction(FB, Acolyte, Australia)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+RecruitAction(TS, Acolyte, NorthAmerica)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+ThousandFormsMainAction(CC)
+ThousandFormsRollAction(CC, 4)
+ThousandFormsAskAction(CC, 4, [], [TS, AN], 6, AN, 2)
+ThousandFormsAskAction(CC, 4, [AN->2], [AN, TS], 6, TS, 1)
+ThousandFormsAskAction(CC, 4, [TS->1], [TS, AN], 5, AN, 0)
+ThousandFormsAskAction(CC, 4, [AN->0], [AN, TS], 5, TS, 0)
+ThousandFormsAskAction(CC, 4, [TS->0], [TS, AN], 4, AN, 1)
+ThousandFormsAskAction(CC, 4, [AN->1], [AN, TS], 3, TS, 0)
+ThousandFormsAskAction(CC, 4, [TS->0], [TS, AN], 3, AN, 1)
+ThousandFormsAskAction(CC, 4, [AN->1], [AN, TS], 2, TS, 0)
+ThousandFormsAskAction(CC, 4, [TS->0], [TS, AN], 0, AN, 1)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+AttackAction(AN, NorthAtlantic, TS, None)
+PreBattleDoneAction(AN, DefenderPreBattle)
+PreBattleDoneAction(TS, PreRoll)
+BattleRollAction(AN, [Miss, Pain, Miss, Pain, Pain, Miss, Pain, Miss, Miss, Pain, Pain, Miss, Miss, Pain], RollDefenders)
+BattleRollAction(TS, [Miss, Miss, Miss], ChannelPowerPhase)
+UnholyGroundAction(AN, TS, WestAfrica)
+BattleDoneAction(AN)
+UnholyGroundAction(AN, TS, Europe)
+BattleDoneAction(AN)
+UnholyGroundAction(AN, TS, NorthAtlantic)
+BattleDoneAction(AN)
+BattleProceedAction(AssignAttackerPains)
+RetreatUnitAction(CC, TS/TombHerd/4, WestAfrica)
+RetreatUnitAction(CC, TS/Acolyte/6, NorthPacific)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Acolyte/6, NorthPacific, SouthPacific, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+SummonAction(CC, Nightgaunt, SouthAmerica)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+BuildCathedralAction(AN, NorthAtlantic)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, NorthAmerica, SouthAmerica, 1)
+TSUndulateCarryAction(TS, TS/DeepTendril/2, NorthAmerica, SouthAmerica, 3)
+TSUndulateCarryAction(TS, TS/Acolyte/5, NorthAmerica, SouthAmerica, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+CaptureAction(CC, NorthAmerica, TS, None)
+CaptureTargetAction(TS, NorthAmerica, CC, TS/Acolyte/4, None)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+SummonAction(AN, Reanimated, NorthAtlantic)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+CaptureAction(TS, SouthAmerica, CC, None)
+CaptureTargetAction(CC, SouthAmerica, TS, CC/Acolyte/3, None)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+RecruitAction(CC, Acolyte, NorthAmerica)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+SummonAction(AN, UnMan, NorthAtlantic)
+FestivalUnManSummonAction(AN, CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, SouthAmerica, NorthAmerica, 1)
+TSUndulateCarryAction(TS, TS/DeepTendril/2, SouthAmerica, NorthAmerica, 3)
+TSUndulateCarryAction(TS, TS/Acolyte/5, SouthAmerica, NorthAmerica, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+MoveAction(CC, CC/Acolyte/6, Scandinavia, SouthAmerica, 1)
+MoveDoneAction(CC)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+MoveAction(AN, AN/UnMan/2, NorthAtlantic, NorthAmerica, 1)
+MoveDoneAction(AN)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+CaptureAction(TS, NorthAmerica, CC, None)
+CaptureTargetAction(CC, NorthAmerica, TS, CC/Acolyte/5, None)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+MoveAction(CC, CC/Nyarlathotep/1, SouthAtlantic, ArcticOcean, 1)
+MoveDoneAction(CC)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, NorthAmerica, NorthPacific, 1)
+TSUndulateCarryAction(TS, TS/DeepTendril/2, NorthAmerica, NorthPacific, 3)
+TSUndulateCarryAction(TS, TS/Acolyte/5, NorthAmerica, NorthPacific, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+CaptureAction(CC, ArcticOcean, TS, None)
+CaptureTargetAction(TS, ArcticOcean, CC, TS/Acolyte/2, None)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, NorthPacific, SouthAmerica, 1)
+TSUndulateCarryAction(TS, TS/DeepTendril/2, NorthPacific, SouthAmerica, 3)
+TSUndulateCarryAction(TS, TS/Acolyte/5, NorthPacific, SouthAmerica, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+CaptureAction(CC, ArcticOcean, TS, None)
+CaptureTargetAction(TS, ArcticOcean, CC, TS/Acolyte/3, None)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, SouthAmerica, NorthPacific, 1)
+TSUndulateCarryAction(TS, TS/DeepTendril/2, SouthAmerica, NorthPacific, 3)
+TSUndulateCarryAction(TS, TS/Acolyte/5, SouthAmerica, NorthPacific, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+CaptureAction(TS, NorthPacific, CC, None)
+CaptureTargetAction(CC, NorthPacific, TS, CC/Acolyte/1, None)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(AN)
+MainAction(AN)
+NextPlayerAction(AN)
+PreMainAction(FB)
+MainAction(FB)
+NextPlayerAction(FB)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/TombHerd/6, SouthAtlantic, SouthPacific, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+DragonAscendingInstantAction(DragonAscendingUpAction("power gather", EndPhasePromptsAction(CC, [CC, AN, FB, TS])))
+PowerGatherAction(CC)
+TSShepherdGatherAction(TS, SouthPacific, [ArcticOcean, SouthAsia, WestAfrica])
+PlayDirectionAction(TS, [TS, FB, AN, CC])
+ElderSignAction(TS, 5, 1, false, DoomPhaseAction)
+ElderSignAction(TS, 4, 2, false, DoomPhaseAction)
+ElderSignAction(TS, 3, 3, false, DoomPhaseAction)
+ElderSignAction(TS, 2, 1, false, DoomPhaseAction)
+ElderSignAction(TS, 1, 2, false, DoomPhaseAction)
+DoomPhaseAction
+DoomNextPlayerAction(TS)
+DoomDoneAction(TS)
+DoomDoneAction(FB)
+DoomDoneAction(AN)
+DoomDoneAction(CC)
+ActionPhaseAction
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+MoveAction(TS, TS/Glaaki/1, NorthPacific, ArcticOcean, 1)
+TSUndulateCarryAction(TS, TS/DeepTendril/2, NorthPacific, ArcticOcean, 3)
+TSUndulateCarryAction(TS, TS/Acolyte/5, NorthPacific, ArcticOcean, 1)
+MoveDoneAction(TS)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+FBWritheMainAction(FB)
+FBWritheRollResultAction(FB, 12, [Kill, Miss, Pain, Kill, Pain, Miss, Pain, Pain, Kill, Miss, Pain, Miss])
+FBWritheKeepAction(FB, [Kill, Miss, Pain, Kill, Pain, Miss, Pain, Pain, Kill, Miss, Pain, Miss])
+FBWritheKillUnitAction(FB, FB/Acolyte/6, 3, 5)
+FBWritheKillUnitAction(FB, FB/Desiccated/1, 2, 5)
+FBWritheKillUnitAction(FB, FB/Desiccated/3, 1, 5)
+FBWritheChoosePainUnitAction(FB, FB/Ghatanothoa/1, 5, [])
+FBWritheChoosePainUnitAction(FB, FB/Acolyte/2, 4, [FB/Ghatanothoa/1])
+FBWritheChoosePainUnitAction(FB, FB/Desiccated/2, 3, [FB/Ghatanothoa/1, FB/Acolyte/2])
+FBWritheChoosePainUnitAction(FB, FB/Desiccated/4, 2, [FB/Ghatanothoa/1, FB/Acolyte/2, FB/Desiccated/2])
+FBWritheChoosePainUnitAction(FB, FB/Acolyte/4, 1, [FB/Ghatanothoa/1, FB/Acolyte/2, FB/Desiccated/2, FB/Desiccated/4])
+FBWritheMoveAllToRegionAction(FB, NorthAmerica, [FB/Ghatanothoa/1, FB/Acolyte/2, FB/Desiccated/2, FB/Desiccated/4, FB/Acolyte/4])
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+BuildCathedralAction(AN, Europe)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+ThousandFormsMainAction(CC)
+ThousandFormsRollAction(CC, 2)
+ThousandFormsAskAction(CC, 2, [], [FB, AN, TS], 8, TS, 0)
+ThousandFormsAskAction(CC, 2, [TS->0], [AN, TS, FB], 8, FB, 0)
+ThousandFormsAskAction(CC, 2, [FB->0, TS->0], [TS, FB, AN], 7, AN, 1)
+ThousandFormsAskAction(CC, 2, [AN->1, FB->0], [FB, AN, TS], 6, TS, 0)
+ThousandFormsAskAction(CC, 2, [TS->0, AN->1], [AN, TS, FB], 5, FB, 0)
+ThousandFormsAskAction(CC, 2, [FB->0, TS->0], [TS, FB, AN], 4, AN, 0)
+ThousandFormsAskAction(CC, 2, [AN->0, FB->0], [FB, AN, TS], 4, TS, 2)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+AttackAction(TS, ArcticOcean, CC, None)
+PreBattleDoneAction(TS, DefenderPreBattle)
+SeekAndDestroyAction(CC, HuntingHorror, NorthPacific)
+SeekAndDestroyAction(CC, HuntingHorror, NorthPacific)
+PreBattleDoneAction(CC, PreRoll)
+BattleRollAction(TS, [Miss, Miss, Miss, Miss, Miss, Miss, Kill, Miss, Miss, Miss], RollDefenders)
+BattleRollAction(CC, [Kill, Pain, Miss, Miss, Miss, Pain, Pain, Pain, Miss, Miss, Pain, Miss, Pain], ChannelPowerPhase)
+AssignKillAction(CC, 1, CC, CC/HuntingHorror/1)
+AssignKillAction(TS, 1, TS, TS/TombHerd/1)
+BattleProceedAction(AllPainsAssignedPhase)
+HarbingerPowerAction(CC, TS/Glaaki/1, 4)
+RetreatUnitAction(CC, TS/Glaaki/1, NorthAtlantic)
+RetreatUnitAction(CC, TS/DeepTendril/2, NorthAtlantic)
+RetreatUnitAction(CC, TS/Acolyte/5, NorthAsia)
+SpellbookAction(TS, Hecatomb, PreMainAction(TS))
+SpellbookAction(TS, Oleaginous, PreMainAction(TS))
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+RecruitAction(FB, Acolyte, Australia)
+PreMainAction(FB)
+MainGatesAction(FB)
+MainAction(FB)
+EndTurnAction(FB)
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+AttackAction(AN, NorthAtlantic, TS, None)
+PreBattleDoneAction(AN, DefenderPreBattle)
+PreBattleDoneAction(TS, PreRoll)
+BattleRollAction(AN, [Miss, Kill, Kill, Kill, Miss, Miss, Kill, Miss, Pain, Miss, Pain, Pain, Miss, Miss, Kill, Pain], RollDefenders)
+BattleRollAction(TS, [Pain, Pain, Miss, Kill, Miss, Pain, Miss], ChannelPowerPhase)
+BattleProceedAction(AssignAttackerKills)
+AssignKillAction(AN, 1, AN, AN/Reanimated/1)
+UnholyGroundAction(AN, TS, Europe)
+BattleDoneAction(AN)
+UnholyGroundAction(AN, TS, NorthAtlantic)
+BattleDoneAction(AN)
+BattleProceedAction(AssignAttackerPains)
+AssignPainAction(AN, 3, AN, AN/Acolyte/4)
+AssignPainAction(AN, 2, AN, AN/Acolyte/3)
+AssignPainAction(AN, 1, AN, AN/Acolyte/1)
+RetreatUnitAction(CC, AN/Acolyte/1, SouthAmerica)
+RetreatUnitAction(CC, AN/Acolyte/3, SouthAmerica)
+RetreatUnitAction(CC, AN/Acolyte/4, SouthAmerica)
+SpellbookAction(TS, GraspingDead, PreMainAction(AN))
+PreMainAction(AN)
+MainGatesAction(AN)
+MainAction(AN)
+EndTurnAction(AN)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+RecruitAction(CC, Acolyte, ArcticOcean)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+RecruitAction(TS, Acolyte, IndianOcean)
+PreMainAction(TS)
+MainGatesAction(TS)
+MainAction(TS)
+RevealESAction(TS, [$1], false, PreMainAction(TS))
+MainGatesAction(TS)
+MainAction(TS)
+RevealESAction(TS, [], false, PreMainAction(TS))
+MainGatesAction(TS)
+MainAction(TS)
+EndTurnAction(TS)
+GameOverPhaseAction
+
+<div class='p'>Cthulhu Wars HRF 0.1 Build lace49</div>
+<div class='p'>Options <span class='halfhigh'>MapEarth35</span> <span class='halfhigh'>PlayerCount(4)</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> started in <span class='region'>South Asia</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> started in <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> started in <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> started in <span class='region'>Australia</span></div>
+<div class='p'>Play order <span class='fb inline-block'>Firstborn</span>, <span class='an inline-block'>The Ancients</span>, <span class='cc inline-block'>Crawling Chaos</span>, <span class='ts inline-block'>Tombstalker</span></div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>Turn 1</div>
+<div class='p'>ACTIONS</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> used <span class='fb'>Writhe</span> rolling 8 dice</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> rolled 2 <span class='kill'>Kill</span> 4 <span class='pain'>Pain</span> 2 Misses</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: Acolyte replaced with <span class='fb'>Desiccated</span> in <span class='region'>Australia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: Acolyte replaced with <span class='fb'>Desiccated</span> in <span class='region'>Australia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: relocated <span class='fb'>Desiccated</span> from <span class='region'>Australia</span> to <span class='region'>East Africa</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: relocated <span class='fb'>Desiccated</span> from <span class='region'>Australia</span> to <span class='region'>Antarctica</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: relocated <span class='fb'>Acolyte</span> from <span class='region'>Australia</span> to <span class='region'>East Africa</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: relocated <span class='fb'>Acolyte</span> from <span class='region'>Australia</span> to <span class='region'>Antarctica</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> lost control of the gate in <span class='region'>Australia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> gained control of the gate in <span class='region'>Australia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> moved <span class='an'>Acolyte</span> from <span class='sea'>North Atlantic</span> to <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> moved <span class='cc'>Acolyte</span> from <span class='region'>South Asia</span> to <span class='sea'>Arctic Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> summoned <span class='ts'>Tomb-Herd</span> in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> built a gate in <span class='region'>Antarctica</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> built a cathedral in <span class='region'>Europe</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> achieved <span class='an'>Cathedral in |||</span> </div>
+<div class='p'><span class='an inline-block'>The Ancients</span> received <span class='an'>Festival</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> built a gate in <span class='sea'>Arctic Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Tomb-Herd</span> from <span class='sea'>North Pacific</span> to <span class='sea'>Arctic Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> built a gate in <span class='region'>East Africa</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> moved <span class='an'>Acolyte</span> from <span class='sea'>North Atlantic</span> to <span class='region'>West Africa</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> summoned <span class='cc'>Nightgaunt</span> in <span class='sea'>Arctic Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> battled <span class='cc inline-block'>Crawling Chaos</span> in <span class='sea'>Arctic Ocean</span> </div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> attacked with <span class='ts'>Tomb-Herd</span> <span class='str'>[3]</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> defended with <span class='cc'>Nightgaunt</span>, <span class='cc'>Acolyte</span> <span class='str'>[0]</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> rolled <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span></div>
+<div class='p'><span class='cc'>Acolyte</span> was <span class='pain'>pained</span></div>
+<div class='p'><span class='cc'>Acolyte</span> retreated to <span class='region'>North America</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> lost control of the gate in <span class='sea'>Arctic Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> built a gate in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> built a gate in <span class='region'>North America</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Acolyte</span> from <span class='sea'>North Pacific</span> to <span class='sea'>Arctic Ocean</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> gained control of the gate in <span class='sea'>Arctic Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> built a cathedral in <span class='region'>West Africa</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> achieved <span class='an'>Cathedral in /^\</span> </div>
+<div class='p'><span class='an inline-block'>The Ancients</span> received <span class='an'>Brainless</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> summoned <span class='ts'>Tomb-Herd</span> in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> achieved <span class='an'>Enemies got lowest cost monster</span> </div>
+<div class='p'><span class='an inline-block'>The Ancients</span> allowed enemy factions to summon their lowest cost monster for free</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> summoned <span class='cc'>Nightgaunt</span> in <span class='region'>North America</span> for free</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> summoned <span class='ts'>Tomb-Herd</span> in <span class='sea'>North Pacific</span> for free</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> summoned <span class='fb'>Desiccated</span> in <span class='region'>East Africa</span> for free</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> received <span class='an'>Extinction</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Tomb-Herd</span> from <span class='sea'>North Pacific</span> to <span class='region'>North America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> moved <span class='an'>Acolyte</span> from <span class='sea'>North Atlantic</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> ran out of power</div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>POWER GATHER</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='power'>10 Power</span> (<span class='region'>2 x 2</span> gates + <span class='region'>6</span> cultists)</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> got <span class='power'>10 Power</span> (<span class='region'>2 x 2</span> gates + <span class='region'>6</span> cultists)</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> got <span class='power'>10 Power</span> (<span class='region'>2 x 3</span> gates + <span class='region'>4</span> cultists)</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> got <span class='power'>10 Power</span> (<span class='region'>2 x 2</span> gates + <span class='region'>6</span> cultists)</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> chose <span class='an inline-block'>The Ancients</span> as the first player</div>
+<div class='p'>Play order <span class='an inline-block'>The Ancients</span>, <span class='fb inline-block'>Firstborn</span>, <span class='ts inline-block'>Tombstalker</span>, <span class='cc inline-block'>Crawling Chaos</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'>DOOM PHASE</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> got <span class='doom'>2 Doom</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> got <span class='doom'>3 Doom</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> got <span class='doom'>2 Doom</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='doom'>2 Doom</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='str'>[5]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>6<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> achieved <span class='fb'>Most Doom</span> </div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> received <span class='fb'>Cyclopean Gaze</span></div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>Turn 2</div>
+<div class='p'>ACTIONS</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> built a cathedral in <span class='region'>South America</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> achieved <span class='an'>Cathedral in (*)</span> </div>
+<div class='p'><span class='an inline-block'>The Ancients</span> received <span class='an'>Unholy Ground</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> awakened <span class='fb'>Ghatanothoa</span> in <span class='region'>Australia</span> for <span class='power'>6 Power</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> achieved <span class='fb'>Awaken Ghatanothoa</span> </div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> received <span class='fb'>Devil's Mark</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> awakened <span class='ts'>Gla'aki</span> in <span class='sea'>North Pacific</span> for <span class='power'>7 Power</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> achieved <span class='ts'>Awaken Gla'aki</span> </div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> received <span class='ts'>Undulate</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> awakened <span class='cc'>Nyarlathotep</span> in <span class='region'>South Asia</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> achieved <span class='cc'>Awaken Nyarlathotep</span> </div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> ran out of power</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> received <span class='cc'>Emissary of the Outer Gods</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> built a gate in <span class='region'>West Africa</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> summoned <span class='fb'>Revenant of K'Naa</span> in <span class='region'>Antarctica</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='sea'>North Pacific</span> to <span class='region'>North America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Tomb-Herd</span> for free from <span class='sea'>North Pacific</span> to <span class='region'>North America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='sea'>North Pacific</span> to <span class='region'>North America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> built a gate in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> recruited <span class='fb'>Acolyte</span> in <span class='region'>Antarctica</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='region'>North America</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Tomb-Herd</span> for free from <span class='region'>North America</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='region'>North America</span> to <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> moved <span class='an'>Acolyte</span> from <span class='region'>South America</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> lost control of the gate in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> gained control of the gate in <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Tomb-Herd</span> from <span class='region'>North America</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> summoned <span class='an'>Un-Man</span> in <span class='region'>Europe</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> got <span class='power'>1 Power</span> from <span class='an'>Festival</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> battled <span class='cc inline-block'>Crawling Chaos</span> in <span class='sea'>Arctic Ocean</span> </div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> attacked with <span class='ts'>Tomb-Herd</span>, <span class='ts'>Acolyte</span> <span class='str'>[3]</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> defended with <span class='cc'>Nightgaunt</span> <span class='str'>[0]</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> rolled <span class='pain'>Pain</span> <span class='kill'>Kill</span> <span class='miss'>Miss</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> achieved <span class='ts'>Rolled a Kill in battle</span> </div>
+<div class='p'><span class='cc'>Nightgaunt</span> was <span class='kill'>killed</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Death March: Death's Head is now <span class='kill'>1</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> ran out of power</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> received <span class='ts'>Green Decay</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> summoned <span class='an'>Un-Man</span> in <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> got <span class='power'>1 Power</span> from <span class='an'>Festival</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Acolyte</span> from <span class='sea'>North Pacific</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> moved <span class='an'>Un-Man</span> from <span class='sea'>North Atlantic</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> captured <span class='ts'>Acolyte</span> in <span class='sea'>North Pacific</span> </div>
+<div class='p'><span class='an inline-block'>The Ancients</span> ran out of power</div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>POWER GATHER</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> got <span class='power'>11 Power</span> (<span class='region'>2 x 3</span> gates + <span class='region'>5</span> cultists)</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> got <span class='power'>11 Power</span> (<span class='region'>2 x 3</span> gates + <span class='region'>5</span> cultists)</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='power'>10 Power</span> (<span class='region'>2 x 2</span> gates + <span class='region'>6</span> cultists)</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> got <span class='power'>13 Power</span> (<span class='region'>2 x 3</span> gates + <span class='region'>6</span> cultists + <span class='region'>1</span> captured)</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> released <span class='ts'>Acolyte</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Shepherd of the Crypt: gained <span class='power'>2 Power</span> from 2 <span class='ts'>Tomb-Herd</span> in <span class='region'>South America</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> chose <span class='ts inline-block'>Tombstalker</span> as the first player</div>
+<div class='p'>Play order <span class='ts inline-block'>Tombstalker</span>, <span class='fb inline-block'>Firstborn</span>, <span class='an inline-block'>The Ancients</span>, <span class='cc inline-block'>Crawling Chaos</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'>DOOM PHASE</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> got <span class='doom'>3 Doom</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> got <span class='doom'>3 Doom</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> got <span class='doom'>3 Doom</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='doom'>2 Doom</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='str'>[5]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>6<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Death March: placed <span class='ts'>Tomb-Herd</span> in <span class='sea'>North Pacific</span> (Death's Head now <span class='kill'>0</span>)</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> performed the ritual for <span class='power'>5 Power</span> and gained <span class='doom'>3 Doom</span> and an <span class='es'>Elder Sign</span></div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='xxxhighlight'>[</span>5<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='str'>[6]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> placed <span class='fb'>Crater</span> in <span class='region'>East Africa</span> with <span class='fb'>Devil's Mark</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> Gate in <span class='region'>East Africa</span> destroyed by <span class='fb'>Crater</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> gained an <span class='es'>Elder Sign</span> from <span class='fb'>Devil's Mark</span></div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>Turn 3</div>
+<div class='p'>ACTIONS</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> summoned <span class='ts'>Deep Tendril</span> in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> used <span class='fb'>Writhe</span> rolling 6 dice</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> rolled 2 <span class='kill'>Kill</span> 2 <span class='pain'>Pain</span> 2 Misses</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: eliminated <span class='fb'>Desiccated</span> in <span class='region'>East Africa</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: eliminated <span class='fb'>Desiccated</span> in <span class='region'>East Africa</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: relocated <span class='fb'>Ghatanothoa</span> from <span class='region'>Australia</span> to <span class='region'>West Africa</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: relocated <span class='fb'>Acolyte</span> from <span class='region'>East Africa</span> to <span class='region'>West Africa</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> built a gate in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> moved <span class='cc'>Nyarlathotep</span> from <span class='region'>South Asia</span> to <span class='region'>Australia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> recruited <span class='ts'>Acolyte</span> in <span class='sea'>Arctic Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> summoned <span class='fb'>Revenant of K'Naa</span> in <span class='region'>Australia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> moved <span class='an'>Acolyte</span> from <span class='region'>West Africa</span> to <span class='sea'>South Atlantic</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> lost control of the gate in <span class='region'>West Africa</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> captured <span class='fb'>Acolyte</span> in <span class='region'>Australia</span> </div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> achieved <span class='cc'>Capture Cultist</span> </div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Cyclopean Gaze</span> - <span class='fb'>Revenant of K'Naa</span>: pained <span class='cc'>Nyarlathotep</span> from <span class='region'>Australia</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> received <span class='cc'>The Thousand Forms</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Tomb-Herd</span> from <span class='sea'>North Pacific</span> to <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='sea'>North Pacific</span> to <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Tomb-Herd</span> from <span class='region'>South America</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='region'>South America</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> lost control of the gate in <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> gained control of the gate in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> gained control of the gate in <span class='region'>West Africa</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> recruited <span class='fb'>Acolyte</span> in <span class='region'>Australia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> summoned <span class='an'>Yothan</span> in <span class='sea'>North Atlantic</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> captured <span class='an'>Acolyte</span> in <span class='sea'>South Pacific</span> </div>
+<div class='p'><span class='an inline-block'>The Ancients</span> lost control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> summoned <span class='ts'>Tomb-Herd</span> in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> summoned <span class='an'>Yothan</span> in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> moved <span class='cc'>Nyarlathotep</span> from <span class='sea'>South Pacific</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Tomb-Herd</span> from <span class='sea'>North Pacific</span> to <span class='region'>South Asia</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='sea'>North Pacific</span> to <span class='region'>South Asia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> captured <span class='ts'>Acolyte</span> in <span class='sea'>North Pacific</span> </div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> lost control of the gate in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> summoned <span class='cc'>Nightgaunt</span> in <span class='region'>South Asia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> battled <span class='cc inline-block'>Crawling Chaos</span> in <span class='region'>South Asia</span> </div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> attacked with <span class='ts'>Tomb-Herd</span>, <span class='ts'>Acolyte</span> <span class='str'>[3]</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> defended with <span class='cc'>Nightgaunt</span>, <span class='cc'>Acolyte</span>, <span class='cc'>Acolyte</span>, <span class='cc'>Acolyte</span>, <span class='cc'>Acolyte</span>, <span class='cc'>Acolyte</span> <span class='str'>[0]</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> rolled <span class='miss'>Miss</span> <span class='kill'>Kill</span> <span class='miss'>Miss</span></div>
+<div class='p'><span class='cc'>Acolyte</span> was <span class='kill'>killed</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Death March: Death's Head is now <span class='kill'>1</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> lost control of the gate in <span class='region'>South Asia</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> gained control of the gate in <span class='region'>South Asia</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> achieved <span class='ts'>Ritual or Control enemy start gate</span> </div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> received <span class='ts'>Eleven Revelations</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> moved <span class='an'>Acolyte</span> from <span class='sea'>South Atlantic</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> gained control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> recruited <span class='cc'>Acolyte</span> in <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> gained control of the gate in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='region'>South America</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Deep Tendril</span> for free from <span class='region'>South America</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Tomb-Herd</span> for free from <span class='region'>South America</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='region'>South America</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> lost control of the gate in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> moved <span class='an'>Acolyte</span> from <span class='sea'>South Pacific</span> to <span class='sea'>South Atlantic</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> lost control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> moved <span class='cc'>Nyarlathotep</span> from <span class='sea'>North Pacific</span> to <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> gained control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='sea'>South Pacific</span> to <span class='region'>Antarctica</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Cyclopean Gaze</span> - <span class='fb'>Revenant of K'Naa</span>: pained <span class='ts'>Gla'aki</span> from <span class='region'>Antarctica</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> captured <span class='an'>Acolyte</span> in <span class='region'>Europe</span> </div>
+<div class='p'><span class='an inline-block'>The Ancients</span> lost control of the gate in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Tomb-Herd</span> from <span class='region'>South America</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> used <span class='cc'>The Thousand Forms</span> and rolled [<span class='power'>2</span>]</div>
+<div class='p'>Other factions were to lose <span class='power'>2 Power</span></div>
+<div class='p'>Not enough power among other factions</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='power'>2 Power</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> moved <span class='cc'>Acolyte</span> from <span class='region'>South Asia</span> to <span class='region'>Europe</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> gained control of the gate in <span class='region'>Europe</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> achieved <span class='cc'>Control three Gates</span> </div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> received <span class='cc'>Madness</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> moved <span class='cc'>Acolyte</span> from <span class='region'>South Asia</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> gained control of the gate in <span class='region'>South America</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> achieved <span class='cc'>Control four Gates</span> </div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> received <span class='cc'>Seek and Destroy</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> summoned <span class='cc'>Flying Polyp</span> in <span class='region'>Europe</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> ran out of power</div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>POWER GATHER</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> got <span class='power'>11 Power</span> (<span class='region'>2 x 3</span> gates + <span class='region'>5</span> cultists)</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> got <span class='power'>11 Power</span> (<span class='region'>2 x 3</span> gates + <span class='region'>5</span> cultists)</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> got <span class='power'>7 Power</span> (<span class='region'>2 x 1</span> gate + <span class='region'>4</span> cultists + <span class='region'>1</span> captured)</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='power'>17 Power</span> (<span class='region'>2 x 4</span> gates + <span class='region'>6</span> cultists + <span class='region'>3</span> captured)</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> released <span class='ts'>Acolyte</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> released <span class='fb'>Acolyte</span>, <span class='an'>Acolyte</span>, <span class='an'>Acolyte</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> power increased to <span class='power'>9 Power</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Shepherd of the Crypt: gained <span class='power'>2 Power</span> from 2 <span class='ts'>Tomb-Herd</span> in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> became the first player</div>
+<div class='p'>Play order <span class='cc inline-block'>Crawling Chaos</span>, <span class='an inline-block'>The Ancients</span>, <span class='fb inline-block'>Firstborn</span>, <span class='ts inline-block'>Tombstalker</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'>DOOM PHASE</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='doom'>4 Doom</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> got <span class='doom'>1 Doom</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> got <span class='doom'>3 Doom</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> got <span class='doom'>3 Doom</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='xxxhighlight'>[</span>5<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='str'>[6]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> performed the ritual for <span class='power'>6 Power</span> and gained <span class='doom'>3 Doom</span> and an <span class='es'>Elder Sign</span></div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='xxxhighlight'>[</span>5<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>6<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='str'>[7]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> placed <span class='fb'>Crater</span> in <span class='region'>West Africa</span> with <span class='fb'>Devil's Mark</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> Gate in <span class='region'>West Africa</span> destroyed by <span class='fb'>Crater</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> gained an <span class='es'>Elder Sign</span> from <span class='fb'>Devil's Mark</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> gained <span class='power'>2 Power</span> from <span class='fb'>Devil's Mark</span> (2 Craters, glyph region)</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Death March: placed <span class='ts'>Tomb-Herd</span> in <span class='sea'>South Atlantic</span> (Death's Head now <span class='kill'>0</span>)</div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>Turn 4</div>
+<div class='p'>ACTIONS</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> moved <span class='cc'>Nyarlathotep</span> from <span class='region'>Europe</span> to <span class='sea'>South Atlantic</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> moved <span class='cc'>Nightgaunt</span> from <span class='region'>South Asia</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> battled <span class='cc inline-block'>Crawling Chaos</span> in <span class='region'>Europe</span> </div>
+<div class='p'><span class='an inline-block'>The Ancients</span> attacked with <span class='an'>Yothan</span>, <span class='an'>Un-Man</span> <span class='str'>[7]</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> defended with <span class='cc'>Flying Polyp</span>, <span class='cc'>Acolyte</span> <span class='str'>[1]</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> rolled <span class='kill'>Kill</span> <span class='kill'>Kill</span> <span class='kill'>Kill</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='kill'>Kill</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> rolled <span class='miss'>Miss</span></div>
+<div class='p'><span class='cc'>Flying Polyp</span>, <span class='cc'>Acolyte</span> were <span class='kill'>killed</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Death March: Death's Head is now <span class='kill'>1</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Death March: Death's Head is now <span class='kill'>2</span></div>
+<div class='p'><span class='an'>Cathedral</span> in <span class='region'>South America</span> was removed with <span class='an'>Unholy Ground</span></div>
+<div class='p'><span class='an'>Cathedral</span> in <span class='region'>Europe</span> was removed with <span class='an'>Unholy Ground</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> lost control of the gate in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> used <span class='fb'>Writhe</span> rolling 7 dice</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> rolled 0 <span class='kill'>Kill</span> 3 <span class='pain'>Pain</span> 4 Misses</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> rerolled ALL dice with <span class='fb'>Writhe</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> rolled 3 <span class='kill'>Kill</span> 2 <span class='pain'>Pain</span> 2 Misses</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: eliminated <span class='fb'>Ghatanothoa</span> in <span class='region'>West Africa</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: Acolyte replaced with <span class='fb'>Desiccated</span> in <span class='region'>West Africa</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: eliminated <span class='fb'>Desiccated</span> in <span class='region'>West Africa</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: relocated <span class='fb'>Desiccated</span> from <span class='region'>Antarctica</span> to <span class='region'>Arabia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: relocated <span class='fb'>Acolyte</span> from <span class='region'>Antarctica</span> to <span class='region'>Arabia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> lost control of the gate in <span class='region'>Antarctica</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> gained control of the gate in <span class='region'>Antarctica</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> captured <span class='cc'>Acolyte</span> in <span class='region'>South Asia</span> </div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> paid <span class='power'>4 Power</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> achieved <span class='cc'>Pay four Power</span> </div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> received <span class='cc'>Invisibility</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> recruited <span class='an'>Acolyte</span> in <span class='region'>Europe</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> gained control of the gate in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> awakened <span class='fb'>Ghatanothoa</span> in <span class='region'>Australia</span> for <span class='power'>4 Power</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> achieved <span class='fb'>2nd Ghatanothoa Awakening</span> </div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> received <span class='fb'>Call of the Faithful</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='sea'>South Pacific</span> to <span class='region'>Antarctica</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Deep Tendril</span> for free from <span class='sea'>South Pacific</span> to <span class='region'>Antarctica</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Tomb-Herd</span> for free from <span class='sea'>South Pacific</span> to <span class='region'>Antarctica</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='sea'>South Pacific</span> to <span class='region'>Antarctica</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> lost control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Cyclopean Gaze</span> - <span class='fb'>Revenant of K'Naa</span>: pained <span class='ts'>Deep Tendril</span> from <span class='region'>Antarctica</span> to <span class='sea'>Indian Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> paid <span class='power'>6 Power</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> achieved <span class='cc'>Pay six Power</span> </div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> received <span class='cc'>Abduct</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> moved <span class='an'>Acolyte</span> from <span class='sea'>South Atlantic</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> moved <span class='an'>Yothan</span> from <span class='region'>Europe</span> to <span class='sea'>North Atlantic</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> recruited <span class='fb'>Acolyte</span> in <span class='region'>Australia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> captured <span class='fb'>Acolyte</span> in <span class='region'>Antarctica</span> </div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> lost control of the gate in <span class='region'>Antarctica</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> gained control of the gate in <span class='region'>Antarctica</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Cyclopean Gaze</span> - <span class='fb'>Revenant of K'Naa</span>: pained <span class='ts'>Tomb-Herd</span> from <span class='region'>Antarctica</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> moved <span class='cc'>Acolyte</span> from <span class='region'>South Asia</span> to <span class='region'>Scandinavia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> summoned <span class='an'>Yothan</span> in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='region'>Antarctica</span> to <span class='sea'>South Atlantic</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='region'>Antarctica</span> to <span class='sea'>South Atlantic</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> lost control of the gate in <span class='region'>Antarctica</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> summoned <span class='cc'>Hunting Horror</span> in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> recruited <span class='an'>Acolyte</span> in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='sea'>South Atlantic</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='sea'>South Atlantic</span> to <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> used <span class='cc'>The Thousand Forms</span> and rolled [<span class='power'>3</span>]</div>
+<div class='p'>Other factions were to lose <span class='power'>3 Power</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> had no power</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> offered to lose <span class='highlight'>1</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> offered no power</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> offered no power</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> offered to lose <span class='highlight'>2</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> offered no power</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> offered to lose <span class='highlight'>2</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> offered no power</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> offered no power</div>
+<div class='p'>Negotiations time was running out</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> offered no power</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> offered to lose <span class='highlight'>2</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> offered no power</div>
+<div class='p'>Negotiations failed</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='power'>3 Power</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> moved <span class='an'>Acolyte</span> from <span class='region'>South America</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> captured <span class='cc'>Acolyte</span> in <span class='region'>South America</span> </div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> lost control of the gate in <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> gained control of the gate in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> summoned <span class='cc'>Hunting Horror</span> in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='region'>South America</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='region'>South America</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> lost control of the gate in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> recruited <span class='cc'>Acolyte</span> in <span class='region'>South America</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> gained control of the gate in <span class='region'>South America</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='sea'>North Pacific</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='sea'>North Pacific</span> to <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='region'>South America</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='region'>South America</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='sea'>North Pacific</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='sea'>North Pacific</span> to <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='region'>South America</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='region'>South America</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> captured <span class='cc'>Acolyte</span> in <span class='sea'>North Pacific</span> </div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> lost control of the gate in <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> gained control of the gate in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> captured <span class='an'>Acolyte</span> in <span class='sea'>North Pacific</span> </div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> ran out of power</div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>POWER GATHER</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='power'>9 Power</span> (<span class='region'>2 x 2</span> gates + <span class='region'>2</span> abandoned + <span class='region'>3</span> cultists)</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> got <span class='power'>11 Power</span> (<span class='region'>2 x 2</span> gates + <span class='region'>2</span> abandoned + <span class='region'>5</span> cultists)</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> got <span class='power'>8 Power</span> (<span class='region'>2 x 1</span> gate + <span class='region'>2</span> abandoned + <span class='region'>4</span> cultists)</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> got <span class='power'>13 Power</span> (<span class='region'>2 x 3</span> gates + <span class='region'>2</span> abandoned + <span class='region'>5</span> cultists)</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Green Decay: 5 captured cultists → <span class='es'>5 Elder Signs</span> (not power)</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> released <span class='cc'>Acolyte</span>, <span class='cc'>Acolyte</span>, <span class='cc'>Acolyte</span>, <span class='an'>Acolyte</span>, <span class='fb'>Acolyte</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Shepherd of the Crypt: gained <span class='power'>2 Power</span> from 2 <span class='ts'>Tomb-Herd</span> in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> became the first player</div>
+<div class='p'>Play order <span class='ts inline-block'>Tombstalker</span>, <span class='cc inline-block'>Crawling Chaos</span>, <span class='an inline-block'>The Ancients</span>, <span class='fb inline-block'>Firstborn</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'>DOOM PHASE</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> got <span class='doom'>3 Doom</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='doom'>2 Doom</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> got <span class='doom'>2 Doom</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> got <span class='doom'>1 Doom</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='xxxhighlight'>[</span>5<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>6<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='str'>[7]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>Turn 5</div>
+<div class='p'>ACTIONS</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='sea'>North Pacific</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='sea'>North Pacific</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> lost control of the gate in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> recruited <span class='cc'>Acolyte</span> in <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> gained control of the gate in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> built a cathedral in <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> achieved <span class='an'>Cathedral in no-glyph Area</span> </div>
+<div class='p'><span class='an inline-block'>The Ancients</span> received <span class='an'>Consecration</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Call of the Faithful</span>: placed Acolyte and took control of the gate in <span class='region'>Antarctica</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> used <span class='fb'>Writhe</span> rolling 8 dice</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> rolled 0 <span class='kill'>Kill</span> 5 <span class='pain'>Pain</span> 3 Misses</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> rerolled ALL dice with <span class='fb'>Writhe</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> rolled 3 <span class='kill'>Kill</span> 3 <span class='pain'>Pain</span> 2 Misses</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: eliminated <span class='fb'>Ghatanothoa</span> in <span class='region'>Australia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: Acolyte replaced with <span class='fb'>Desiccated</span> in <span class='region'>Australia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: Acolyte replaced with <span class='fb'>Desiccated</span> in <span class='region'>Australia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: relocated <span class='fb'>Desiccated</span> from <span class='region'>Arabia</span> to <span class='region'>Arabia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: relocated <span class='fb'>Acolyte</span> from <span class='region'>Arabia</span> to <span class='region'>Arabia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: relocated <span class='fb'>Acolyte</span> from <span class='region'>Australia</span> to <span class='region'>Arabia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> lost control of the gate in <span class='region'>Australia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> achieved <span class='fb'>No Acolytes in Start Area</span> </div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> received <span class='fb'>The Eye Opens</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Call of the Faithful</span>: placed Acolyte and took control of the gate in <span class='region'>Australia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> captured <span class='cc'>Acolyte</span> in <span class='region'>South America</span> </div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> lost control of the gate in <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> gained control of the gate in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> summoned <span class='cc'>Flying Polyp</span> in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> built a cathedral in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> awakened <span class='fb'>Ghatanothoa</span> in <span class='region'>Australia</span> for <span class='power'>4 Power</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> achieved <span class='fb'>3rd Ghatanothoa Awakening</span> </div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> received <span class='fb'>Carnage</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='region'>South America</span> to <span class='region'>North America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='region'>South America</span> to <span class='region'>North America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> lost control of the gate in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> recruited <span class='cc'>Acolyte</span> in <span class='region'>South America</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> gained control of the gate in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> recruited <span class='an'>Acolyte</span> in <span class='sea'>North Atlantic</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> recruited <span class='fb'>Acolyte</span> in <span class='region'>Antarctica</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> captured <span class='cc'>Acolyte</span> in <span class='region'>North America</span> </div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> lost control of the gate in <span class='region'>North America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> gained control of the gate in <span class='region'>North America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> summoned <span class='cc'>Flying Polyp</span> in <span class='region'>South America</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> battled <span class='an inline-block'>The Ancients</span> in <span class='sea'>North Pacific</span> </div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> attacked with <span class='cc'>Hunting Horror</span>, <span class='cc'>Flying Polyp</span>, <span class='cc'>Nightgaunt</span>, <span class='cc'>Acolyte</span> <span class='str'>[3]</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> defended with <span class='an'>Un-Man</span> <span class='str'>[0]</span></div>
+<div class='p'><span class='cc'>Hunting Horror</span> flew from <span class='region'>South America</span></div>
+<div class='p'><span class='cc'>Nightgaunt</span> was hidden by <span class='cc'>Flying Polyp</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> strength increased to <span class='str'>[5]</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> rolled <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='kill'>Kill</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span></div>
+<div class='p'><span class='an'>Un-Man</span> was <span class='kill'>killed</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Death March: Death's Head is now <span class='kill'>3</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> achieved <span class='an'>Enemies got highest cost monster</span> </div>
+<div class='p'><span class='an inline-block'>The Ancients</span> allowed enemy factions to summon their highest cost monster for free</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> summoned <span class='fb'>Desiccated</span> in <span class='region'>Antarctica</span> for free</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> summoned <span class='ts'>Deep Tendril</span> in <span class='region'>North America</span> for free</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> summoned <span class='cc'>Flying Polyp</span> in <span class='region'>South America</span> for free</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> received <span class='an'>Worship Services</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> recruited <span class='fb'>Acolyte</span> in <span class='region'>Australia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> recruited <span class='ts'>Acolyte</span> in <span class='region'>North America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> used <span class='cc'>The Thousand Forms</span> and rolled [<span class='power'>4</span>]</div>
+<div class='p'>Other factions were to lose <span class='power'>4 Power</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> had no power</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> offered to lose <span class='highlight'>2</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> offered to lose <span class='highlight'>1</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> offered no power</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> offered no power</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> offered to lose <span class='highlight'>1</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> offered no power</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> offered to lose <span class='highlight'>1</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> offered no power</div>
+<div class='p'>Negotiations time was running out</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> offered to lose <span class='highlight'>1</span></div>
+<div class='p'>Negotiations failed</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='power'>4 Power</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> battled <span class='ts inline-block'>Tombstalker</span> in <span class='sea'>North Atlantic</span> </div>
+<div class='p'><span class='an inline-block'>The Ancients</span> attacked with <span class='an'>Yothan</span>, <span class='an'>Yothan</span>, <span class='an'>Acolyte</span>, <span class='an'>Acolyte</span>, <span class='an'>Acolyte</span>, <span class='an'>Acolyte</span> <span class='str'>[14]</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> defended with <span class='ts'>Tomb-Herd</span>, <span class='ts'>Acolyte</span> <span class='str'>[3]</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> rolled <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> rolled <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span></div>
+<div class='p'><span class='an'>Cathedral</span> in <span class='region'>West Africa</span> was removed with <span class='an'>Unholy Ground</span></div>
+<div class='p'><span class='an'>Cathedral</span> in <span class='region'>Europe</span> was removed with <span class='an'>Unholy Ground</span></div>
+<div class='p'><span class='an'>Cathedral</span> in <span class='sea'>North Atlantic</span> was removed with <span class='an'>Unholy Ground</span></div>
+<div class='p'><span class='ts'>Tomb-Herd</span>, <span class='ts'>Acolyte</span> were <span class='pain'>pained</span></div>
+<div class='p'><span class='ts'>Tomb-Herd</span> retreated to <span class='region'>West Africa</span></div>
+<div class='p'><span class='ts'>Acolyte</span> retreated to <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Acolyte</span> from <span class='sea'>North Pacific</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> gained control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> summoned <span class='cc'>Nightgaunt</span> in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> built a cathedral in <span class='sea'>North Atlantic</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='region'>North America</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Deep Tendril</span> for free from <span class='region'>North America</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='region'>North America</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> lost control of the gate in <span class='region'>North America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> gained control of the gate in <span class='region'>North America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> captured <span class='ts'>Acolyte</span> in <span class='region'>North America</span> </div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> lost control of the gate in <span class='region'>North America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> summoned <span class='an'>Reanimated</span> in <span class='sea'>North Atlantic</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> captured <span class='cc'>Acolyte</span> in <span class='region'>South America</span> </div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> lost control of the gate in <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> gained control of the gate in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> recruited <span class='cc'>Acolyte</span> in <span class='region'>North America</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> gained control of the gate in <span class='region'>North America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> summoned <span class='an'>Un-Man</span> in <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='power'>1 Power</span> from <span class='an'>Festival</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='region'>South America</span> to <span class='region'>North America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Deep Tendril</span> for free from <span class='region'>South America</span> to <span class='region'>North America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='region'>South America</span> to <span class='region'>North America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> lost control of the gate in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> moved <span class='cc'>Acolyte</span> from <span class='region'>Scandinavia</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> gained control of the gate in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> moved <span class='an'>Un-Man</span> from <span class='sea'>North Atlantic</span> to <span class='region'>North America</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> captured <span class='cc'>Acolyte</span> in <span class='region'>North America</span> </div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> lost control of the gate in <span class='region'>North America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> gained control of the gate in <span class='region'>North America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> moved <span class='cc'>Nyarlathotep</span> from <span class='sea'>South Atlantic</span> to <span class='sea'>Arctic Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='region'>North America</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Deep Tendril</span> for free from <span class='region'>North America</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='region'>North America</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> lost control of the gate in <span class='region'>North America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> captured <span class='ts'>Acolyte</span> in <span class='sea'>Arctic Ocean</span> </div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='sea'>North Pacific</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Deep Tendril</span> for free from <span class='sea'>North Pacific</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='sea'>North Pacific</span> to <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> captured <span class='ts'>Acolyte</span> in <span class='sea'>Arctic Ocean</span> </div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> lost control of the gate in <span class='sea'>Arctic Ocean</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='region'>South America</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Deep Tendril</span> for free from <span class='region'>South America</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='region'>South America</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> captured <span class='cc'>Acolyte</span> in <span class='sea'>North Pacific</span> </div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> lost control of the gate in <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> gained control of the gate in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Tomb-Herd</span> from <span class='sea'>South Atlantic</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> ran out of power</div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>POWER GATHER</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='power'>8 Power</span> (<span class='region'>2 x 1</span> gate + <span class='region'>2</span> abandoned + <span class='region'>1</span> cultist + <span class='region'>3</span> captured)</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> got <span class='power'>12 Power</span> (<span class='region'>2 x 2</span> gates + <span class='region'>2</span> abandoned + <span class='region'>6</span> cultists)</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> got <span class='power'>12 Power</span> (<span class='region'>2 x 2</span> gates + <span class='region'>2</span> abandoned + <span class='region'>6</span> cultists)</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> got <span class='power'>11 Power</span> (<span class='region'>2 x 3</span> gates + <span class='region'>2</span> abandoned + <span class='region'>3</span> cultists)</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Green Decay: 5 captured cultists → <span class='es'>5 Elder Signs</span> (not power)</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> released <span class='ts'>Acolyte</span>, <span class='ts'>Acolyte</span>, <span class='ts'>Acolyte</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> released <span class='cc'>Acolyte</span>, <span class='cc'>Acolyte</span>, <span class='cc'>Acolyte</span>, <span class='cc'>Acolyte</span>, <span class='cc'>Acolyte</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Shepherd of the Crypt: gained <span class='power'>3 Power</span> from 3 <span class='ts'>Tomb-Herd</span> in <span class='sea'>South Pacific</span></div>
+<div class='p'>Play order <span class='ts inline-block'>Tombstalker</span>, <span class='fb inline-block'>Firstborn</span>, <span class='an inline-block'>The Ancients</span>, <span class='cc inline-block'>Crawling Chaos</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'>DOOM PHASE</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> got <span class='doom'>3 Doom</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> got <span class='doom'>2 Doom</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> got <span class='doom'>2 Doom</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='doom'>1 Doom</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='xxxhighlight'>[</span>5<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>6<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='str'>[7]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>Turn 6</div>
+<div class='p'>ACTIONS</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> moved <span class='ts'>Gla'aki</span> from <span class='sea'>North Pacific</span> to <span class='sea'>Arctic Ocean</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Deep Tendril</span> for free from <span class='sea'>North Pacific</span> to <span class='sea'>Arctic Ocean</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Undulate: carried <span class='ts'>Acolyte</span> for free from <span class='sea'>North Pacific</span> to <span class='sea'>Arctic Ocean</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> lost control of the gate in <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> gained control of the gate in <span class='sea'>Arctic Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> used <span class='fb'>Writhe</span> rolling 12 dice</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> rolled 3 <span class='kill'>Kill</span> 5 <span class='pain'>Pain</span> 4 Misses</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: Acolyte replaced with <span class='fb'>Desiccated</span> in <span class='region'>Australia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: eliminated <span class='fb'>Desiccated</span> in <span class='region'>Australia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: eliminated <span class='fb'>Desiccated</span> in <span class='region'>Australia</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: relocated <span class='fb'>Ghatanothoa</span> from <span class='region'>Australia</span> to <span class='region'>North America</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: relocated <span class='fb'>Acolyte</span> from <span class='region'>Arabia</span> to <span class='region'>North America</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: relocated <span class='fb'>Desiccated</span> from <span class='region'>Arabia</span> to <span class='region'>North America</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: relocated <span class='fb'>Desiccated</span> from <span class='region'>Antarctica</span> to <span class='region'>North America</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> <span class='fb'>Writhe</span>: relocated <span class='fb'>Acolyte</span> from <span class='region'>Arabia</span> to <span class='region'>North America</span></div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> gained control of the gate in <span class='region'>North America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> built a cathedral in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> used <span class='cc'>The Thousand Forms</span> and rolled [<span class='power'>2</span>]</div>
+<div class='p'>Other factions were to lose <span class='power'>2 Power</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> offered no power</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> offered no power</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> offered to lose <span class='highlight'>1</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> offered no power</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> offered no power</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> offered no power</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> offered to lose <span class='highlight'>2</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> lost <span class='power'>2 Power</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> battled <span class='cc inline-block'>Crawling Chaos</span> in <span class='sea'>Arctic Ocean</span> </div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> attacked with <span class='ts'>Gla'aki</span>, <span class='ts'>Deep Tendril</span>, <span class='ts'>Tomb-Herd</span>, <span class='ts'>Acolyte</span> <span class='str'>[10]</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> defended with <span class='cc'>Nyarlathotep</span> <span class='str'>[9]</span></div>
+<div class='p'><span class='cc'>Hunting Horror</span> flew from <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='cc'>Hunting Horror</span> flew from <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> strength increased to <span class='str'>[13]</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> rolled <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='kill'>Kill</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> rolled <span class='kill'>Kill</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> achieved <span class='ts'>Gla'aki battled enemy GOO</span> </div>
+<div class='p'><span class='ts'>Tomb-Herd</span> was <span class='kill'>killed</span></div>
+<div class='p'><span class='cc'>Hunting Horror</span> was <span class='kill'>killed</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> achieved <span class='ts'>Tomb-Herd killed in battle</span> </div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Death March: Death's Head is now <span class='kill'>4</span></div>
+<div class='p'><span class='ts'>Gla'aki</span>, <span class='ts'>Deep Tendril</span>, <span class='ts'>Acolyte</span> were <span class='pain'>pained</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='power'>4 Power</span> as <span class='cc'>The Harbinger</span></div>
+<div class='p'><span class='ts'>Gla'aki</span> retreated to <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='ts'>Deep Tendril</span> retreated to <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='ts'>Acolyte</span> retreated to <span class='region'>North Asia</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> lost control of the gate in <span class='sea'>Arctic Ocean</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> received <span class='ts'>Hecatomb</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> received <span class='ts'>Oleaginous</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> recruited <span class='fb'>Acolyte</span> in <span class='region'>Australia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='an inline-block'>The Ancients</span> battled <span class='ts inline-block'>Tombstalker</span> in <span class='sea'>North Atlantic</span> </div>
+<div class='p'><span class='an inline-block'>The Ancients</span> attacked with <span class='an'>Yothan</span>, <span class='an'>Yothan</span>, <span class='an'>Reanimated</span>, <span class='an'>Acolyte</span>, <span class='an'>Acolyte</span>, <span class='an'>Acolyte</span>, <span class='an'>Acolyte</span> <span class='str'>[16]</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> defended with <span class='ts'>Gla'aki</span>, <span class='ts'>Deep Tendril</span> <span class='str'>[7]</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> rolled <span class='miss'>Miss</span> <span class='kill'>Kill</span> <span class='kill'>Kill</span> <span class='kill'>Kill</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='kill'>Kill</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='kill'>Kill</span> <span class='pain'>Pain</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> rolled <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='kill'>Kill</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> achieved <span class='ts'>Rolled 3 Pains in battle</span> </div>
+<div class='p'><span class='an'>Reanimated</span> was <span class='kill'>killed</span></div>
+<div class='p'><span class='ts'>Gla'aki</span>, <span class='ts'>Deep Tendril</span> were <span class='kill'>killed</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> Death March: Death's Head is now <span class='kill'>5</span></div>
+<div class='p'><span class='an'>Cathedral</span> in <span class='region'>Europe</span> was removed with <span class='an'>Unholy Ground</span></div>
+<div class='p'><span class='an'>Cathedral</span> in <span class='sea'>North Atlantic</span> was removed with <span class='an'>Unholy Ground</span></div>
+<div class='p'><span class='an'>Acolyte</span>, <span class='an'>Acolyte</span>, <span class='an'>Acolyte</span> were <span class='pain'>pained</span></div>
+<div class='p'><span class='an'>Acolyte</span> retreated to <span class='region'>South America</span></div>
+<div class='p'><span class='an'>Acolyte</span> retreated to <span class='region'>South America</span></div>
+<div class='p'><span class='an'>Acolyte</span> retreated to <span class='region'>South America</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> lost control of the gate in <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='an inline-block'>The Ancients</span> gained control of the gate in <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> received <span class='ts'>Grasping Dead</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> recruited <span class='cc'>Acolyte</span> in <span class='sea'>Arctic Ocean</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> gained control of the gate in <span class='sea'>Arctic Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> recruited <span class='ts'>Acolyte</span> in <span class='sea'>Indian Ocean</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> revealed [<span class='es'>1</span>] for <span class='doom'>1 Doom</span> </div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> revealed [<span class='es'>3</span>] [<span class='es'>1</span>] [<span class='es'>2</span>] [<span class='es'>1</span>] [<span class='es'>1</span>] [<span class='es'>2</span>] [<span class='es'>3</span>] [<span class='es'>1</span>] [<span class='es'>2</span>] for <span class='doom'>16 Doom</span> </div>
+<div class='p'><span class='fb inline-block'>Firstborn</span> revealed [<span class='es'>1</span>] [<span class='es'>1</span>] [<span class='es'>3</span>] [<span class='es'>1</span>] for <span class='doom'>6 Doom</span></div>
+<div class='p'><span class='ts inline-block'>Tombstalker</span> won</div>

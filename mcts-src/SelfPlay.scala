@@ -25,6 +25,11 @@ import hrf.colmat._
  *  (filled in when the game ends) whether that faction went on to win. */
 final class Example(val features : Array[Double], val faction : Faction) {
     var label : Double = -1.0   // set at game end: 1.0 win, 0.0 loss
+    // Position-quality potential Φ(s) of THIS state for THIS faction, captured live at
+    // record time (Outcome.statePotential). Used by the potential-based label so the
+    // value net learns per-move position quality instead of one smeared terminal label.
+    // -1.0 = not captured (label falls back to pure terminal, preserving old behavior).
+    var potential : Double = -1.0
 }
 
 object SelfPlay {
@@ -60,13 +65,19 @@ object SelfPlay {
         val examples = scala.collection.mutable.ArrayBuffer[Example]()
         val trajectory = new Trajectory(g.setup)
 
+        var decisions = 0
+        val exIdx = scala.collection.mutable.ArrayBuffer[Int]()
         val recording = new DecisionPolicy {
             def decide(game : Game, faction : Faction, actions : $[Action]) : Action = {
                 // Observe the live game for the shaping trajectory (gate loss/capture
                 // diffs, per-turn AP power/gate snapshots), then record how the state
                 // looks to THIS faction before it acts.
                 trajectory.observe(game)
-                examples += new Example(Features.of(game, faction), faction)
+                val ex = new Example(Features.of(game, faction), faction)
+                ex.potential = Outcome.statePotential(game, faction)  // live per-move position quality
+                examples += ex
+                exIdx += decisions
+                decisions += 1
                 searcher.decide(game, faction, actions)
             }
         }
@@ -76,13 +87,23 @@ object SelfPlay {
         // game state readable, so its shaped labels still train the model.
         val (winners, _) = Engine.rolloutCapped(g, s0, recording, decisionCap, throwOnCap = false)
 
-        // Label every example by the BLENDED terminal value: win = 1.0, otherwise a
-        // mix of doom-relative standing and the ten shaping milestones (Outcome +
-        // Shaping) — this is the partial-credit signal that gives a gradient even when
-        // no faction won, the exact failure the flat run hit. Shaping is read at game
-        // end when all snapshots and totals are final.
+        // PROGRESS-BLENDED per-state label (2026-07-29): blend each state's own potential
+        // Φ(s_t) with the terminal value by how deep into the game it sat, so the value net
+        // gets a per-move gradient instead of one terminal label smeared across every state.
+        // Terminal = the same valueShaped partial-credit label (win=1.0, else doom/spellbook/
+        // shaping) that gave a gradient even in no-winner games.
         val shaping = trajectory.score(g)
-        examples.foreach(e => e.label = Outcome.valueShaped(g, winners, e.faction, shaping.getOrElse(e.faction, 0.0)))
+        val total = math.max(1, decisions)
+        val exArr = examples.toArray
+        var i = 0
+        while (i < exArr.length) {
+            val e = exArr(i)
+            val terminal = Outcome.valueShaped(g, winners, e.faction, shaping.getOrElse(e.faction, 0.0))
+            e.label =
+                if (e.potential < 0.0) terminal
+                else Outcome.progressBlended(e.potential, terminal, exIdx(i).toDouble / total)
+            i += 1
+        }
         (examples.toList, winners, examples.length)
     }
 
