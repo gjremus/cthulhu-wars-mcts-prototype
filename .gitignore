@@ -1,0 +1,9 @@
+# compiled output / build artifacts
+build/target/
+**/target/
+*.class
+# large engine copy (reference only, not our source)
+engine-copy/
+# logs / scratch
+*.log
+/tmp/
