@@ -71,11 +71,19 @@ object Outcome {
     // Weights: the two HARD win conditions (doom lead, 6 spellbooks) dominate, matching
     // valueShaped's blend; gates (the doom engine), an awakened GOO, and power round it
     // out. Doom is scored against 30 (the base-4 win threshold), capped at 1.0.
-    private val PotDoom  = 0.35   // doom / 30 (the doom-lead hard condition)
-    private val PotSB    = 0.35   // spellbooks / 6 (the 6-spellbook hard condition)
-    private val PotGates = 0.15   // controlled gates, cap 2 (the doom-generation base)
-    private val PotGOO   = 0.10   // own GOO awakened (enables Elder Signs + big rituals)
-    private val PotPower = 0.05   // power on hand, cap 10 (bankroll to act/ritual)
+    // PLATEAU LEVER (a), 2026-07-29 (R11 flat 4 iters @ score 2.09, doom stuck 20-24, arena 0/32):
+    // Φ(s) scored doom/SB/gates/GOO/power but had NO RITUAL TERM — yet the ritual is the doom
+    // ENGINE (doom = valid gates per ritual). A position where the seat has ritualed is strictly
+    // better (it has converted gates→doom and is on the ES/SB track), but Φ read it as identical
+    // to one that hasn't. This under-valued the ritual investment PER STATE, so the value net gave
+    // no positional credit for ritualing — the same gap that made "skip" beat "ritual" in shaping,
+    // now fixed at the state-potential layer too. Weights rebalanced to still sum to 1.0.
+    private val PotDoom   = 0.32  // doom / 30 (the doom-lead hard condition)
+    private val PotSB     = 0.33  // spellbooks / 6 (the 6-spellbook hard condition)
+    private val PotGates  = 0.13  // controlled gates, cap 2 (the doom-generation base)
+    private val PotGOO    = 0.09  // own GOO awakened (enables Elder Signs + big rituals)
+    private val PotRitual = 0.09  // rituals performed, cap 3 (the doom ENGINE — new lever a)
+    private val PotPower  = 0.04  // power on hand, cap 10 (bankroll to act/ritual)
 
     /** Position-quality potential Φ(s) in [0,1] for `me`, read purely from the live game.
      *  Used to give EACH recorded state its own value target (see PolicyRun.selfPlayGame),
@@ -87,8 +95,9 @@ object Outcome {
         val sbN    = math.min(1.0, p.spellbooks.num / 6.0)
         val gatesN = math.min(1.0, p.allGates.num.toDouble / 2.0)
         val gooN   = if (p.goos.factionGOOs.nonEmpty) 1.0 else 0.0
+        val ritN   = math.min(1.0, game.ritualHistory.count(_ == me).toDouble / 3.0)
         val powN   = math.min(1.0, p.power.toDouble / 10.0)
-        val v = PotDoom * doomN + PotSB * sbN + PotGates * gatesN + PotGOO * gooN + PotPower * powN
+        val v = PotDoom * doomN + PotSB * sbN + PotGates * gatesN + PotGOO * gooN + PotRitual * ritN + PotPower * powN
         math.max(0.0, math.min(1.0, v))
     }
 
