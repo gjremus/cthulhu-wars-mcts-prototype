@@ -106,6 +106,30 @@ final class Trajectory(factions : $[Faction]) {
     // separately from raw ritual VALUE so the PATTERN itself is reinforced, not just size.
     private val goodRituals   = mutable.Map[Faction, Int]().withDefaultValue(0)
 
+    // UNIT-LOSS pain, scaled by replacement cost (user directive 2026-07-29). Losing units
+    // was BG's second-biggest mistake (after not upgrading gate keepers). A killed /
+    // eliminated / sacrificed unit returns to the faction's RESERVE pool (Game.scala ~1280:
+    // eliminate -> u.region = faction.reserve); a CAPTURED unit goes to a PRISON (handled by
+    // the separate unitsCaptured term); a SUBMERGED Cthulhu goes to the Deep (still inPlay),
+    // so it does NOT read as a loss. So we detect a true loss as a RISE in the reserve count
+    // of a unit class between observations, and charge its REPLACEMENT COST — the power to
+    // summon it back (UnitClass.cost: Acolyte 1, Dark Young 3, Shub-Niggurath 8, Cthulhu 4,
+    // Hastur 10, ...). This scales pain by how expensive the lost piece is, exactly as
+    // directed. Ancillary costs emerge for free: Shub's 2-cultist sacrifice sends those two
+    // cultists to reserve, firing their own cost-1 pain each, so Shub's "true cost 10"
+    // (8 + 2) accrues without any per-faction code. Board-state ancillaries (YS King-in-
+    // Yellow needs a cultist in a gateless area) are left for the brain to tease out over
+    // self-play, per the user's explicit allowance. Faction-agnostic: reserve + cost only.
+    private val unitLossCost  = mutable.Map[Faction, Double]().withDefaultValue(0.0)
+    private val lastPoolByClass = mutable.Map[Faction, Map[UnitClass, Int]]()
+
+    // GOO-AWAKEN Action-Phase, for the AP-scaled awaken reward (user directive 2026-07-29).
+    // Awakening a GOO early is worth more: AP2 is the highest-value window, AP1 ≈ AP3 (both
+    // below AP2), AP4+ a flat floor. We record the TURN (this brain's AP proxy, as everywhere
+    // in this file) at which the faction's first own GOO appeared on the map, then scale the
+    // ownGOO reward by that turn in scoreBreakdown. -1 = not awakened.
+    private val gooAwakenTurn = mutable.Map[Faction, Int]().withDefaultValue(-1)
+
     private def inner(m : mutable.Map[Faction, mutable.Map[Int, Int]], f : Faction) : mutable.Map[Int, Int] =
         m.getOrElseUpdate(f, mutable.Map[Int, Int]())
 
@@ -178,6 +202,29 @@ final class Trajectory(factions : $[Faction]) {
             }
             lastRituals(f) = ritNow
 
+            // UNIT-LOSS pain (user directive 2026-07-29). Count this faction's units sitting
+            // in its RESERVE pool, per class, and charge replacement cost for each NEW arrival
+            // since the last observation. Reserve = killed/eliminated/sacrificed (Game.scala
+            // eliminate -> region = reserve); prison (capture) and Deep (submerge) are NOT the
+            // reserve, so this isolates true losses. Per-class diff so a loss-then-resummon
+            // (unit leaves reserve) doesn't net the pain away — the loss already happened and
+            // cost real tempo. Cost = uclass.cost (universal summon power). Shub's sacrificed
+            // cultists land here too, so its true replacement cost accrues automatically.
+            val poolByClass : Map[UnitClass, Int] =
+                p.pool.toList.groupBy(_.uclass).map { case (uc, us) => uc -> us.size }
+            lastPoolByClass.get(f).foreach { prev =>
+                poolByClass.foreach { case (uc, n) =>
+                    val was = prev.getOrElse(uc, 0)
+                    if (n > was) unitLossCost(f) = unitLossCost(f) + (n - was) * uc.cost.toDouble
+                }
+            }
+            lastPoolByClass(f) = poolByClass
+
+            // GOO-AWAKEN turn: record the AP (turn) the faction's first own GOO reached the
+            // map, so the awaken reward can be AP-scaled. factionGOOs = own-faction GOOs in play.
+            if (gooAwakenTurn(f) < 0 && p.goos.factionGOOs.nonEmpty)
+                gooAwakenTurn(f) = turn
+
             // Ability-use detection: books that ENTERED a cooldown set since last look.
             val nowCd : Set[Spellbook] =
                 (p.oncePerGame ++ p.oncePerTurn ++ p.oncePerRound ++ p.oncePerAction ++ p.oncePerBattle).toList.toSet
@@ -236,6 +283,22 @@ final class Trajectory(factions : $[Faction]) {
     def gatesLostToEnemyCount(f : Faction) : Int = gatesLostToEnemy(f)
     def gatesDefendedCount(f : Faction)    : Int = gatesDefended(f)
 
+    /** Total replacement-cost of every unit this faction lost (killed/eliminated/sacrificed). */
+    def unitLossCostTotal(f : Faction) : Double = unitLossCost(f)
+    /** Turn (AP proxy) the faction first awakened an own GOO, or -1 if never. */
+    def gooAwakenAP(f : Faction) : Int = gooAwakenTurn(f)
+
+    // AP-scaled multiplier for the GOO-awaken reward (user directive 2026-07-29): awakening
+    // in AP2 is worth the most; AP1 ≈ AP3 (both below AP2); AP4-and-beyond a flat floor.
+    // "some factions deviate, but a good broad rule to start with." Returns a [0,1] factor
+    // applied to the ownGOO term; 0 if the GOO was never awakened.
+    private def gooAwakenFactor(ap : Int) : Double = ap match {
+        case n if n <= 0 => 0.0   // never awakened
+        case 2           => 1.00  // highest-value window
+        case 1 | 3       => 0.70  // below AP2, equal to each other
+        case _           => 0.45  // AP4+ flat floor
+    }
+
     /** Avg power a faction held ENTERING the doom phase (the pre-ritual bankroll). */
     def avgPreDoomPow(f : Faction) : Double = {
         val s = preDoomPow.getOrElse(f, mutable.Map.empty).values
@@ -277,7 +340,13 @@ final class Trajectory(factions : $[Faction]) {
         val preDoom    = c01(avgPreDoomPow(f) / 10.0)
         val ap1Gates   = c01(eg.getOrElse(1, 0) / 2.0)
         val avgGates   = c01(mean(eg.values, p.allGates.num.toDouble) / 2.0)   // cap-at-2 (per faction fingerprint)
-        val ownGoo     = if (p.goos.factionGOOs.nonEmpty) 1.0 else 0.0
+        // ownGOO is now AP-SCALED (user directive 2026-07-29): awakened = 1.0 baseline, times
+        // the AP factor (AP2 highest, AP1≈AP3, AP4+ flat). Rewards awakening in the strong
+        // window, not just awakening at all.
+        val ownGoo     = if (p.goos.factionGOOs.nonEmpty) gooAwakenFactor(gooAwakenAP(f)) else 0.0
+        // UNIT-LOSS: total replacement cost lost this game, normalized. Target 20 ≈ a heavily
+        // bleeding game (a Shub round-trip is 10; several Dark Young are 3 each). Penalized.
+        val lossN      = c01(unitLossCostTotal(f) / 20.0)
         val eldSigns   = c01((p.es.num + p.revealed.num) / 8.0)
         val unitsKept  = 1.0 - c01(unitsCaptured(f) / 6.0)
         val onMap      = c01(p.allInPlay.num / 12.0)
@@ -315,7 +384,8 @@ final class Trajectory(factions : $[Faction]) {
             "b:powerUse"   ->  0.02 * powUse,
             // PENALTIES (subtract) — immediate-detection, delivered in the game-end label.
             "p:abandon"    -> -0.20 * abandonN,     // abandoning a gate — 2x gateTaken (strict anti-farm)
-            "p:lostGate"   -> -0.24 * lostN         // losing a gate to an enemy (worse than abandon)
+            "p:lostGate"   -> -0.24 * lostN,        // losing a gate to an enemy (worse than abandon)
+            "p:unitLoss"   -> -0.18 * lossN         // units killed/eliminated/sacrificed, scaled by replacement cost
         )
     }
 
