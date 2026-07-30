@@ -221,6 +221,17 @@ final class PolicyModel(
 
     /** Deep copy — snapshot the trained weights (for best-checkpoint keeping). */
     def copy : PolicyModel = new PolicyModel(dinS, dinA, hidden, w1s.clone(), w1a.clone(), b1.clone(), w2.clone(), b2)
+
+    /** Overwrite THIS net's weights in place from `o` (same dims). Used by warm-start to
+     *  continue from an on-disk checkpoint without rebinding the `val policy` reference. */
+    def adopt(o : PolicyModel) : Unit = {
+        require(o.dinS == dinS && o.dinA == dinA && o.hidden == hidden, "PolicyModel.adopt: dim mismatch")
+        System.arraycopy(o.w1s, 0, w1s, 0, w1s.length)
+        System.arraycopy(o.w1a, 0, w1a, 0, w1a.length)
+        System.arraycopy(o.b1, 0, b1, 0, b1.length)
+        System.arraycopy(o.w2, 0, w2, 0, w2.length)
+        b2 = o.b2
+    }
 }
 
 object PolicyModel {

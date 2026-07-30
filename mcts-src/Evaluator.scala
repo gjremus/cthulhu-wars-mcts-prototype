@@ -433,6 +433,16 @@ class MLPModel(
 
     /** Deep copy — snapshot the trained weights (for best-checkpoint keeping). */
     def copy : MLPModel = new MLPModel(din, hidden, w1.clone(), b1.clone(), w2.clone(), b2)
+
+    /** Overwrite THIS net's weights in place from `o` (same dims). Used by warm-start to
+     *  continue from an on-disk checkpoint without rebinding the `val value` reference. */
+    def adopt(o : MLPModel) : Unit = {
+        require(o.din == din && o.hidden == hidden, "MLPModel.adopt: dim mismatch")
+        System.arraycopy(o.w1, 0, w1, 0, w1.length)
+        System.arraycopy(o.b1, 0, b1, 0, b1.length)
+        System.arraycopy(o.w2, 0, w2, 0, w2.length)
+        b2 = o.b2
+    }
 }
 
 object MLPModel {

@@ -277,6 +277,30 @@ object PolicyRun {
         }
         println(f"bootstrapped: policy move-match ${matchAccuracy(policy, polAll)}%.1f%% (vs random ${randomBaseline}%.1f%%), value confidence ${confidencePct(SelfPlay.logLoss(value, valBoot))}%.0f%%\n")
 
+        // WARM-START (cross-run persistence). If a compatible best-checkpoint from a prior
+        // run exists on disk, adopt it OVER the fresh bootstrap so learning ACCUMULATES
+        // across runs instead of relearning from zero every time (the old behaviour, which
+        // also made each run redraw a different trajectory via nondeterministic parallel
+        // self-play). Bootstrap still ran above (its bot corpus is reused as the per-iter
+        // anchor regularizer), but the net we CONTINUE from is the saved best. Set env
+        // CW_FRESH=1 to force a cold from-bootstrap start. A dim mismatch (config change)
+        // makes load return None -> clean fall back to the bootstrapped net.
+        val forceFresh = sys.env.get("CW_FRESH").exists(v => v == "1" || v.equalsIgnoreCase("true"))
+        var warmStarted = false
+        if (forceFresh) {
+            println("warm-start: CW_FRESH set -> ignoring any on-disk checkpoint (cold bootstrap start)\n")
+        } else if (Checkpoint.exists) {
+            (Checkpoint.loadPolicy(Features.dim, ActionFeatures.dim, hidden), Checkpoint.loadValue(Features.dim, hidden)) match {
+                case (Some(p), Some(v)) =>
+                    policy.adopt(p); value.adopt(v); warmStarted = true
+                    println(f"warm-start: LOADED best checkpoint from disk [${Checkpoint.metaLine}] -> continuing from it (not the fresh bootstrap)\n")
+                case _ =>
+                    println("warm-start: on-disk checkpoint present but INCOMPATIBLE with current dims -> cold bootstrap start\n")
+            }
+        } else {
+            println("warm-start: no on-disk checkpoint found -> cold bootstrap start (this run will create one)\n")
+        }
+
         // baseline arena BEFORE any self-play improvement (this is the combined-run result)
         println("-- arena @ iter 0 (bootstrap only, = combined run) --")
         reportPerSeat(Arena.evaluatePerSeatBrain(
@@ -307,8 +331,13 @@ object PolicyRun {
         // collapsed). Reported and used for the final arena.
         var bestPolicy = policy.copy
         var bestValue  = value.copy
-        var bestScore  = -1.0
+        // Seed the best-bar from the on-disk checkpoint's score when we warm-started, so a
+        // WEAKER new run cannot overwrite a stronger saved net (that would re-introduce the
+        // exact "throw away the good brain" bug this feature fixes). Cold start keeps -1.0
+        // so the first iter always sets an initial best.
+        var bestScore  = if (warmStarted) Checkpoint.savedScore.getOrElse(-1.0) else -1.0
         var bestIter   = 0
+        if (warmStarted) println(f"best-bar seeded from disk score=${bestScore}%.2f (a new best must beat this to overwrite the saved net)\n")
 
         // LEAGUE POOL (lever c). Frozen opponents the learner must beat. SEEDED with the
         // bootstrap clone (a snapshot of the just-cloned bot-style net) — the closest
@@ -385,7 +414,16 @@ object PolicyRun {
                 // OLDEST checkpoint beyond it when over cap so recent, stronger selves dominate.
                 leaguePool += ((policy.copy, value.copy))
                 if (leaguePool.length > LeagueCap) leaguePool.remove(1)
-                println(f"   >>> new best checkpoint @ iter $it (finished=${finishedRate}%.2f rit/g=${ritPerGame}%.2f score=${iterScore}%.2f) | league=${leaguePool.length}")
+                // PERSIST across runs: write the new best to disk so the next run can
+                // warm-start from it instead of relearning from zero. Only overwrites the
+                // on-disk best when THIS run's best beats it (guard below) — set CW_RUNTAG
+                // to label which run produced it.
+                val runTag = sys.env.getOrElse("CW_RUNTAG", "selfplay")
+                (bestPolicy, bestValue) match {
+                    case (bp : PolicyModel, bv : MLPModel) => Checkpoint.save(bp, bv, it, iterScore, runTag)
+                    case _ =>
+                }
+                println(f"   >>> new best checkpoint @ iter $it (finished=${finishedRate}%.2f rit/g=${ritPerGame}%.2f score=${iterScore}%.2f) | league=${leaguePool.length} | saved to disk")
             }
 
             // 4. TEST vs the bots every `arenaEvery` iterations (and on the last one).
