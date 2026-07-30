@@ -53,9 +53,28 @@ object Outcome {
      *  guarantees the top score); every non-winner gets the doom-equivalent shaping score
      *  (`shaping` = Trajectory.score, already in [0,1]) held below 1.0 by NonWinnerCeiling,
      *  so 1.0 is unreachable without actually winning. Doom/spellbooks are counted once, in
-     *  the shaping score — no separate end-game doom reward. */
+     *  the shaping score — no separate end-game doom reward.
+     *
+     *  PLATEAU LEVER (b), 2026-07-29 (R12 plateaued: best-checkpoint flat 4 iters @ 3.48,
+     *  doom settled ~22-23 well short of 30, arena 0/32). ROOT CAUSE: under weak self-play
+     *  most games hit the decision cap with NO faction qualified, so the engine declares
+     *  "humanity won" (winners empty). Every seat then gets a below-1.0 label — the net NEVER
+     *  sees a "THIS is winning" target, so nothing pulls doom toward 30. DOOM-RACE TERMINAL:
+     *  when there is no engine winner (the stalemate case ONLY), treat the highest-doom seat(s)
+     *  as the winner for the value label (1.0) — the real-CW endgame tiebreak (most doom wins).
+     *  A genuinely-decided game (winners.nonEmpty) is UNTOUCHED: its real winner is 1.0 and its
+     *  real losers stay capped below 1.0, so the user's hard rule ("impossible to reach 1
+     *  without winning") still holds for every game the engine actually decided. This gives
+     *  high-doom seats in stalemated games the win gradient the ES/SB-gated condition denies. */
     def valueShaped(game : Game, winners : $[Faction], me : Faction, shaping : Double) : Double = {
         if (winners.contains(me)) return 1.0
+        // Doom-race fallback: ONLY when the game ended with no engine winner (stalemate at cap).
+        if (winners.isEmpty) {
+            val doomByF = game.setup.map(f => f -> game.players(f).doom).toMap
+            val topDoom = doomByF.values.max
+            // Require a positive doom lead so a 0-doom stalemate doesn't hand out a spurious win.
+            if (topDoom > 0 && doomByF.getOrElse(me, 0) == topDoom) return 1.0
+        }
         NonWinnerCeiling * math.max(0.0, math.min(1.0, shaping))
     }
 
