@@ -310,13 +310,23 @@ object PolicyRun {
         var bestScore  = -1.0
         var bestIter   = 0
 
+        // LEAGUE POOL (lever c). Frozen opponents the learner must beat. SEEDED with the
+        // bootstrap clone (a snapshot of the just-cloned bot-style net) — the closest
+        // in-process stand-in for the hand-tuned arena bots, so beating it attacks the arena
+        // gap head-on — and GROWN with each new best-checkpoint (progressively stronger past
+        // selves, the AlphaZero-league idea). Capped so per-game opponent variety stays bounded
+        // and old weak snapshots age out (keep the seed + the most recent checkpoints).
+        val LeagueCap = 4
+        val leaguePool = scala.collection.mutable.ArrayBuffer[(PolicyModel, ValueNet)]((policy.copy, value.copy))
+        println(f"league: seeded with 1 bootstrap-clone opponent; grows with each best-checkpoint (cap $LeagueCap)\n")
+
         // --- 1-4. ITERATE: self-play -> train toward search -> relabel value -> test -
         var it = 1
         while (it <= iters) {
             val ti = System.nanoTime()
             // 1. PLAY self-play games; each records (state, candidates, MCTS visit dist)
             //    and (state, faction) for value, labelled by the self-play winner.
-            val batch = selfPlayBatch(sims, gamesPerIter, policy, value, parallel)
+            val batch = selfPlayBatch(sims, gamesPerIter, policy, value, leaguePool.toList, parallel)
             val pol   = batch.flatMap(_.targets).toArray    // PolicyTarget (soft move-target)
             val vals  = batch.flatMap(_.examples).toArray   // Example (dense shaped value)
             val spWins = batch.count(_.hadWinner)           // self-play games that actually FINISHED
@@ -370,7 +380,12 @@ object PolicyRun {
             if (iterScore > bestScore) {
                 bestScore = iterScore; bestIter = it
                 bestPolicy = policy.copy; bestValue = value.copy
-                println(f"   >>> new best checkpoint @ iter $it (finished=${finishedRate}%.2f rit/g=${ritPerGame}%.2f score=${iterScore}%.2f)")
+                // LEAGUE (lever c): admit this new best as a frozen opponent (a stronger past
+                // self). Keep the seed (index 0, the bot-style clone) always, and age out the
+                // OLDEST checkpoint beyond it when over cap so recent, stronger selves dominate.
+                leaguePool += ((policy.copy, value.copy))
+                if (leaguePool.length > LeagueCap) leaguePool.remove(1)
+                println(f"   >>> new best checkpoint @ iter $it (finished=${finishedRate}%.2f rit/g=${ritPerGame}%.2f score=${iterScore}%.2f) | league=${leaguePool.length}")
             }
 
             // 4. TEST vs the bots every `arenaEvery` iterations (and on the last one).
@@ -525,11 +540,38 @@ object PolicyRun {
                              // across the batch to report WHAT drove the reward this iteration.
                              val scorecards : Seq[(Faction, Seq[(String, Double)])])
 
+    // PLATEAU LEVER (c), 2026-07-30 — LEAGUE / PAST-CHECKPOINT OPPONENTS.
+    // R13 plateaued: best-checkpoint flat 8 iters (11-18) at 3.51, resolved-game doom stuck
+    // 21.6-25.0 (never 30), arena 0/32 the entire run — the SAME arena flatline every run.
+    // ROOT CAUSE of the arena gap: `selfPlayGame` drove ALL FOUR seats with the ONE current
+    // net, so the learner only ever trained against clones of its OWN CURRENT STYLE. It never
+    // had to beat a DIFFERENT player, so it overfits a self-consistent equilibrium that the
+    // hand-tuned bots (a different style) simply sidestep — hence 0/32 forever, independent of
+    // the reward. LEAGUE FIX (standard AlphaZero-league play): each self-play game now has ONE
+    // rotating LEARNER seat (the current, still-training net, the only seat recorded) versus
+    // THREE FROZEN league opponents drawn from a pool = the bootstrap/bot-style clone (the
+    // closest in-process proxy to the arena bots — beating it directly attacks the arena gap)
+    // plus accumulated best-checkpoints (strong past selves). The learner must now learn play
+    // that beats OTHER styles, not just itself. Faction-agnostic: seats rotate over all four.
     def selfPlayGame(sims : Int, policy : PolicyModel, value : ValueNet,
-                     decisionCap : Int = 1600) : SelfPlayGame = {
+                     league : Seq[(PolicyModel, ValueNet)], learnerSeat : Faction,
+                     gameIdx : Int, decisionCap : Int = 1600) : SelfPlayGame = {
         val g = SelfPlay.newGame()
-        val brain = new MCTSPolicy(sims = sims, leaf = PolicyValueEval(policy, value))
-        brain.recorder = scala.collection.mutable.ArrayBuffer[PolicyTarget]()
+        // Learner: the current net, the ONLY seat whose decisions we record + train on.
+        val learnerBrain = new MCTSPolicy(sims = sims, leaf = PolicyValueEval(policy, value))
+        learnerBrain.recorder = scala.collection.mutable.ArrayBuffer[PolicyTarget]()
+        // Opponents: one FROZEN league net per non-learner seat, chosen deterministically by
+        // (gameIdx, seat) so the pool is exercised evenly with no RNG. Fallback to self if the
+        // pool is somehow empty (shouldn't happen — it's always seeded with the bootstrap clone).
+        val pool = if (league.nonEmpty) league else Seq((policy, value))
+        val brainByFaction : Map[Faction, MCTSPolicy] = {
+            val m = scala.collection.mutable.Map[Faction, MCTSPolicy](learnerSeat -> learnerBrain)
+            g.setup.toList.filter(_ != learnerSeat).zipWithIndex.foreach { case (f, i) =>
+                val (op, ov) = pool((gameIdx + i) % pool.length)
+                m(f) = new MCTSPolicy(sims = sims, leaf = PolicyValueEval(op, ov))
+            }
+            m.toMap
+        }
         val vals = scala.collection.mutable.ArrayBuffer[Example]()
         val trajectory = new Trajectory(g.setup)
         var decisions = 0
@@ -540,15 +582,20 @@ object PolicyRun {
         val recording = new DecisionPolicy {
             def decide(game : Game, faction : Faction, actions : $[Action]) : Action = {
                 trajectory.observe(game)
-                val ex = new Example(Features.of(game, faction), faction)
-                // Capture Φ(s) from the LIVE board now — the per-move position quality the
-                // smeared terminal label never provided. (Read here, not at game end, so it
-                // reflects THIS state, not the final one.)
-                ex.potential = Outcome.statePotential(game, faction)
-                vals += ex
-                exIdx += decisions
+                // ONLY the learner seat's states become value-training examples: its terminal
+                // label + progress-blended Φ(s) is the learning signal. Opponent seats are
+                // frozen league nets — we do not train the value head on their perspective.
+                if (faction == learnerSeat) {
+                    val ex = new Example(Features.of(game, faction), faction)
+                    // Capture Φ(s) from the LIVE board now — the per-move position quality the
+                    // smeared terminal label never provided. (Read here, not at game end, so it
+                    // reflects THIS state, not the final one.)
+                    ex.potential = Outcome.statePotential(game, faction)
+                    vals += ex
+                    exIdx += decisions   // GLOBAL decision index (game length denominator below)
+                }
                 decisions += 1
-                brain.decide(game, faction, actions)
+                brainByFaction(faction).decide(game, faction, actions)
             }
         }
         val s0 = Engine.start(g)
@@ -575,9 +622,13 @@ object PolicyRun {
         // Same 10 faction-agnostic intermediate metrics the all-bot baseline emits, so the
         // brain's self-play games are measured by identical code — this is the diagnostic
         // for WHERE the brain falls short of the bots (SBs, GOOs, rituals, doom/AP, etc.).
-        val scorecards = g.setup.toList.map(f => f -> trajectory.scoreBreakdown(g, f))
-        new SelfPlayGame(brain.recorder.toList, vals.toList, winners.nonEmpty, decisions,
-                         GameMetrics.all(g, trajectory), scorecards)
+        // LEAGUE (lever c): report ONLY the LEARNER seat — the other three are frozen league
+        // opponents, so folding their metrics/scorecards in would dilute the learner's signal
+        // (best-checkpoint scoring and the per-iter diagnostic must reflect the net we train).
+        val scorecards = List(learnerSeat -> trajectory.scoreBreakdown(g, learnerSeat))
+        val metrics    = GameMetrics.all(g, trajectory).filter(_.faction == learnerSeat)
+        new SelfPlayGame(learnerBrain.recorder.toList, vals.toList, winners.nonEmpty, decisions,
+                         metrics, scorecards)
     }
 
     /** DIAGNOSTIC: bootstrap the policy exactly like self-play, then run ONE self-play
@@ -649,8 +700,12 @@ object PolicyRun {
     }
 
     def selfPlayBatch(sims : Int, nGames : Int, policy : PolicyModel, value : ValueNet,
-                      parallel : Boolean) : Seq[SelfPlayGame] = {
-        def one(i : Int) = selfPlayGame(sims, policy, value)
+                      league : Seq[(PolicyModel, ValueNet)], parallel : Boolean) : Seq[SelfPlayGame] = {
+        // LEAGUE (lever c): rotate the LEARNER seat across the four factions round-robin so the
+        // net learns to WIN from every seat vs the league pool (faction-agnostic training), and
+        // pass gameIdx so opponent-seat selection walks the pool deterministically.
+        val seats = SelfPlay.fixedSeating.toArray
+        def one(i : Int) = selfPlayGame(sims, policy, value, league, seats(i % seats.length), i)
         if (parallel) {
             import scala.collection.parallel.CollectionConverters._
             (0 until nGames).par.map(one).toList
