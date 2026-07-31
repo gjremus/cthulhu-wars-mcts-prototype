@@ -20,7 +20,14 @@ import scala.io.Source
  */
 object Checkpoint {
 
-    val Dir = "/Users/gremus/cthulhu-wars-mcts-prototype/checkpoints"
+    // Default checkpoint dir; override with CW_CKPT_DIR so a challenger run (e.g. a
+    // wider-hidden brain, whose dims are INCOMPATIBLE with the saved champion) can
+    // persist to an isolated dir WITHOUT clobbering the current best on disk.
+    val Dir = {
+        val e = System.getenv("CW_CKPT_DIR")
+        if (e != null && e.trim.nonEmpty) e.trim
+        else "/Users/gremus/cthulhu-wars-mcts-prototype/checkpoints"
+    }
 
     private def policyFile = new File(Dir, "best.policy")
     private def valueFile  = new File(Dir, "best.value")
