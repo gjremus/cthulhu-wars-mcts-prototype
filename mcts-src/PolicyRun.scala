@@ -337,6 +337,10 @@ object PolicyRun {
         // so the first iter always sets an initial best.
         var bestScore  = if (warmStarted) Checkpoint.savedScore.getOrElse(-1.0) else -1.0
         var bestIter   = 0
+        // Last arena win-rate reading, carried forward between arena evals (measured only
+        // every `arenaEvery` iters) so the best-checkpoint composite always has a value.
+        // 0.0 until the first arena eval fires.
+        var lastArenaWR = 0.0
         if (warmStarted) println(f"best-bar seeded from disk score=${bestScore}%.2f (a new best must beat this to overwrite the saved net)\n")
 
         // LEAGUE POOL (lever c). Frozen opponents the learner must beat. SEEDED with the
@@ -346,6 +350,12 @@ object PolicyRun {
         // selves, the AlphaZero-league idea). Capped so per-game opponent variety stays bounded
         // and old weak snapshots age out (keep the seed + the most recent checkpoints).
         val LeagueCap = 4
+        // Weight on the arena win-rate term in the best-checkpoint composite. Sized so a real
+        // arena win is a decisive tiebreaker between comparable brains without letting a lone
+        // 1/32 crown an otherwise-weak net: 3.0 × (1/32 = 0.031) ≈ +0.09, i.e. one arena win
+        // is worth ~0.3 rituals/game. A full sweep (32/32 = 1.0) would add +3.0 — dominant, as
+        // it should be once the brain genuinely beats the bots.
+        val ArenaWeight = 3.0
         val leaguePool = scala.collection.mutable.ArrayBuffer[(PolicyModel, ValueNet)]((policy.copy, value.copy))
         println(f"league: seeded with 1 bootstrap-clone opponent; grows with each best-checkpoint (cap $LeagueCap)\n")
 
@@ -400,12 +410,28 @@ object PolicyRun {
             // needs tweaking (e.g. avgEndGates near 0 => gate control still the gap).
             println("   " + avgScorecardLine(batch.flatMap(_.scorecards)))
 
+            // 4. TEST vs the bots every `arenaEvery` iterations (and on the last one).
+            //    Run this BEFORE the best-checkpoint decision so the arena win-rate can feed
+            //    the composite: now that the brain actually beats bots (R16 it34, first ever),
+            //    the saved brain MUST be selected partly on WINNING arena games, not only on
+            //    finishing self-play games + rituals (which ignored the real target entirely).
+            if (it % arenaEvery == 0 || it == iters) {
+                print(f"   arena @ iter $it: ")
+                val (aw, ag) = reportPerSeat(Arena.evaluatePerSeatBrain(
+                    () => new MCTSPolicy(sims = sims, leaf = PolicyValueEval(policy, value)), perSeat))
+                lastArenaWR = if (ag > 0) aw.toDouble / ag else 0.0
+            }
+
             // BEST-CHECKPOINT: score this iteration by what actually collapsed — games
-            // that FINISH and rituals happening. finishedRate in [0,1] plus rituals/game
-            // (the two symptoms of the good iter-1 shape); snapshot the net if it's a new best.
+            // that FINISH and rituals happening (finishedRate in [0,1] plus rituals/game, the
+            // two symptoms of the good iter-1 shape) — PLUS the arena win-rate term so the
+            // saved/warm-started brain tracks the one that beats the hand-tuned bots. Arena
+            // is only measured every `arenaEvery` iters, so we carry the last reading forward;
+            // ArenaWeight is large enough that a real arena win is a decisive tiebreaker but
+            // can't by itself crown an otherwise-weak brain (1/32 ≈ 0.031 → +0.09 bonus).
             val finishedRate = spWins.toDouble / gamesPerIter
             val ritPerGame   = batch.flatMap(_.metrics).map(_.rituals).sum.toDouble / math.max(1, batch.size)
-            val iterScore    = finishedRate + 0.3 * ritPerGame
+            val iterScore    = finishedRate + 0.3 * ritPerGame + ArenaWeight * lastArenaWR
             if (iterScore > bestScore) {
                 bestScore = iterScore; bestIter = it
                 bestPolicy = policy.copy; bestValue = value.copy
@@ -423,14 +449,7 @@ object PolicyRun {
                     case (bp : PolicyModel, bv : MLPModel) => Checkpoint.save(bp, bv, it, iterScore, runTag)
                     case _ =>
                 }
-                println(f"   >>> new best checkpoint @ iter $it (finished=${finishedRate}%.2f rit/g=${ritPerGame}%.2f score=${iterScore}%.2f) | league=${leaguePool.length} | saved to disk")
-            }
-
-            // 4. TEST vs the bots every `arenaEvery` iterations (and on the last one).
-            if (it % arenaEvery == 0 || it == iters) {
-                print(f"   arena @ iter $it: ")
-                reportPerSeat(Arena.evaluatePerSeatBrain(
-                    () => new MCTSPolicy(sims = sims, leaf = PolicyValueEval(policy, value)), perSeat))
+                println(f"   >>> new best checkpoint @ iter $it (finished=${finishedRate}%.2f rit/g=${ritPerGame}%.2f arenaWR=${lastArenaWR}%.3f score=${iterScore}%.2f) | league=${leaguePool.length} | saved to disk")
             }
             it += 1
         }
@@ -827,8 +846,10 @@ object PolicyRun {
         f"scorecard avg/seat (total=$total%.3f): " + parts.mkString(" ")
     }
 
-    /** Print a per-seat arena result block (brain rotates all four seats). */
-    def reportPerSeat(perSeat : Map[Faction, Arena.ArenaResult]) : Unit = {
+    /** Print a per-seat arena result block (brain rotates all four seats) and RETURN
+     *  (totalBrainWins, totalGames) so the caller can feed the arena win-rate into the
+     *  best-checkpoint composite. Callers that only want the printout can ignore it. */
+    def reportPerSeat(perSeat : Map[Faction, Arena.ArenaResult]) : (Int, Int) = {
         var totWins = 0; var totGames = 0
         val seatStrs = SelfPlay.fixedSeating.toList.map { f =>
             val r = perSeat(f)
@@ -837,6 +858,7 @@ object PolicyRun {
         }
         val wr = if (totGames > 0) 100.0 * totWins / totGames else 0.0
         println(f"   >>> overall ${totWins}%d/${totGames}%d = ${wr}%.0f%% | " + seatStrs.mkString(" "))
+        (totWins, totGames)
     }
 
     /** Play `nGames` bot-vs-bot games, recording a PolicyExample at every real decision
