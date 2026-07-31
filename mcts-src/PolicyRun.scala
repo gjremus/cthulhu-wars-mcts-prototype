@@ -277,6 +277,19 @@ object PolicyRun {
         }
         println(f"bootstrapped: policy move-match ${matchAccuracy(policy, polAll)}%.1f%% (vs random ${randomBaseline}%.1f%%), value confidence ${confidencePct(SelfPlay.logLoss(value, valBoot))}%.0f%%\n")
 
+        // BOOTSTRAP CLONE SNAPSHOT — captured HERE, before any warm-start adopt() below can
+        // overwrite `policy`/`value`. This snapshot is the bot-style anchor that seeds the
+        // league pool (lever c). It MUST be the bootstrap net, NOT the warm-started net:
+        // seeding the league from a warm-started strong net (the R17 bug — league was seeded
+        // from `policy.copy` AFTER adopt, so on warm-start every self-play opponent was a copy
+        // of the learner) makes self-play a strong-net-vs-itself echo chamber with no
+        // competent-but-different opponent in the room, which collapses games (R17: 0/20
+        // finished, ~80-move games vs ~1300 normal). On a COLD start `policy` still equals the
+        // bootstrap net here, so this snapshot is identical to the old behaviour — cold runs
+        // are unaffected; only the warm-start path is fixed.
+        val bootstrapPolicy = policy.copy
+        val bootstrapValue  = value.copy
+
         // WARM-START (cross-run persistence). If a compatible best-checkpoint from a prior
         // run exists on disk, adopt it OVER the fresh bootstrap so learning ACCUMULATES
         // across runs instead of relearning from zero every time (the old behaviour, which
@@ -356,7 +369,11 @@ object PolicyRun {
         // is worth ~0.3 rituals/game. A full sweep (32/32 = 1.0) would add +3.0 — dominant, as
         // it should be once the brain genuinely beats the bots.
         val ArenaWeight = 3.0
-        val leaguePool = scala.collection.mutable.ArrayBuffer[(PolicyModel, ValueNet)]((policy.copy, value.copy))
+        // Seed from the BOOTSTRAP snapshot (captured before warm-start adopt), NOT from
+        // `policy` — on warm-start `policy` is the strong saved net, and using it here was the
+        // R17 self-play-collapse bug. The bootstrap net is the bot-style anchor the league is
+        // meant to provide.
+        val leaguePool = scala.collection.mutable.ArrayBuffer[(PolicyModel, ValueNet)]((bootstrapPolicy.copy, bootstrapValue.copy))
         println(f"league: seeded with 1 bootstrap-clone opponent; grows with each best-checkpoint (cap $LeagueCap)\n")
 
         // --- 1-4. ITERATE: self-play -> train toward search -> relabel value -> test -
