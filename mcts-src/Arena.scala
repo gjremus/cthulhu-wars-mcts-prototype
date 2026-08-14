@@ -265,7 +265,7 @@ object Arena {
         def one(i : Int) : (Int, Int, Double, Double, GameTrace) = {
             val g = SelfPlay.newGameLogged()
             val brain = brainFactory()
-            val routing = g.setup.map(f -> f -> (if (brainSeats.contains(f)) brain else (BotPolicy : DecisionPolicy))).toMap
+            val routing = g.setup.map(f => f -> (if (brainSeats.contains(f)) brain else (BotPolicy : DecisionPolicy))).toMap
             val policy = new MixedPolicy(routing)
             val serializer = new Serialize(g)
 
