@@ -405,7 +405,10 @@ object PolicyRun {
             val ti = System.nanoTime()
             // 1. PLAY self-play games; each records (state, candidates, MCTS visit dist)
             //    and (state, faction) for value, labelled by the self-play winner.
-            val batch = selfPlayBatch(sims, gamesPerIter, policy, value, leaguePool.toList, parallel)
+            val traceDir = System.getenv("CW_SAVE_TRACES")
+            val saveTraces = traceDir != null && traceDir.trim.nonEmpty
+            val batch = selfPlayBatch(sims, gamesPerIter, policy, value, leaguePool.toList, parallel,
+                                      saveTraces, Option(traceDir), s"iter$it")
             val pol   = batch.flatMap(_.targets).toArray    // PolicyTarget (soft move-target)
             val vals  = batch.flatMap(_.examples).toArray   // Example (dense shaped value)
             val spWins = batch.count(_.hadWinner)           // self-play games that actually FINISHED
@@ -705,8 +708,9 @@ object PolicyRun {
     // that beats OTHER styles, not just itself. Faction-agnostic: seats rotate over all four.
     def selfPlayGame(sims : Int, policy : PolicyModel, value : ValueNet,
                      league : Seq[(PolicyModel, ValueNet)], learnerSeat : Faction,
-                     gameIdx : Int, decisionCap : Int = 1600) : SelfPlayGame = {
-        val g = SelfPlay.newGame()
+                     gameIdx : Int, decisionCap : Int = 1600, saveTrace : Boolean = false,
+                     traceDir : Option[String] = None, iterTag : String = "") : SelfPlayGame = {
+        val g = if (saveTrace) SelfPlay.newGameLogged() else SelfPlay.newGame()
         // Learner: the current net, the ONLY seat whose decisions we record + train on.
         val learnerBrain = new MCTSPolicy(sims = sims, leaf = PolicyValueEval(policy, value))
         learnerBrain.recorder = scala.collection.mutable.ArrayBuffer[PolicyTarget]()
@@ -771,7 +775,18 @@ object PolicyRun {
             }
         }
         val s0 = Engine.start(g)
-        val (winners, _) = Engine.rolloutCapped(g, s0, recording, decisionCap, throwOnCap = false)
+        val (winners, hitCap, acts, log) = if (saveTrace) {
+            val serializer = new Serialize(g)
+            val startActions = scala.collection.mutable.ArrayBuffer[Action]()
+            val startLog = scala.collection.mutable.ArrayBuffer[String]()
+            val sink : (Action, $[String]) => Unit = (act, ls) => { startActions += act; startLog ++= ls.toList }
+            val startSit = Engine.startLogged(g, sink)
+            val (w, hc, a, l) = Engine.rolloutLogged(g, startSit, recording, decisionCap)
+            (w, hc, startActions.toList ++ a.toList, startLog.toList ++ l.toList)
+        } else {
+            val (w, hc) = Engine.rolloutCapped(g, s0, recording, decisionCap, throwOnCap = false)
+            (w, hc, List.empty[Action], List.empty[String])
+        }
         val shaping = trajectory.score(g)
         // PROGRESS-BLENDED per-state label (2026-07-29): each state's target blends its own
         // captured potential Φ(s_t) with the terminal outcome, weighted by how deep into the
@@ -799,6 +814,30 @@ object PolicyRun {
         // (best-checkpoint scoring and the per-iter diagnostic must reflect the net we train).
         val scorecards = List(learnerSeat -> trajectory.scoreBreakdown(g, learnerSeat))
         val metrics    = GameMetrics.all(g, trajectory).filter(_.faction == learnerSeat)
+
+        // Write trace file if requested
+        if (saveTrace && traceDir.isDefined && acts.nonEmpty) {
+            val dir = traceDir.get
+            new java.io.File(dir).mkdirs()
+            val serializer = new Serialize(g)
+            val actionLines = acts.map(serializer.write)
+            val logLines = log
+            val breakdown = trajectory.scoreBreakdown(g, learnerSeat)
+            val breakdownStr = breakdown.map { case (name, value) => s"$name=${"%+.3f".format(value)}" }.mkString(" ")
+            val allDoom = g.setup.map(f => f -> g.players(f).doom).toMap
+            val doomStr = allDoom.toList.sortBy(-_._2).map { case (f, d) => s"${f.short}=$d" }.mkString(" ")
+            val learnerScore = Outcome.valueShaped(g, winners.toList, learnerSeat, shaping.getOrElse(learnerSeat, 0.0))
+            val learnerDoom = g.players(learnerSeat).doom
+            val winTag = if (winners.contains(learnerSeat)) "-WIN" else ""
+            val fn = s"$dir/selfplay-$iterTag-${learnerSeat.short.toLowerCase}-g$gameIdx$winTag-d$learnerDoom.txt"
+            val content = actionLines.mkString("\n") + "\n\n" +
+                          logLines.map(l => s"<div class='p'>$l</div>").mkString("\n") + "\n\n" +
+                          s"FINAL_SCORE=$learnerScore\n" +
+                          s"BREAKDOWN=$breakdownStr\n" +
+                          s"ALL_DOOM=$doomStr"
+            java.nio.file.Files.write(java.nio.file.Paths.get(fn), content.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+        }
+
         new SelfPlayGame(learnerBrain.recorder.toList, vals.toList, winners.nonEmpty, decisions,
                          metrics, scorecards)
     }
@@ -891,12 +930,15 @@ object PolicyRun {
     }
 
     def selfPlayBatch(sims : Int, nGames : Int, policy : PolicyModel, value : ValueNet,
-                      league : Seq[(PolicyModel, ValueNet)], parallel : Boolean) : Seq[SelfPlayGame] = {
+                      league : Seq[(PolicyModel, ValueNet)], parallel : Boolean,
+                      saveTraces : Boolean = false, traceDir : Option[String] = None,
+                      iterTag : String = "") : Seq[SelfPlayGame] = {
         // LEAGUE (lever c): rotate the LEARNER seat across the four factions round-robin so the
         // net learns to WIN from every seat vs the league pool (faction-agnostic training), and
         // pass gameIdx so opponent-seat selection walks the pool deterministically.
         val seats = SelfPlay.fixedSeating.toArray
-        def one(i : Int) = selfPlayGame(sims, policy, value, league, seats(i % seats.length), i, decisionCapEnv)
+        def one(i : Int) = selfPlayGame(sims, policy, value, league, seats(i % seats.length), i, decisionCapEnv,
+                                        saveTraces, traceDir, iterTag)
         if (parallel) {
             import scala.collection.parallel.CollectionConverters._
             (0 until nGames).par.map(one).toList
