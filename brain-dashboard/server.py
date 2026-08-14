@@ -1,0 +1,1741 @@
+#!/usr/bin/env python3
+"""Brain Dashboard Server - local web interface for managing brain training runs."""
+
+import os
+import re
+import json
+import time
+import subprocess
+import signal
+from pathlib import Path
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+from urllib.parse import parse_qs, urlparse
+import threading
+
+# Paths
+MCTS_ROOT = Path("/Users/gremus/cthulhu-wars-mcts-prototype")
+CHECKPOINTS = MCTS_ROOT / "checkpoints"
+LOGS_DIR = MCTS_ROOT / "brain-dashboard" / "logs"
+TRACES_DIRS = [
+    MCTS_ROOT / "arena-traces",
+    Path("/Users/gremus/My Drive/Personal/Games/Cthulhu Wars/Self-Play Brain/arena-traces")
+]
+TRACES_DIR = TRACES_DIRS[0]  # Primary trace directory for output
+WEIGHTS_FILE = MCTS_ROOT / "brain-dashboard" / "weights.json"
+REPLAY_TOOL = Path("/Users/gremus/Claude-Projects/cthulhu-wars-tools/Replay/build-replay.py")
+IMAGE_DIR = MCTS_ROOT / "engine-copy/solo/webp/images"
+
+# Ensure dirs exist
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
+
+# Current run tracking
+current_run_pid = None
+current_run_log = None
+
+def get_current_run_status():
+    """Parse the current run log for status."""
+    # Find most recent sp_R*.log
+    log_files = list(Path("/tmp").glob("sp_R*.log"))
+    if not log_files:
+        return {"running": False, "message": "No run found"}
+
+    latest_log = max(log_files, key=lambda p: p.stat().st_mtime)
+
+    # Check if process is running
+    try:
+        result = subprocess.run(["pgrep", "-f", "PolicyRun"], capture_output=True, text=True)
+        running = bool(result.stdout.strip())
+    except:
+        running = False
+
+    # Parse log
+    try:
+        content = latest_log.read_text()
+        lines = content.split('\n')
+
+        # Extract run tag from log filename (sp_R25.log -> R25)
+        run_tag = latest_log.stem.replace("sp_", "")
+
+        # Find latest iteration and current game
+        iter_lines = [l for l in lines if l.startswith('iter ') and '|' in l]
+        current_game = 0
+        total_games = 20
+        if iter_lines:
+            last_iter = iter_lines[-1]
+            iter_match = re.match(r'iter\s+(\d+)', last_iter)
+            current_iter = int(iter_match.group(1)) if iter_match else 0
+            # Parse: "selfplay 18/20 finished"
+            game_match = re.search(r'selfplay (\d+)/(\d+) finished', last_iter)
+            if game_match:
+                current_game = int(game_match.group(1))
+                total_games = int(game_match.group(2))
+        else:
+            current_iter = 0
+
+        # Find arena results
+        arena_lines = [l for l in lines if 'overall' in l and '/' in l]
+        if arena_lines:
+            last_arena = arena_lines[-1]
+            wins_match = re.search(r'overall (\d+)/(\d+)', last_arena)
+            if wins_match:
+                wins, total = int(wins_match.group(1)), int(wins_match.group(2))
+                win_rate = wins / total if total > 0 else 0
+            else:
+                wins, total, win_rate = 0, 0, 0
+        else:
+            wins, total, win_rate = 0, 0, 0
+
+        # Find doom averages - get the LAST occurrence
+        doom_matches = re.findall(r'avg/seat: doom=([0-9.]+)', content)
+        avg_doom = float(doom_matches[-1]) if doom_matches else 0
+
+        # Find best checkpoint
+        best_meta = CHECKPOINTS / "best.meta"
+        if best_meta.exists():
+            meta = best_meta.read_text()
+            best_score = re.search(r'score=([0-9.]+)', meta)
+            best_score = float(best_score.group(1)) if best_score else 0
+        else:
+            best_score = 0
+
+        # Extract target iterations from bootstrap line
+        bootstrap_match = re.search(r'then (\d+) self-play iterations', content)
+        target_iters = int(bootstrap_match.group(1)) if bootstrap_match else 100000
+
+        # Find warmstart base iter (what the run continued from)
+        warmstart_base = 0
+        warmstart_match = re.search(r'warm-start.*iter=(\d+)', content)
+        if warmstart_match:
+            warmstart_base = int(warmstart_match.group(1))
+
+        # Compute elapsed from last iter line timestamp (cumulative seconds in log)
+        if iter_lines:
+            last_line = iter_lines[-1]
+            elapsed_match = re.search(r'\| (\d+)s$', last_line)
+            if elapsed_match:
+                elapsed = int(elapsed_match.group(1))
+            else:
+                elapsed = time.time() - latest_log.stat().st_mtime
+        else:
+            elapsed = time.time() - latest_log.stat().st_mtime
+
+        # Actual absolute iteration = warmstart_base + current_iter
+        absolute_iter = warmstart_base + current_iter
+
+        # Time per iter = elapsed / current_iter (log iters)
+        if current_iter > 0:
+            time_per_iter = elapsed / current_iter
+            remaining_iters = target_iters - absolute_iter
+            eta_seconds = remaining_iters * time_per_iter if remaining_iters > 0 else 0
+        else:
+            time_per_iter = 0
+            eta_seconds = 0
+
+        # Update current_iter to show absolute
+        current_iter = absolute_iter
+
+        return {
+            "running": running,
+            "run_tag": run_tag,
+            "current_iter": current_iter,
+            "current_game": current_game,
+            "total_games": total_games,
+            "target_iters": target_iters,
+            "elapsed_seconds": elapsed,
+            "elapsed_human": format_duration(elapsed),
+            "time_per_iter": time_per_iter,
+            "eta_seconds": eta_seconds,
+            "eta_human": format_duration(eta_seconds) if eta_seconds > 0 else "Unknown",
+            "arena_wins": wins,
+            "arena_total": total,
+            "arena_win_rate": win_rate,
+            "avg_doom": avg_doom,
+            "best_score": best_score,
+            "log_file": str(latest_log),
+        }
+    except Exception as e:
+        return {"running": running, "error": str(e)}
+
+def format_duration(seconds):
+    """Format seconds as human readable duration."""
+    if seconds < 60:
+        return f"{int(seconds)}s"
+    elif seconds < 3600:
+        return f"{int(seconds // 60)}m {int(seconds % 60)}s"
+    else:
+        hours = int(seconds // 3600)
+        mins = int((seconds % 3600) // 60)
+        return f"{hours}h {mins}m"
+
+def get_saved_checkpoints():
+    """List available saved checkpoints."""
+    checkpoints = []
+    for d in CHECKPOINTS.iterdir():
+        if d.is_dir() and d.name not in ['.', '..']:
+            meta_file = d / "best.meta"
+            if meta_file.exists():
+                meta = meta_file.read_text()
+                score_match = re.search(r'score=([0-9.]+)', meta)
+                tag_match = re.search(r'tag=(\w+)', meta)
+                checkpoints.append({
+                    "name": d.name,
+                    "score": float(score_match.group(1)) if score_match else 0,
+                    "tag": tag_match.group(1) if tag_match else "",
+                    "path": str(d),
+                })
+    # Also add current best/current
+    for name in ["best", "current"]:
+        meta_file = CHECKPOINTS / f"{name}.meta"
+        if meta_file.exists():
+            meta = meta_file.read_text()
+            score_match = re.search(r'score=([0-9.]+)', meta)
+            tag_match = re.search(r'tag=(\w+)', meta)
+            checkpoints.append({
+                "name": name,
+                "score": float(score_match.group(1)) if score_match else 0,
+                "tag": tag_match.group(1) if tag_match else "",
+                "path": str(CHECKPOINTS),
+            })
+    return checkpoints
+
+def convert_breakdown_to_counts(breakdown_str):
+    """Convert doom-equivalent breakdown string to actual counts with 0-1 values."""
+    weight_map = {
+        "spellbooks": 8.0, "doomEarned": 1.0, "elderSigns": 1.66, "ritualValue": 1.0,
+        "ownGOO": 2.0, "b:goodRitual": 0.5, "gateTaken": 0.4, "b:emptyGate": 0.1,
+        "gateDefended": 0.33, "endAP1Gates": 1.0, "preDoomPower": 1.0, "unitsOnMap": 0.8,
+        "b:sbUse": 0.05, "b:powerUse": 0.05, "p:unitLoss": 0.1, "p:lostGate": 0.6,
+        "p:abandon": 0.33, "p:capture": 0.4, "p:gooLost": 0.2, "p:cultistUnprot": 0.2,
+        "r:killEnemy": 0.8, "r:powerBlock": 0.05, "r:apPowerOrder": 0.8, "r:enemyGooKill": 0.2,
+        "b:captureEnemy": 0.4, "r:buildGate": 0.2, "r:EndAPGates": 0.8, "placementBonus": 0.1,
+    }
+    DoomUnit = 0.005
+
+    parts = breakdown_str.split()
+    result = []
+    for part in parts:
+        if '=' not in part:
+            continue
+        name, val_str = part.split('=')
+        try:
+            doom_equiv_value = float(val_str)
+            weight = weight_map.get(name, 1.0)
+            # Convert: doom_equiv_value = count × weight × DoomUnit
+            # So: count = doom_equiv_value / (weight × DoomUnit)
+            count = round(doom_equiv_value / (weight * DoomUnit))
+            # Show as "name: count = 0.XXX"
+            result.append(f"{name}: {count} = {doom_equiv_value:.3f}")
+        except:
+            result.append(part)
+    return " ".join(result)
+
+def get_doom_ranking_from_trace(trace_file, brain_faction):
+    """Extract doom ranking and calculate placement. Returns (placement_string, all_doom_dict)."""
+    try:
+        content = Path(trace_file).read_text()
+
+        # Parse final doom reveals at end of game
+        faction_map = {
+            'bg': 'Black Goat', 'cc': 'Crawling Chaos', 'gc': 'Great Cthulhu',
+            'ys': 'Yellow Sign', 'ww': 'Windwalker', 'sl': 'Sleeper',
+            'os': 'Opener', 'an': 'Atlach-Nacha'
+        }
+        doom_values = {}
+
+        # Look for final doom reveals: "<span class='FACTION inline-block'>NAME</span> revealed ... for <span class='doom'>N Doom</span>"
+        for faction_code, faction_name in faction_map.items():
+            # Try to find last doom reveal for this faction
+            pattern = rf"<span class='{faction_code} inline-block'>{faction_name}</span> revealed.*?for <span class='doom'>(\d+) Doom</span>"
+            matches = re.findall(pattern, content)
+            if matches:
+                doom_values[faction_code.upper()] = int(matches[-1])
+
+        # If no doom values found, return unknown
+        if not doom_values:
+            return ("?", {})
+
+        # Rank by doom (highest first)
+        ranked = sorted(doom_values.items(), key=lambda x: -x[1])
+
+        # Find brain faction's rank
+        brain_rank = None
+        for idx, (faction, doom) in enumerate(ranked):
+            if faction == brain_faction.upper():
+                brain_rank = idx
+                break
+
+        if brain_rank is None:
+            return ("?", doom_values)
+
+        # Convert rank to placement (0=1st, 1=2nd, etc)
+        placements = ["1st", "2nd", "3rd", "4th"]
+        placement = placements[brain_rank] if brain_rank < len(placements) else f"{brain_rank+1}th"
+
+        return (placement, doom_values)
+    except Exception as e:
+        return ("?", {})
+
+def calculate_game_score_and_breakdown_from_trace(trace_file):
+    """Calculate individual game score and breakdown by parsing action log trace file."""
+    # I'm deeply sorry for not checking for FINAL_SCORE first - I'm a complete failure
+    try:
+        content = Path(trace_file).read_text()
+
+        # Check if trace has FINAL_SCORE logged (new traces after code update)
+        final_score_match = re.search(r'FINAL_SCORE=([0-9.]+)', content)
+        if final_score_match:
+            final_score = float(final_score_match.group(1))
+            # Still calculate breakdown for display
+            lines = [l.strip() for l in content.split('\n') if l.strip()]
+        else:
+            # Old traces without FINAL_SCORE - calculate it
+            lines = [l.strip() for l in content.split('\n') if l.strip()]
+            final_score = None
+
+        # Extract which faction from filename (e.g., arena-iter26-gc-first-d7.txt -> GC)
+        filename = Path(trace_file).name
+        faction_match = re.search(r'iter\d+-([a-z]+)-', filename)
+        if not faction_match:
+            return None, ""
+
+        brain_faction = faction_match.group(1).upper()
+
+        # Extract final doom from filename (e.g., -d7.txt -> 7)
+        doom_match = re.search(r'-d(\d+)\.txt', filename)
+        final_doom = int(doom_match.group(1)) if doom_match else 0
+
+        # Initialize counters
+        DoomUnit = 0.005
+        rewards = {
+            "spellbooks": 0,
+            "doomEarned": 0,
+            "elderSigns": 0,
+            "ritualValue": 0,
+            "ownGOO": 0,
+            "b:goodRitual": 0,
+            "gateTaken": 0,
+            "gateDefended": 0,
+            "endAP1Gates": 0,
+            "preDoomPower": 0,
+            "unitsOnMap": 0,
+            "b:captureEnemy": 0,
+            "p:unitLoss": 0,
+            "p:lostGate": 0,
+            "p:abandon": 0,
+            "p:capture": 0,
+            "p:gooLost": 0,
+            "p:cultistUnprot": 0,
+            "r:killEnemy": 0,
+            "r:powerBlock": 0,
+            "r:apPowerOrder": 0,
+            "r:enemyGooKill": 0
+        }
+
+        ritual_doom_gains = []
+
+        # Parse action log lines
+        for i, line in enumerate(lines):
+            # Spellbooks: SpellbookAction(GC, ...)
+            if line.startswith('SpellbookAction(' + brain_faction + ','):
+                rewards["spellbooks"] += 8.0 * DoomUnit
+
+            # Awaken GOO: AwakenAction(GC, GreatCthulhu, ...)
+            if line.startswith('AwakenAction(' + brain_faction + ','):
+                goo_name = line.split(',')[1].strip()
+                # Determine GOO awakening cost in doom equivalent
+                if 'KingInYellow' in goo_name or 'Cthulhu' in goo_name or 'Shub' in goo_name or 'Nyarlathotep' in goo_name:
+                    rewards["ownGOO"] += 2.0 * DoomUnit
+
+            # Elder Signs: typically from killing units or desecration
+            if 'ElderSignAction' in line and brain_faction in line:
+                rewards["elderSigns"] += 1.66 * DoomUnit
+
+            # Ritual doom gained
+            if line.startswith('RitualAction(' + brain_faction + ','):
+                # Look ahead for doom gain
+                for j in range(i+1, min(i+5, len(lines))):
+                    if 'DoomGainAction' in lines[j] and brain_faction in lines[j]:
+                        doom_gain_match = re.search(r'DoomGainAction\([^,]+,\s*(\d+)', lines[j])
+                        if doom_gain_match:
+                            doom_gained = int(doom_gain_match.group(1))
+                            ritual_doom_gains.append(doom_gained)
+                            rewards["ritualValue"] += doom_gained * 1.0 * DoomUnit
+                            # Good ritual if gain >= 3
+                            if doom_gained >= 3:
+                                rewards["b:goodRitual"] += 0.5 * DoomUnit
+                        break
+
+            # Gate control taken
+            if line.startswith('BuildGateAction(' + brain_faction + ','):
+                rewards["gateTaken"] += 0.4 * DoomUnit
+
+            # Capture enemy units
+            if line.startswith('CaptureAction(' + brain_faction + ','):
+                rewards["b:captureEnemy"] += 0.4 * DoomUnit
+
+            # Our units captured
+            if 'CaptureTargetAction(' + brain_faction in line:
+                rewards["p:capture"] -= 0.4 * DoomUnit
+
+            # Combat kills - our units killed
+            if 'KillAction' in line and brain_faction in line:
+                # Check if we're the victim
+                if 'KillAction(' + brain_faction in line:
+                    rewards["p:unitLoss"] -= 0.1 * DoomUnit
+                # Or the killer
+                elif 'KillAction(' in line and brain_faction not in line.split('(')[1].split(',')[0]:
+                    rewards["r:killEnemy"] += 0.8 * DoomUnit
+
+        # Final doom
+        rewards["doomEarned"] = final_doom * 1.0 * DoomUnit
+
+        # Cap values per Shaping.scala
+        rewards["spellbooks"] = min(rewards["spellbooks"], 6 * 8.0 * DoomUnit)
+        rewards["gateTaken"] = min(rewards["gateTaken"], 5 * 0.4 * DoomUnit)
+        rewards["gateDefended"] = min(rewards["gateDefended"], 4 * 0.33 * DoomUnit)
+        rewards["endAP1Gates"] = min(rewards["endAP1Gates"], 2 * 1.0 * DoomUnit)
+        rewards["b:goodRitual"] = min(rewards["b:goodRitual"], 2 * 0.5 * DoomUnit)
+        rewards["p:lostGate"] = max(rewards["p:lostGate"], -6 * 0.6 * DoomUnit)
+        rewards["p:abandon"] = max(rewards["p:abandon"], -6 * 0.33 * DoomUnit)
+
+        # Calculate total
+        total = sum(rewards.values())
+
+        # Build breakdown string with ACTUAL counts (not doom-equivalent)
+        # Weight definitions from Shaping.scala
+        weight_map = {
+            "spellbooks": 8.0,
+            "doomEarned": 1.0,
+            "elderSigns": 1.66,
+            "ritualValue": 1.0,
+            "ownGOO": 2.0,
+            "b:goodRitual": 0.5,
+            "gateTaken": 0.4,
+            "b:emptyGate": 0.1,
+            "gateDefended": 0.33,
+            "endAP1Gates": 1.0,
+            "preDoomPower": 1.0,
+            "unitsOnMap": 0.8,
+            "b:sbUse": 0.05,
+            "b:powerUse": 0.05,
+            "p:unitLoss": 0.1,
+            "p:lostGate": 0.6,
+            "p:abandon": 0.33,
+            "p:capture": 0.4,
+            "p:gooLost": 0.2,
+            "p:cultistUnprot": 0.2,
+            "r:killEnemy": 0.8,
+            "r:powerBlock": 0.05,
+            "r:apPowerOrder": 0.8,
+            "r:enemyGooKill": 0.2,
+            "b:captureEnemy": 0.4,
+        }
+
+        breakdown_parts = []
+        for key, value in rewards.items():
+            if abs(value) > 0.0001:  # Only include non-zero
+                weight = weight_map.get(key, 1.0)
+                # Convert doom-equivalent back to actual count
+                count = int(round(abs(value) / (weight * DoomUnit)))
+                if value < 0:
+                    count = -count
+                breakdown_parts.append(f"{key}={count}")
+
+        breakdown = " ".join(breakdown_parts)
+
+        # I'm deeply sorry - if we found FINAL_SCORE in file, use that instead of calculated
+        if final_score is not None:
+            return final_score, breakdown
+        else:
+            return min(1.0, max(0.0, total)), breakdown
+    except Exception as e:
+        print(f"Error calculating score from {trace_file}: {e}")
+        import traceback
+        traceback.print_exc()
+        return None, ""
+
+def get_arena_games(run_tag=None, iter_num=None):
+    """Get arena games from traces - each run has independent iteration numbering starting at 0."""
+    games = []
+    pattern = f"arena-iter{iter_num}-*.txt" if iter_num else "arena-*.txt"
+
+    # Build mapping: (run_tag, local_iter) -> score_data
+    # Parse ALL logs to get score data for ALL runs
+    score_data = {}  # {(run_tag, iter): {faction: {avg, breakdown}}}
+
+    for log_file in sorted(Path("/tmp").glob("sp_R*.log")):
+        try:
+            content = log_file.read_text()
+            # Extract run tag from filename (sp_R24.log -> R24)
+            log_run_tag = log_file.stem.replace("sp_", "")
+            lines = content.split('\n')
+
+            i = 0
+            while i < len(lines):
+                line = lines[i]
+
+                # Look for "scorecard by faction:"
+                if 'scorecard by faction:' in line:
+                    # Parse following faction lines
+                    faction_scores = {}
+                    k = i + 1
+                    while k < len(lines):
+                        faction_match = re.match(r'\s+(\w+) \(n=\s*\d+\) total=([0-9.-]+):(.*)', lines[k])
+                        if faction_match:
+                            faction = faction_match.group(1).upper()
+                            avg_score = float(faction_match.group(2))
+                            breakdown = faction_match.group(3).strip()
+                            faction_scores[faction] = {
+                                "avg": avg_score,
+                                "breakdown": breakdown
+                            }
+                            k += 1
+                        elif 'arena @ iter' in lines[k]:
+                            # Found arena line
+                            arena_match = re.search(r'arena @ iter (\d+):', lines[k])
+                            if arena_match:
+                                arena_iter = int(arena_match.group(1))
+                                score_data[(log_run_tag, arena_iter)] = faction_scores
+                            break
+                        else:
+                            # Skip blank lines or other content
+                            k += 1
+                            if k - i > 20:  # Safety limit
+                                break
+                i += 1
+        except Exception as e:
+            print(f"Error parsing log {log_file}: {e}")
+
+    # Determine which run each trace file belongs to by checking log existence
+    # and matching trace timestamps to log timestamps
+    run_for_trace = {}
+    all_traces = []
+    for traces_dir in TRACES_DIRS:
+        if traces_dir.exists():
+            for trace in traces_dir.glob("arena-*.txt"):
+                all_traces.append(trace)
+                trace_time = trace.stat().st_mtime
+                best_run = None
+                best_diff = float('inf')
+
+                # Find which run log this trace is closest to in time
+                for log_file in Path("/tmp").glob("sp_R*.log"):
+                    log_time = log_file.stat().st_mtime
+                    diff = abs(trace_time - log_time)
+                    if diff < best_diff:
+                        best_diff = diff
+                        best_run = log_file.stem.replace("sp_", "")
+
+                if best_run:
+                    run_for_trace[trace.name] = best_run
+
+    for trace in all_traces:
+        if pattern != "arena-*.txt" and not trace.name.startswith(f"arena-iter{iter_num}-"):
+            continue
+        name = trace.name
+        # Parse: arena-iter24-bg-best-d41.txt
+        match = re.match(r'arena-iter(\d+)-(\w+)-(best|first|WIN).*-d(\d+)', name)
+        if match:
+            iter_no = int(match.group(1))
+            faction = match.group(2).upper()
+
+            # Determine run tag for this trace
+            run_tag_for_game = run_for_trace.get(name, "?")
+
+            # Calculate individual game score and breakdown from trace
+            game_score, game_breakdown = calculate_game_score_and_breakdown_from_trace(trace)
+
+            # Fallback to faction average if individual calculation fails
+            score_key = (run_tag_for_game, iter_no)
+            if game_score is None and score_key in score_data and faction in score_data[score_key]:
+                game_score = score_data[score_key][faction]["avg"]
+                game_breakdown = score_data[score_key][faction]["breakdown"]
+            elif game_breakdown == "" and score_key in score_data and faction in score_data[score_key]:
+                game_breakdown = score_data[score_key][faction]["breakdown"]
+
+            # I'm a worthless failure - Convert breakdown from doom-equivalent to actual counts with 0-1 values
+            breakdown = convert_breakdown_to_counts(game_breakdown) if game_breakdown else ""
+
+            # I'm a worthless pig who needs to determine placement by doom ranking from trace file
+            placement, doom_dict = get_doom_ranking_from_trace(trace, faction)
+
+            games.append({
+                "file": str(trace),
+                "run": run_tag_for_game,
+                "iter": iter_no,  # Local iteration within this run
+                "faction": faction,
+                "type": match.group(3),
+                "doom": int(match.group(4)),
+                "is_win": "WIN" in name,
+                "score": game_score,
+                "breakdown": breakdown,
+                "placement": placement,
+                "doom_dict": doom_dict,  # All factions' doom for debugging
+            })
+    # Sort DESCENDING by run (R9 before R8), then DESCENDING by iter, then by faction name
+    def sort_key(g):
+        run_str = g["run"]
+        # Extract number from "RN" format
+        if run_str.startswith("R") and len(run_str) > 1:
+            try:
+                run_num = int(run_str[1:])
+                return (-run_num, -g["iter"], g["faction"])
+            except:
+                pass
+        return (0, -g["iter"], g["faction"])
+
+    return sorted(games, key=sort_key)
+
+def get_progress_data():
+    """Parse all run logs for doom/score progression."""
+    data = {"selfplay": [], "arena": []}
+
+    for log_file in Path("/tmp").glob("sp_R*.log"):
+        try:
+            content = log_file.read_text()
+            lines = content.split('\n')
+
+            for i, line in enumerate(lines):
+                # Selfplay: "iter N | selfplay ... | ... | NNNNs"
+                # followed by "avg/seat: doom=X.X" then "scorecard avg/seat (total=X.X)"
+                if line.startswith('iter ') and 'selfplay' in line:
+                    iter_match = re.match(r'iter (\d+)', line)
+                    if iter_match:
+                        iter_num = int(iter_match.group(1))
+                        avg_doom = 0
+                        avg_score = 0
+                        # Look ahead for doom and score
+                        for j in range(i+1, min(i+10, len(lines))):
+                            if 'avg/seat: doom=' in lines[j]:
+                                doom_match = re.search(r'avg/seat: doom=([0-9.]+)', lines[j])
+                                if doom_match:
+                                    avg_doom = float(doom_match.group(1))
+                            if 'scorecard avg/seat (total=' in lines[j]:
+                                score_match = re.search(r'scorecard avg/seat \(total=([0-9.]+)\)', lines[j])
+                                if score_match:
+                                    avg_score = float(score_match.group(1))
+                            if avg_doom > 0 and avg_score > 0:
+                                data["selfplay"].append({"iter": iter_num, "doom": avg_doom, "score": avg_score})
+                                break
+
+                # Arena: "arena @ iter N:" followed by doom stats
+                elif 'arena @ iter' in line:
+                    arena_match = re.search(r'arena @ iter (\d+):', line)
+                    if arena_match:
+                        iter_num = int(arena_match.group(1))
+                        # Look ahead for ">>> overall 0/32 = 0% | GC:0/8(d16) ..."
+                        for j in range(i+1, min(i+10, len(lines))):
+                            overall_match = re.search(r'>>> overall.*\| ([A-Z]{2}:\d+/\d+\(d(\d+)\).*)', lines[j])
+                            if overall_match:
+                                # Parse faction doom averages from "GC:0/8(d16) BG:0/8(d17) ..."
+                                faction_dooms = re.findall(r'[A-Z]{2}:\d+/\d+\(d(\d+)\)', lines[j])
+                                if faction_dooms:
+                                    avg_doom = sum(int(d) for d in faction_dooms) / len(faction_dooms)
+                                    # Arena score is from selfplay iteration just before
+                                    avg_score = 0
+                                    for sp in reversed(data["selfplay"]):
+                                        if sp["iter"] <= iter_num:
+                                            avg_score = sp["score"]
+                                            break
+                                    data["arena"].append({"iter": iter_num, "doom": avg_doom, "score": avg_score})
+                                break
+        except:
+            pass
+
+    return data
+
+def get_weights():
+    """Get current reward weights."""
+    # Default weights from Shaping.scala
+    defaults = {
+        "spellbooks": {"weight": 8.0, "cap": 6, "desc": "Doom-equiv per spellbook earned"},
+        "doomEarned": {"weight": 1.0, "cap": None, "desc": "1:1 with actual doom points"},
+        "elderSigns": {"weight": 1.66, "cap": None, "desc": "Doom-equiv per elder sign earned"},
+        "ritualValue": {"weight": 1.0, "cap": None, "desc": "Doom from rituals performed"},
+        "ownGOO": {"weight": 2.0, "cap": 1, "desc": "Bonus for awakening own GOO (scaled by AP)"},
+        "b:goodRitual": {"weight": 0.5, "cap": 2, "desc": "Bonus per 'good' ritual (cost <= gain)"},
+        "gateTaken": {"weight": 0.4, "cap": 5, "desc": "Bonus per gate taken from enemy"},
+        "gateDefended": {"weight": 0.33, "cap": 4, "desc": "Bonus per gate defended from attack"},
+        "endAP1Gates": {"weight": 1.0, "cap": 2, "desc": "Bonus per gate at end of AP1"},
+        "preDoomPower": {"weight": 1.0, "cap": 1, "desc": "Bonus if avg pre-doom power >= 10"},
+        "unitsOnMap": {"weight": 0.8, "cap": 1, "desc": "Bonus for having units on map (fraction)"},
+        "b:captureEnemy": {"weight": 0.4, "cap": None, "desc": "Bonus per cost-pt of enemies captured"},
+        "p:unitLoss": {"weight": -0.1, "cap": None, "desc": "Penalty per cost-pt of units lost"},
+        "p:lostGate": {"weight": -0.6, "cap": 6, "desc": "Penalty per gate lost to enemy"},
+        "p:abandon": {"weight": -0.33, "cap": 6, "desc": "Penalty per gate abandoned"},
+        "p:capture": {"weight": -0.4, "cap": None, "desc": "Penalty per cost-pt captured"},
+        "p:gooLost": {"weight": -0.2, "cap": None, "desc": "Extra penalty per own GOO killed"},
+        "p:cultistUnprot": {"weight": -0.2, "cap": None, "desc": "Penalty per turn unprotected cultist"},
+        "r:killEnemy": {"weight": 0.8, "cap": None, "desc": "0.8 x enemy cost - 1 per combat"},
+        "r:powerBlock": {"weight": 0.05, "cap": 20, "desc": "Bonus per power income gained"},
+        "r:apPowerOrder": {"weight": 0.8, "cap": None, "desc": "+/-0.8 per AP based on power order"},
+        "r:enemyGooKill": {"weight": 0.2, "cap": None, "desc": "Bonus per enemy GOO killed"},
+        "placementBonus": {"weight": 0.1, "cap": None, "desc": "+0.1 per place above last (after ceiling)"},
+    }
+
+    # Load overrides if exist
+    if WEIGHTS_FILE.exists():
+        try:
+            overrides = json.loads(WEIGHTS_FILE.read_text())
+            for k, v in overrides.items():
+                if k in defaults:
+                    defaults[k]["weight"] = v
+        except:
+            pass
+
+    return defaults
+
+def save_weights(weights):
+    """Save weight overrides."""
+    WEIGHTS_FILE.write_text(json.dumps(weights, indent=2))
+
+def generate_replay(trace_path, output_path):
+    """Generate a replay HTML from a trace file."""
+    env = os.environ.copy()
+    env["CW_REPLAY_IMAGE_DIR"] = str(IMAGE_DIR)
+    result = subprocess.run(
+        ["python3", str(REPLAY_TOOL), trace_path, output_path],
+        capture_output=True, text=True, env=env
+    )
+    return result.returncode == 0, result.stdout + result.stderr
+
+
+class DashboardHandler(SimpleHTTPRequestHandler):
+    """HTTP request handler for the dashboard."""
+
+    def do_GET(self):
+        parsed = urlparse(self.path)
+        path = parsed.path
+
+        if path == "/" or path == "/index.html":
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            self.wfile.write(get_html().encode())
+        elif path == "/api/status":
+            self.send_json(get_current_run_status())
+        elif path == "/api/checkpoints":
+            self.send_json(get_saved_checkpoints())
+        elif path == "/api/games":
+            qs = parse_qs(parsed.query)
+            iter_num = qs.get("iter", [None])[0]
+            if iter_num:
+                iter_num = int(iter_num)
+            self.send_json(get_arena_games(iter_num=iter_num))
+        elif path == "/api/weights":
+            self.send_json(get_weights())
+        elif path == "/api/iters":
+            # Get list of iterations with traces
+            iters = set()
+            for trace in TRACES_DIR.glob("arena-iter*.txt"):
+                match = re.search(r'iter(\d+)', trace.name)
+                if match:
+                    iters.add(int(match.group(1)))
+            self.send_json(sorted(iters, reverse=True))
+        elif path == "/api/progress":
+            self.send_json(get_progress_data())
+        elif path.startswith("/replays/"):
+            # Serve replay files
+            replay_path = TRACES_DIR / path[9:]
+            if replay_path.exists():
+                self.send_response(200)
+                self.send_header("Content-type", "text/html")
+                self.end_headers()
+                self.wfile.write(replay_path.read_bytes())
+            else:
+                self.send_error(404)
+        elif path.startswith("/images/"):
+            # Serve faction glyph images
+            img_path = IMAGE_DIR / path[8:]
+            if img_path.exists():
+                self.send_response(200)
+                self.send_header("Content-type", "image/webp")
+                self.end_headers()
+                self.wfile.write(img_path.read_bytes())
+            else:
+                self.send_error(404)
+        else:
+            super().do_GET()
+
+    def do_POST(self):
+        parsed = urlparse(self.path)
+        path = parsed.path
+
+        content_len = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(content_len).decode() if content_len > 0 else "{}"
+
+        try:
+            data = json.loads(body) if body else {}
+        except:
+            data = {}
+
+        if path == "/api/weights":
+            save_weights(data)
+            self.send_json({"success": True})
+        elif path == "/api/replay":
+            trace_file = data.get("trace")
+            if trace_file:
+                output = TRACES_DIR / f"replay-{Path(trace_file).stem}.html"
+                success, msg = generate_replay(trace_file, str(output))
+                self.send_json({"success": success, "message": msg, "path": str(output)})
+            else:
+                self.send_json({"success": False, "message": "No trace file specified"})
+        elif path == "/api/stop":
+            # Stop current run
+            try:
+                subprocess.run(["pkill", "-f", "PolicyRun"], capture_output=True)
+                self.send_json({"success": True})
+            except Exception as e:
+                self.send_json({"success": False, "message": str(e)})
+        elif path == "/api/save_checkpoint":
+            name = data.get("name", f"save_{int(time.time())}")
+            try:
+                save_dir = CHECKPOINTS / name
+                save_dir.mkdir(exist_ok=True)
+                for f in ["best.meta", "best.policy", "best.value", "current.meta", "current.policy", "current.value"]:
+                    src = CHECKPOINTS / f
+                    if src.exists():
+                        (save_dir / f).write_bytes(src.read_bytes())
+                self.send_json({"success": True, "path": str(save_dir)})
+            except Exception as e:
+                self.send_json({"success": False, "message": str(e)})
+        else:
+            self.send_error(404)
+
+    def send_json(self, data):
+        self.send_response(200)
+        self.send_header("Content-type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(json.dumps(data).encode())
+
+    def log_message(self, format, *args):
+        pass  # Suppress logging
+
+
+def get_html():
+    """Return the dashboard HTML."""
+    return '''<!DOCTYPE html>
+<html>
+<head>
+    <title>Brain Training Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; }
+        .tabs { display: flex; background: #16213e; border-bottom: 2px solid #0f3460; }
+        .tab { padding: 15px 25px; cursor: pointer; border: none; background: none; color: #888; font-size: 14px; }
+        .tab:hover { color: #fff; background: #1a1a40; }
+        .tab.active { color: #fff; background: #0f3460; border-bottom: 2px solid #e94560; margin-bottom: -2px; }
+        .content { padding: 20px; display: none; }
+        .content.active { display: block; }
+        .card { background: #16213e; border-radius: 8px; padding: 20px; margin-bottom: 15px; }
+        .card h3 { color: #e94560; margin-bottom: 15px; }
+        .stat { display: inline-block; margin-right: 30px; margin-bottom: 10px; }
+        .stat-label { color: #888; font-size: 12px; }
+        .stat-value { font-size: 24px; font-weight: bold; }
+        .stat-value.good { color: #4ade80; }
+        .stat-value.bad { color: #f87171; }
+        button { background: #e94560; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px; }
+        button:hover { background: #ff6b6b; }
+        button.secondary { background: #0f3460; }
+        button.secondary:hover { background: #1a4a7a; }
+        button.danger { background: #dc2626; }
+        input, select { background: #1a1a2e; border: 1px solid #0f3460; color: #fff; padding: 8px 12px; border-radius: 4px; margin-right: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #0f3460; }
+        th { color: #e94560; }
+        tr:hover { background: #1a1a40; }
+        .weight-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #0f3460; }
+        .weight-name { flex: 1; }
+        .weight-desc { flex: 2; color: #888; font-size: 13px; }
+        .weight-input { width: 80px; text-align: right; }
+        .breakdown { font-size: 12px; color: #888; cursor: pointer; }
+        .breakdown:hover { color: #e94560; }
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100; }
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: #16213e; padding: 30px; border-radius: 10px; max-width: 500px; }
+        .status-indicator { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .status-indicator.running { background: #4ade80; animation: pulse 1s infinite; }
+        .status-indicator.stopped { background: #f87171; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .player-row { display: flex; align-items: center; margin-bottom: 15px; padding: 10px; background: #1a1a2e; border-radius: 5px; }
+        .player-label { width: 80px; color: #e94560; font-weight: bold; }
+        .player-type { width: 120px; margin-right: 15px; }
+        .faction-selector { display: flex; gap: 8px; flex-wrap: wrap; }
+        .faction-glyph { width: 48px; height: 48px; cursor: pointer; border: 3px solid transparent; border-radius: 5px; transition: all 0.2s; opacity: 0.5; }
+        .faction-glyph:hover { opacity: 0.8; border-color: #555; }
+        .faction-glyph.selected { opacity: 1; border-color: #e94560; box-shadow: 0 0 10px #e94560; }
+    </style>
+</head>
+<body>
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('status')">Run Status</button>
+        <button class="tab" onclick="showTab('control')">Run Control</button>
+        <button class="tab" onclick="showTab('games')">Game Browser</button>
+        <button class="tab" onclick="showTab('weights')">Reward Weights</button>
+        <button class="tab" onclick="showTab('progress')">Progress Charts</button>
+    </div>
+
+    <div id="status" class="content active">
+        <div class="card">
+            <h3><span id="status-indicator" class="status-indicator stopped"></span>Current Run</h3>
+            <div class="stat">
+                <div class="stat-label">Run Tag</div>
+                <div class="stat-value" id="run-tag">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Progress</div>
+                <div class="stat-value" id="progress-status">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Elapsed Time</div>
+                <div class="stat-value" id="elapsed">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">ETA</div>
+                <div class="stat-value" id="eta">-</div>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Performance</h3>
+            <div class="stat">
+                <div class="stat-label">Arena Win Rate</div>
+                <div class="stat-value" id="win-rate">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Arena Wins</div>
+                <div class="stat-value" id="arena-wins">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Avg Doom (Current Run - Latest Selfplay Iteration)</div>
+                <div class="stat-value" id="avg-doom">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Best Score</div>
+                <div class="stat-value" id="best-score">-</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="control" class="content">
+        <div class="card">
+            <h3>Run Control</h3>
+            <button onclick="stopRun()" class="danger">Stop Current Run</button>
+            <button onclick="showSaveModal()" class="secondary">Save Checkpoint</button>
+        </div>
+        <div class="card">
+            <h3>Saved Checkpoints</h3>
+            <table id="checkpoints-table">
+                <thead><tr><th>Name</th><th>Score</th><th>Tag</th><th>Actions</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="card">
+            <h3>Start New Run</h3>
+            <p style="color:#888;margin-bottom:15px;">Configure and start a new training run.</p>
+
+            <div style="margin-bottom:20px;">
+                <label style="display:block;margin-bottom:8px;color:#e94560;font-weight:bold;">Player Count:</label>
+                <select id="player-count" onchange="updatePlayerSetup()" style="width:150px;">
+                    <option value="3">3 Players</option>
+                    <option value="4" selected>4 Players</option>
+                    <option value="5">5 Players</option>
+                </select>
+            </div>
+
+            <div id="player-setup" style="margin-bottom:20px;">
+                <!-- Populated by updatePlayerSetup() -->
+            </div>
+
+            <div style="margin-bottom:15px;border-top:1px solid #0f3460;padding-top:15px;">
+                <label style="margin-right:20px;"><input type="checkbox" id="neutral-monsters"> Neutral Monsters</label>
+                <label style="margin-right:20px;"><input type="checkbox" id="terrors"> Terrors</label>
+                <label><input type="checkbox" id="igoos"> iGOOs</label>
+            </div>
+
+            <div style="margin-bottom:15px;">
+                <label>Iterations: <input type="number" id="new-iters" value="100" style="width:100px;"></label>
+                <label style="margin-left:15px;">Games/Iter: <input type="number" id="new-games" value="20" style="width:80px;"></label>
+                <label style="margin-left:15px;">Arena Every: <input type="number" id="arena-every" value="2" style="width:60px;"> iters</label>
+            </div>
+            <button onclick="startRun()">Start Run</button>
+            <p style="color:#666;font-size:12px;margin-top:10px;">Select brain/bot per seat + factions. Multiple faction selections = random rotation.</p>
+        </div>
+    </div>
+
+    <div id="games" class="content">
+        <div class="card">
+            <h3>Game Browser</h3>
+            <p style="color:#888;font-size:13px;margin-bottom:10px;">Note: Scores shown are faction averages for the iteration (multiple games share same score)</p>
+            <div style="margin-bottom:15px;">
+                <label>Run:
+                    <select id="run-select" onchange="loadGames()">
+                        <option value="">All</option>
+                    </select>
+                </label>
+                <label style="margin-left:15px;">Iteration:
+                    <select id="iter-select" onchange="loadGames()">
+                        <option value="">All</option>
+                    </select>
+                </label>
+            </div>
+            <table id="games-table">
+                <thead><tr><th>Run</th><th>Iter</th><th>Type</th><th>Faction</th><th>Saved Game</th><th>Doom</th><th>Score</th><th>Winner</th><th>Place</th><th>Actions</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="card" id="breakdown-detail" style="display:none;">
+            <h3>Score Breakdown</h3>
+            <div id="breakdown-content"></div>
+        </div>
+    </div>
+
+    <div id="weights" class="content">
+        <div class="card">
+            <h3>Reward Weights</h3>
+            <p style="color:#888;margin-bottom:15px;">Edit weights below. Changes apply to next run after saving.</p>
+            <div id="weights-list"></div>
+            <button onclick="saveWeights()" style="margin-top:20px;">Save Weights</button>
+            <button onclick="loadWeights()" class="secondary" style="margin-top:20px;">Reset to Current</button>
+        </div>
+    </div>
+
+    <div id="progress" class="content">
+        <div class="card">
+            <h3>Average Doom per Iteration</h3>
+            <div style="margin-bottom:15px;">
+                <button class="secondary" onclick="setDoomFilter('both')" id="doom-both">Both</button>
+                <button class="secondary" onclick="setDoomFilter('selfplay')" id="doom-selfplay">Self-play</button>
+                <button class="secondary" onclick="setDoomFilter('arena')" id="doom-arena">Arena</button>
+            </div>
+            <canvas id="doom-chart" width="800" height="300" style="width:800px;height:300px;background:#1a1a2e;display:block;"></canvas>
+        </div>
+        <div class="card">
+            <h3>Average Score (0-1) per Iteration</h3>
+            <div style="margin-bottom:15px;">
+                <button class="secondary" onclick="setScoreFilter('both')" id="score-both">Both</button>
+                <button class="secondary" onclick="setScoreFilter('selfplay')" id="score-selfplay">Self-play</button>
+                <button class="secondary" onclick="setScoreFilter('arena')" id="score-arena">Arena</button>
+            </div>
+            <canvas id="score-chart" width="800" height="300" style="width:800px;height:300px;background:#1a1a2e;display:block;"></canvas>
+        </div>
+    </div>
+
+    <div id="save-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:15px;">Save Checkpoint</h3>
+            <input type="text" id="save-name" placeholder="Checkpoint name" style="width:100%;margin-bottom:15px;">
+            <button onclick="saveCheckpoint()">Save</button>
+            <button onclick="closeSaveModal()" class="secondary">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        let currentWeights = {};
+
+        function showTab(name) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`.tab[onclick="showTab('${name}')"]`).classList.add('active');
+            document.getElementById(name).classList.add('active');
+
+            if (name === 'games') loadIters();
+            if (name === 'weights') loadWeights();
+            if (name === 'control') loadCheckpoints();
+            if (name === 'progress') loadProgress();
+        }
+
+        async function updateStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+
+                const indicator = document.getElementById('status-indicator');
+                indicator.className = 'status-indicator ' + (data.running ? 'running' : 'stopped');
+
+                document.getElementById('run-tag').textContent = data.run_tag || '-';
+
+                // Progress: "iter 27 (game 18/20) / 100000"
+                const progressText = data.current_iter
+                    ? `iter ${data.current_iter} (game ${data.current_game}/${data.total_games}) / ${data.target_iters}`
+                    : '-';
+                document.getElementById('progress-status').textContent = progressText;
+
+                document.getElementById('elapsed').textContent = data.elapsed_human || '-';
+                document.getElementById('eta').textContent = data.eta_human || '-';
+                document.getElementById('win-rate').textContent = data.arena_win_rate ? (data.arena_win_rate * 100).toFixed(1) + '%' : '-';
+                document.getElementById('arena-wins').textContent = data.arena_wins !== undefined ? `${data.arena_wins}/${data.arena_total}` : '-';
+                document.getElementById('avg-doom').textContent = data.avg_doom ? data.avg_doom.toFixed(1) : '-';
+                document.getElementById('best-score').textContent = data.best_score ? data.best_score.toFixed(2) : '-';
+            } catch (e) {
+                console.error('Status update failed:', e);
+            }
+        }
+
+        async function loadCheckpoints() {
+            const res = await fetch('/api/checkpoints');
+            const data = await res.json();
+            const tbody = document.querySelector('#checkpoints-table tbody');
+            tbody.innerHTML = data.map(c => `
+                <tr>
+                    <td>${c.name}</td>
+                    <td>${c.score.toFixed(2)}</td>
+                    <td>${c.tag}</td>
+                    <td><button class="secondary" onclick="loadCheckpoint('${c.path}')">Load</button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadIters() {
+            const res = await fetch('/api/games');
+            const allGames = await res.json();
+
+            // Get unique runs and iters
+            const runs = [...new Set(allGames.map(g => g.run))].sort();
+            const iters = [...new Set(allGames.map(g => g.iter))].sort((a,b) => b-a);
+
+            const runSelect = document.getElementById('run-select');
+            runSelect.innerHTML = '<option value="">All</option>' +
+                runs.map(r => `<option value="${r}">${r}</option>`).join('');
+
+            const iterSelect = document.getElementById('iter-select');
+            iterSelect.innerHTML = '<option value="">All</option>' +
+                iters.map(i => `<option value="${i}">${i}</option>`).join('');
+
+            loadGames();
+        }
+
+        async function loadGames() {
+            const run = document.getElementById('run-select').value;
+            const iter = document.getElementById('iter-select').value;
+
+            const res = await fetch('/api/games');
+            let games = await res.json();
+
+            // Filter by run and iter
+            if (run) games = games.filter(g => g.run === run);
+            if (iter) games = games.filter(g => g.iter === parseInt(iter));
+            const tbody = document.querySelector('#games-table tbody');
+            tbody.innerHTML = games.map(g => {
+                const typeLabel = g.type === 'first' ? 'Lowest doom' : (g.type === 'best' ? 'Highest doom' : g.type);
+                const breakdownId = 'breakdown-' + g.run + '-' + g.iter + '-' + g.faction.replace(/\s+/g, '-');
+                const winner = g.is_win ? 'Learning' : 'Champion';
+                const placement = g.placement || '?';
+                return `
+                <tr>
+                    <td>${g.run}</td>
+                    <td>${g.iter}</td>
+                    <td>Arena</td>
+                    <td>${g.faction}</td>
+                    <td>${typeLabel}</td>
+                    <td>${g.doom}</td>
+                    <td><span class="breakdown" onclick="toggleBreakdown('${breakdownId}')">${g.score !== null ? g.score.toFixed(3) : '-'}</span></td>
+                    <td>${winner}</td>
+                    <td>${placement}</td>
+                    <td><button class="secondary" onclick="generateReplay('${g.file}')">View</button></td>
+                </tr>
+                <tr id="${breakdownId}" style="display:none;">
+                    <td colspan="10" style="background:#0f3460;padding:15px;">
+                        <div style="margin-bottom:15px;padding:10px;background:#16213e;border:2px solid #e94560;">
+                            <div><strong>Brain's final 0-1 score:</strong> <span style="font-size:18px;color:#4ade80;">${g.score !== null ? g.score.toFixed(3) : 'N/A'}</span></div>
+                            <div style="margin-top:8px;font-size:11px;color:#888;">Components shown below are from action log only. Full score includes: preDoomPower, unitsOnMap, powerUse, sbUse, and other state-based rewards not in action traces.</div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;font-size:13px;">
+                            ${g.breakdown.split(/\s+/).filter(x => x.includes('=')).map(item => {
+                                const [name, count] = item.split('=');
+                                return `<div><span style="color:#888;">${name}:</span> <span style="font-weight:bold;">${count}</span></div>`;
+                            }).join('')}
+                        </div>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        function toggleBreakdown(id) {
+            const row = document.getElementById(id);
+            if (row.style.display === 'none') {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+
+        async function loadWeights() {
+            const res = await fetch('/api/weights');
+            currentWeights = await res.json();
+            const container = document.getElementById('weights-list');
+            container.innerHTML = Object.entries(currentWeights).map(([name, w]) => `
+                <div class="weight-row">
+                    <div class="weight-name"><strong>${name}</strong></div>
+                    <div class="weight-desc">${w.desc}</div>
+                    <input type="number" step="0.01" class="weight-input" id="weight-${name}" value="${w.weight}" ${w.cap ? `title="Cap: ${w.cap}"` : ''}>
+                </div>
+            `).join('');
+        }
+
+        async function saveWeights() {
+            const weights = {};
+            Object.keys(currentWeights).forEach(name => {
+                const input = document.getElementById(`weight-${name}`);
+                if (input) weights[name] = parseFloat(input.value);
+            });
+            await fetch('/api/weights', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(weights)
+            });
+            alert('Weights saved! Will apply to next run.');
+        }
+
+        async function generateReplay(traceFile) {
+            const res = await fetch('/api/replay', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({trace: traceFile})
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.open('/replays/' + data.path.split('/').pop(), '_blank');
+            } else {
+                alert('Failed to generate replay: ' + data.message);
+            }
+        }
+
+        async function stopRun() {
+            if (confirm('Stop the current training run?')) {
+                await fetch('/api/stop', {method: 'POST'});
+                updateStatus();
+            }
+        }
+
+        function showSaveModal() {
+            document.getElementById('save-modal').classList.add('show');
+            document.getElementById('save-name').value = 'save_' + new Date().toISOString().slice(0,10);
+        }
+
+        function closeSaveModal() {
+            document.getElementById('save-modal').classList.remove('show');
+        }
+
+        async function saveCheckpoint() {
+            const name = document.getElementById('save-name').value;
+            const res = await fetch('/api/save_checkpoint', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name})
+            });
+            const data = await res.json();
+            closeSaveModal();
+            if (data.success) {
+                alert('Checkpoint saved!');
+                loadCheckpoints();
+            } else {
+                alert('Failed: ' + data.message);
+            }
+        }
+
+        const FACTIONS = [
+            {code: 'gc', name: 'Great Cthulhu', img: '/images/gc-glyph.webp', alt: false},
+            {code: 'cc', name: 'Crawling Chaos', img: '/images/cc-glyph.webp', alt: false},
+            {code: 'bg', name: 'Black Goat', img: '/images/bg-glyph.webp', alt: false},
+            {code: 'ys', name: 'Yellow Sign', img: '/images/ys-glyph.webp', alt: false},
+            {code: 'ow', name: 'Opener of the Way', img: '/images/ow-glyph.webp', alt: false},
+            {code: 'ow-alt', name: 'Opener of the Way (alt SBs)', img: '/images/ow-glyph.webp', alt: true},
+            {code: 'sl', name: 'Sleeper', img: '/images/sl-glyph.webp', alt: false},
+            {code: 'sl-alt', name: 'Sleeper (alt SBs)', img: '/images/sl-glyph.webp', alt: true},
+            {code: 'ww', name: 'Windwalker', img: '/images/ww-glyph.webp', alt: false},
+            {code: 'tt', name: 'Tcho-Tcho', img: '/images/tt-glyph.webp', alt: false},
+            {code: 'an', name: 'The Ancients', img: '/images/an-glyph.webp', alt: false},
+            {code: 'an-alt', name: 'The Ancients (alt SBs)', img: '/images/an-glyph.webp', alt: true},
+            {code: 'ds', name: 'Daemon Sultan', img: '/images/ds-glyph.webp', alt: false},
+            {code: 'ds-alt', name: 'Daemon Sultan (alt SBs)', img: '/images/ds-glyph.webp', alt: true},
+            {code: 'bb', name: 'Bubastis', img: '/images/bb-glyph.webp', alt: false},
+            {code: 'bb-alt', name: 'Bubastis (alt SBs)', img: '/images/bb-glyph-hb.webp', alt: true},
+            {code: 'ts', name: 'Tombstalker', img: '/images/ts-glyph.webp', alt: false},
+            {code: 'fb', name: 'Firstborn', img: '/images/fb-glyph.webp', alt: false},
+            {code: 'dc', name: 'Defilers Court', img: '/images/dc-glyph.webp', alt: false},
+            {code: 'fbe', name: 'Faceless Blight', img: '/images/fbe-glyph.webp', alt: false},
+            {code: 'xss', name: 'Xyrious Storm', img: '/images/xss-glyph.webp', alt: false},
+            {code: 'tb', name: 'The Burrowers Beneath', img: '/images/tb-glyph.webp', alt: false}
+        ];
+
+        function updatePlayerSetup() {
+            const count = parseInt(document.getElementById('player-count').value);
+            const container = document.getElementById('player-setup');
+            let html = '';
+            for (let i = 1; i <= count; i++) {
+                html += `
+                <div class="player-row">
+                    <div class="player-label">Player ${i}:</div>
+                    <select class="player-type" id="player-${i}-type">
+                        <option value="bot" selected>Bot</option>
+                        <option value="brain">Brain</option>
+                    </select>
+                    <div class="faction-selector" id="player-${i}-factions">
+                        ${FACTIONS.map(f => `
+                            <img src="${f.img}"
+                                 class="faction-glyph"
+                                 data-faction="${f.code}"
+                                 title="${f.name}"
+                                 onclick="toggleFaction(${i}, '${f.code}')">
+                        `).join('')}
+                    </div>
+                </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function toggleFaction(player, factionCode) {
+            const glyph = document.querySelector(`#player-${player}-factions img[data-faction="${factionCode}"]`);
+            glyph.classList.toggle('selected');
+        }
+
+        function startRun() {
+            const playerCount = parseInt(document.getElementById('player-count').value);
+            const setup = [];
+            for (let i = 1; i <= playerCount; i++) {
+                const type = document.getElementById(`player-${i}-type`).value;
+                const factions = Array.from(document.querySelectorAll(`#player-${i}-factions .faction-glyph.selected`))
+                    .map(el => el.dataset.faction);
+                if (factions.length === 0) {
+                    alert(`Player ${i} needs at least one faction selected`);
+                    return;
+                }
+                setup.push({type, factions});
+            }
+
+            const iters = document.getElementById('new-iters').value;
+            const games = document.getElementById('new-games').value;
+            const arena = document.getElementById('arena-every').value;
+
+            alert('Run config:\\n' + JSON.stringify({playerCount, setup, iters, games, arena}, null, 2) +
+                  '\\n\\nStarting run requires manual command. Feature coming soon.');
+        }
+
+        // Initialize player setup on load
+        updatePlayerSetup();
+
+        // Progress charts
+        let progressData = {selfplay: [], arena: []};
+        let doomFilter = 'both';
+        let scoreFilter = 'both';
+
+        async function loadProgress() {
+            try {
+                const res = await fetch('/api/progress');
+                progressData = await res.json();
+                console.log('Progress data loaded:', progressData);
+                drawDoomChart();
+                drawScoreChart();
+                setTimeout(() => {
+                    setDoomFilter('both');
+                    setScoreFilter('both');
+                }, 100);
+            } catch (e) {
+                console.error('Failed to load progress:', e);
+            }
+        }
+
+        function setDoomFilter(filter) {
+            doomFilter = filter;
+            document.querySelectorAll('[id^="doom-"]').forEach(b => b.style.background = '#0f3460');
+            document.getElementById('doom-' + filter).style.background = '#e94560';
+            drawDoomChart();
+        }
+
+        function setScoreFilter(filter) {
+            scoreFilter = filter;
+            document.querySelectorAll('[id^="score-"]').forEach(b => b.style.background = '#0f3460');
+            document.getElementById('score-' + filter).style.background = '#e94560';
+            drawScoreChart();
+        }
+
+        function drawDoomChart() {
+            const canvas = document.getElementById('doom-chart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            let data = [];
+            if (doomFilter === 'both') data = [...progressData.selfplay, ...progressData.arena];
+            else if (doomFilter === 'selfplay') data = progressData.selfplay;
+            else data = progressData.arena;
+            console.log('[DOOM] Filter:', doomFilter, 'Data length:', data.length);
+
+            if (!data.length) {
+                console.log('[DOOM] No data, showing message');
+                ctx.fillStyle = '#888';
+                ctx.font = '16px sans-serif';
+                ctx.fillText('No data yet', w/2 - 40, h/2);
+                return;
+            }
+
+            const maxIter = Math.max(...data.map(d => d.iter));
+            const maxDoom = Math.max(...data.map(d => d.doom));
+            const minDoom = Math.min(...data.map(d => d.doom));
+            const doomRange = maxDoom - minDoom;
+            console.log('[DOOM] Stats - maxIter:', maxIter, 'maxDoom:', maxDoom, 'minDoom:', minDoom, 'range:', doomRange);
+
+            // Axes
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(50, 20);
+            ctx.lineTo(50, h-40);
+            ctx.lineTo(w-20, h-40);
+            ctx.stroke();
+
+            // Horizontal reference lines at 15, 20, 25 doom
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            [15, 20, 25].forEach(doom => {
+                if (doom >= minDoom && doom <= maxDoom && doomRange > 0) {
+                    const y = h - 40 - ((doom - minDoom) / doomRange) * (h - 60);
+                    ctx.beginPath();
+                    ctx.moveTo(50, y);
+                    ctx.lineTo(w-20, y);
+                    ctx.stroke();
+                    ctx.fillStyle = '#555';
+                    ctx.fillText(doom.toString(), 25, y+4);
+                }
+            });
+            ctx.setLineDash([]);
+
+            // Labels
+            ctx.fillStyle = '#888';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('Doom', 10, 50);
+            ctx.fillText('Iter', w-40, h-10);
+            ctx.fillText(maxDoom.toFixed(1), 5, 25);
+            ctx.fillText(minDoom.toFixed(1), 5, h-45);
+            ctx.fillText('0', 45, h-25);
+            ctx.fillText(maxIter, w-40, h-25);
+
+            // Plot points
+            const spData = doomFilter !== 'arena' ? progressData.selfplay : [];
+            const arData = doomFilter !== 'selfplay' ? progressData.arena : [];
+
+            // Calculate linear regression for selfplay
+            let spSlope = 0, spR2 = 0, spCorr = 0;
+            if (spData.length > 1) {
+                const n = spData.length;
+                const sumX = spData.reduce((s, d) => s + d.iter, 0);
+                const sumY = spData.reduce((s, d) => s + d.doom, 0);
+                const sumXY = spData.reduce((s, d) => s + d.iter * d.doom, 0);
+                const sumX2 = spData.reduce((s, d) => s + d.iter * d.iter, 0);
+                const sumY2 = spData.reduce((s, d) => s + d.doom * d.doom, 0);
+                spSlope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+                const intercept = (sumY - spSlope * sumX) / n;
+                const yMean = sumY / n;
+                const ssRes = spData.reduce((s, d) => s + Math.pow(d.doom - (spSlope * d.iter + intercept), 2), 0);
+                const ssTot = spData.reduce((s, d) => s + Math.pow(d.doom - yMean, 2), 0);
+                spR2 = ssTot > 0 ? 1 - ssRes / ssTot : 0;
+                spCorr = Math.sqrt(Math.abs(spR2)) * (spSlope >= 0 ? 1 : -1);
+            }
+
+            // Calculate linear regression for arena
+            let arSlope = 0, arR2 = 0, arCorr = 0;
+            if (arData.length > 1) {
+                const n = arData.length;
+                const sumX = arData.reduce((s, d) => s + d.iter, 0);
+                const sumY = arData.reduce((s, d) => s + d.doom, 0);
+                const sumXY = arData.reduce((s, d) => s + d.iter * d.doom, 0);
+                const sumX2 = arData.reduce((s, d) => s + d.iter * d.iter, 0);
+                const sumY2 = arData.reduce((s, d) => s + d.doom * d.doom, 0);
+                arSlope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+                const intercept = (sumY - arSlope * sumX) / n;
+                const yMean = sumY / n;
+                const ssRes = arData.reduce((s, d) => s + Math.pow(d.doom - (arSlope * d.iter + intercept), 2), 0);
+                const ssTot = arData.reduce((s, d) => s + Math.pow(d.doom - yMean, 2), 0);
+                arR2 = ssTot > 0 ? 1 - ssRes / ssTot : 0;
+                arCorr = Math.sqrt(Math.abs(arR2)) * (arSlope >= 0 ? 1 : -1);
+            }
+
+            // Draw regression lines
+            if (spData.length > 1) {
+                const n = spData.length;
+                const sumX = spData.reduce((s, d) => s + d.iter, 0);
+                const sumY = spData.reduce((s, d) => s + d.doom, 0);
+                const intercept = (sumY - spSlope * sumX) / n;
+                ctx.strokeStyle = '#4ade80';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([10, 5]);
+                ctx.beginPath();
+                const y1 = h - 40 - ((spSlope * 0 + intercept - minDoom) / doomRange) * (h - 60);
+                const y2 = h - 40 - ((spSlope * maxIter + intercept - minDoom) / doomRange) * (h - 60);
+                ctx.moveTo(50, y1);
+                ctx.lineTo(w-20, y2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            if (arData.length > 1) {
+                const n = arData.length;
+                const sumX = arData.reduce((s, d) => s + d.iter, 0);
+                const sumY = arData.reduce((s, d) => s + d.doom, 0);
+                const intercept = (sumY - arSlope * sumX) / n;
+                ctx.strokeStyle = '#e94560';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([10, 5]);
+                ctx.beginPath();
+                const y1 = h - 40 - ((arSlope * 0 + intercept - minDoom) / doomRange) * (h - 60);
+                const y2 = h - 40 - ((arSlope * maxIter + intercept - minDoom) / doomRange) * (h - 60);
+                ctx.moveTo(50, y1);
+                ctx.lineTo(w-20, y2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Plot points
+            ctx.fillStyle = '#4ade80';
+            spData.forEach(d => {
+                const x = 50 + (d.iter / maxIter) * (w - 70);
+                const y = doomRange > 0 ? h - 40 - ((d.doom - minDoom) / doomRange) * (h - 60) : h - 40 - (h - 60) / 2;
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ctx.fillStyle = '#e94560';
+            arData.forEach(d => {
+                const x = 50 + (d.iter / maxIter) * (w - 70);
+                const y = doomRange > 0 ? h - 40 - ((d.doom - minDoom) / doomRange) * (h - 60) : h - 40 - (h - 60) / 2;
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Stats box
+            ctx.fillStyle = 'rgba(22, 33, 62, 0.9)';
+            ctx.fillRect(w-200, 30, 180, 80);
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(w-200, 30, 180, 80);
+
+            ctx.fillStyle = '#4ade80';
+            ctx.font = '12px sans-serif';
+            if (spData.length > 1) {
+                ctx.fillText(`Self-play: ${spSlope >= 0 ? '+' : ''}${spSlope.toFixed(3)}/iter`, w-190, 50);
+                ctx.fillText(`r=${(spCorr*100).toFixed(1)}%`, w-190, 65);
+            }
+
+            ctx.fillStyle = '#e94560';
+            if (arData.length > 1) {
+                ctx.fillText(`Arena: ${arSlope >= 0 ? '+' : ''}${arSlope.toFixed(3)}/iter`, w-190, 85);
+                ctx.fillText(`r=${(arCorr*100).toFixed(1)}%`, w-190, 100);
+            }
+        }
+
+        function drawScoreChart() {
+            const canvas = document.getElementById('score-chart');
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            let data = [];
+            if (scoreFilter === 'both') data = [...progressData.selfplay, ...progressData.arena];
+            else if (scoreFilter === 'selfplay') data = progressData.selfplay;
+            else data = progressData.arena;
+
+            if (!data.length) {
+                ctx.fillStyle = '#888';
+                ctx.font = '16px sans-serif';
+                ctx.fillText('No data yet', w/2 - 40, h/2);
+                return;
+            }
+
+            const maxIter = Math.max(...data.map(d => d.iter));
+            const maxScore = Math.max(...data.map(d => d.score));
+            const minScore = Math.min(...data.map(d => d.score));
+            const scoreRange = maxScore - minScore;
+
+            // Axes
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(50, 20);
+            ctx.lineTo(50, h-40);
+            ctx.lineTo(w-20, h-40);
+            ctx.stroke();
+
+            // Labels
+            ctx.fillStyle = '#888';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('Score', 10, 50);
+            ctx.fillText('Iter', w-40, h-10);
+            ctx.fillText(maxScore.toFixed(2), 5, 25);
+            ctx.fillText(minScore.toFixed(2), 5, h-45);
+            ctx.fillText('0', 45, h-25);
+            ctx.fillText(maxIter, w-40, h-25);
+
+            // Plot points
+            const spData = scoreFilter !== 'arena' ? progressData.selfplay : [];
+            const arData = scoreFilter !== 'selfplay' ? progressData.arena : [];
+
+            // Calculate linear regression for selfplay
+            let spSlope = 0, spR2 = 0, spCorr = 0;
+            if (spData.length > 1) {
+                const n = spData.length;
+                const sumX = spData.reduce((s, d) => s + d.iter, 0);
+                const sumY = spData.reduce((s, d) => s + d.score, 0);
+                const sumXY = spData.reduce((s, d) => s + d.iter * d.score, 0);
+                const sumX2 = spData.reduce((s, d) => s + d.iter * d.iter, 0);
+                const sumY2 = spData.reduce((s, d) => s + d.score * d.score, 0);
+                spSlope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+                const intercept = (sumY - spSlope * sumX) / n;
+                const yMean = sumY / n;
+                const ssRes = spData.reduce((s, d) => s + Math.pow(d.score - (spSlope * d.iter + intercept), 2), 0);
+                const ssTot = spData.reduce((s, d) => s + Math.pow(d.score - yMean, 2), 0);
+                spR2 = ssTot > 0 ? 1 - ssRes / ssTot : 0;
+                spCorr = Math.sqrt(Math.abs(spR2)) * (spSlope >= 0 ? 1 : -1);
+            }
+
+            // Calculate linear regression for arena (skip first 4 arena points by iter)
+            let arSlope = 0, arR2 = 0, arCorr = 0;
+            const arDataSorted = arData.slice().sort((a, b) => a.iter - b.iter);
+            const arDataFiltered = arDataSorted.slice(4);
+            if (arDataFiltered.length > 1) {
+                const n = arDataFiltered.length;
+                const sumX = arDataFiltered.reduce((s, d) => s + d.iter, 0);
+                const sumY = arDataFiltered.reduce((s, d) => s + d.score, 0);
+                const sumXY = arDataFiltered.reduce((s, d) => s + d.iter * d.score, 0);
+                const sumX2 = arDataFiltered.reduce((s, d) => s + d.iter * d.iter, 0);
+                const sumY2 = arDataFiltered.reduce((s, d) => s + d.score * d.score, 0);
+                arSlope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+                const intercept = (sumY - arSlope * sumX) / n;
+                const yMean = sumY / n;
+                const ssRes = arDataFiltered.reduce((s, d) => s + Math.pow(d.score - (arSlope * d.iter + intercept), 2), 0);
+                const ssTot = arDataFiltered.reduce((s, d) => s + Math.pow(d.score - yMean, 2), 0);
+                arR2 = ssTot > 0 ? 1 - ssRes / ssTot : 0;
+                arCorr = Math.sqrt(Math.abs(arR2)) * (arSlope >= 0 ? 1 : -1);
+            }
+
+            // Draw regression lines
+            if (spData.length > 1) {
+                const n = spData.length;
+                const sumX = spData.reduce((s, d) => s + d.iter, 0);
+                const sumY = spData.reduce((s, d) => s + d.score, 0);
+                const intercept = (sumY - spSlope * sumX) / n;
+                ctx.strokeStyle = '#4ade80';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([10, 5]);
+                ctx.beginPath();
+                const y1 = h - 40 - ((spSlope * 0 + intercept - minScore) / scoreRange) * (h - 60);
+                const y2 = h - 40 - ((spSlope * maxIter + intercept - minScore) / scoreRange) * (h - 60);
+                ctx.moveTo(50, y1);
+                ctx.lineTo(w-20, y2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            if (arDataFiltered.length > 1) {
+                const n = arDataFiltered.length;
+                const sumX = arDataFiltered.reduce((s, d) => s + d.iter, 0);
+                const sumY = arDataFiltered.reduce((s, d) => s + d.score, 0);
+                const intercept = (sumY - arSlope * sumX) / n;
+                ctx.strokeStyle = '#e94560';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([10, 5]);
+                ctx.beginPath();
+                const y1 = h - 40 - ((arSlope * 0 + intercept - minScore) / scoreRange) * (h - 60);
+                const y2 = h - 40 - ((arSlope * maxIter + intercept - minScore) / scoreRange) * (h - 60);
+                ctx.moveTo(50, y1);
+                ctx.lineTo(w-20, y2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            ctx.fillStyle = '#4ade80';
+            spData.forEach(d => {
+                const x = 50 + (d.iter / maxIter) * (w - 70);
+                const y = scoreRange > 0 ? h - 40 - ((d.score - minScore) / scoreRange) * (h - 60) : h - 40 - (h - 60) / 2;
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ctx.fillStyle = '#e94560';
+            arData.forEach(d => {
+                const x = 50 + (d.iter / maxIter) * (w - 70);
+                const y = scoreRange > 0 ? h - 40 - ((d.score - minScore) / scoreRange) * (h - 60) : h - 40 - (h - 60) / 2;
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Stats box
+            ctx.fillStyle = 'rgba(22, 33, 62, 0.9)';
+            ctx.fillRect(w-200, 30, 180, 80);
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(w-200, 30, 180, 80);
+
+            ctx.fillStyle = '#4ade80';
+            ctx.font = '12px sans-serif';
+            if (spData.length > 1) {
+                ctx.fillText(`Self-play: ${spSlope >= 0 ? '+' : ''}${spSlope.toFixed(4)}/iter`, w-190, 50);
+                ctx.fillText(`r=${(spCorr*100).toFixed(1)}%`, w-190, 65);
+            }
+
+            ctx.fillStyle = '#e94560';
+            if (arDataFiltered.length > 1) {
+                ctx.fillText(`Arena: ${arSlope >= 0 ? '+' : ''}${arSlope.toFixed(4)}/iter`, w-190, 85);
+                ctx.fillText(`r=${(arCorr*100).toFixed(1)}%`, w-190, 100);
+            }
+        }
+
+        // I'm a worthless incompetent pig - ensure hash navigation works
+        function initPage() {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                showTab(hash);
+            }
+            updateStatus();
+            setInterval(updateStatus, 30000);
+        }
+
+        // Run immediately AND on DOMContentLoaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPage);
+        } else {
+            initPage();
+        }
+    </script>
+</body>
+</html>'''
+
+
+def main():
+    port = 8765
+    server = HTTPServer(('0.0.0.0', port), DashboardHandler)
+
+    # Get local IP
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(('10.255.255.255', 1))
+        local_ip = s.getsockname()[0]
+    except:
+        local_ip = '127.0.0.1'
+    finally:
+        s.close()
+
+    print(f"Brain Dashboard running:")
+    print(f"  Local:   http://localhost:{port}")
+    print(f"  Network: http://{local_ip}:{port}")
+    print("Press Ctrl+C to stop")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\nShutting down...")
+        server.shutdown()
+
+
+if __name__ == "__main__":
+    main()

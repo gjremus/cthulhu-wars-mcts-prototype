@@ -158,6 +158,31 @@ class MCTSPolicy(
     // True when a policy net supplies move priors — selection then uses PUCT.
     private val usePUCT : Boolean = leaf.isInstanceOf[PolicyValueEval]
 
+    // ─── ENDGAME-ROLLOUT DEPTH LEVER (env-gated, 2026-08-05, user directive
+    //     "build more depth so it can get to end game") ─────────────────────────────
+    // The plateau's prime suspect: sims=160 expands one node per simulation, so the
+    // best line reaches well under a single action-phase of a ~960-decision game — the
+    // search NEVER sees the close, it just asks the value net to GUESS the position.
+    // That guess is exactly what "out-dooms everyone but can't finish" needs fixed.
+    //
+    // When CW_ENDGAME_ROLLOUT=<doom> is set, any search leaf whose position has already
+    // reached the late game (max doom across seats >= that threshold) is no longer valued
+    // by a net guess: the clone is PLAYED OUT to a REAL terminal with a fast greedy
+    // policy-net playout and scored by the true win/loss standing (win=1.0, else
+    // doom-scaled — the same Outcome.value the trainer uses). Early/mid leaves still use
+    // the value net (cheap), so throughput only pays the rollout cost where it matters —
+    // near the finish, where few decisions remain. Faction-agnostic (reads only doom +
+    // the shared policy net), so it transfers to bot-less factions.
+    //
+    // DEFAULT OFF (sentinel Int.MaxValue): with no env set the leaf path is byte-identical
+    // to the running champion/challengers, so building + compiling this never disturbs a
+    // live run. Activate later by relaunching a successor with CW_ENDGAME_ROLLOUT set.
+    private val EndgameRolloutDoom : Int = {
+        val e = System.getenv("CW_ENDGAME_ROLLOUT")
+        if (e == null || e.trim.isEmpty) Int.MaxValue
+        else try math.max(1, e.trim.toInt) catch { case _ : NumberFormatException => Int.MaxValue }
+    }
+
     /** Per-move prior from the policy net over `acts` at this decision, or null when
      *  not in policy mode (selection falls back to firstUnexpanded/UCB1). Read-only on
      *  the game, so it is safe on the shared clone during search. */
@@ -347,10 +372,20 @@ class MCTSPolicy(
             // One dot product per faction on the CURRENT leaf state — no playout.
             val cache = g.setup.map(f => f -> model.eval(g, f)).toMap
             f => cache.getOrElse(f, 0.5)
-        case PolicyValueEval(_, value) =>
+        case PolicyValueEval(pol, value) =>
+            // DEPTH LEVER: if this leaf is already in the late game, don't GUESS with the
+            // value net — play it out to a REAL finish with a greedy policy-net playout and
+            // score by the true terminal standing. `pol` (the search's own policy net) picks
+            // moves greedily, so the playout is fast and consistent with the tree's priors.
+            // Off (EndgameRolloutDoom = Int.MaxValue) unless CW_ENDGAME_ROLLOUT is set.
+            val maxDoom = g.setup.map(f => g.players(f).doom).max
+            if (maxDoom >= EndgameRolloutDoom) {
+                val w = Engine.rollout(g, leafSit, new GreedyPolicy(pol), RolloutDecisionCap)
+                terminalStanding(g, w)
+            }
             // AlphaZero leaf value: the value net if present, else a neutral 0.5 so the
             // search is driven purely by the policy prior + real terminal outcomes.
-            if (value == null) (_ => 0.5)
+            else if (value == null) (_ => 0.5)
             else { val cache = g.setup.map(f => f -> value.eval(g, f)).toMap; f => cache.getOrElse(f, 0.5) }
         case RolloutEval(policy) =>
             // Play the clone to a real end; g is now at game over. Use the DENSE

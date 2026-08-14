@@ -47,7 +47,38 @@ object Outcome {
     //
     // NonWinnerCeiling caps the whole losing band strictly below 1.0. Set to 0.90: high enough
     // that a near-win (≈0.78 shaping) reads as "almost there", but a real win (1.0) still wins.
-    private val NonWinnerCeiling = 0.90
+    //
+    // PLATEAU LEVER #3 (env-gated, 2026-08-01). The champion's plateau hypothesis is that the
+    // win/loss SEPARATION is too weak: a strong losing arena game shapes ≈0.68, so its label is
+    // 0.90×0.68 ≈ 0.61 vs a win's 1.0 — a gap of only ~0.39. Lowering the ceiling WIDENS that gap
+    // (e.g. 0.50 → strong loss tops ≈0.34, gap ≈0.66) so the value net learns a much sharper
+    // "winning is worth far more than almost-winning" signal. Env-gated with default 0.90 so the
+    // running champion (which sets no env) is byte-identical; the sandbox experiment sets
+    // CW_NONWINNER_CEILING to a lower value. Clamped to [0,1] — a garbage env can't corrupt the label.
+    // NEUTRALIZED 2026-08-04 (user directive: the "big score then kneecap it with the loss
+    // ceiling" mechanism was rejected — "CUT LITERALLY EVERY SCORE IN HALF … EXCEPT THE WIN").
+    // The loss is now held low BY CONSTRUCTION via the halved Shaping.DoomUnit (0.005), so the
+    // ceiling multiplier defaults to 1.0 (a no-op). Left env-overridable for experiments, but
+    // the design no longer relies on it — a losing seat's label IS its (halved) shaping score.
+    private val NonWinnerCeiling : Double = {
+        val e = System.getenv("CW_NONWINNER_CEILING")
+        if (e == null || e.trim.isEmpty) 1.0
+        else try math.max(0.0, math.min(1.0, e.trim.toDouble)) catch { case _ : NumberFormatException => 1.0 }
+    }
+
+    // Stalemate penalty. A no-winner game (every seat stalled to the decision cap with nobody
+    // qualified → the engine declares "humanity won") is the FAILURE mode we are trying to
+    // punish, NOT reward. It gets multiplied on top of the non-winner ceiling, so a stalemated
+    // seat's label is StalematePenalty × NonWinnerCeiling × shaping — strictly below a real loss
+    // in a DECIDED game (where a genuine winner emerged and the loser at least played toward a
+    // resolvable outcome). Env-gated CW_STALEMATE_PENALTY, default 0.25: a draw is worth a
+    // quarter of the same shaping in a decided game, so the brain is pushed hard to CLOSE the
+    // game rather than farm doom to a truce. Clamped to [0,1]; a garbage env can't corrupt it.
+    private val StalematePenalty : Double = {
+        val e = System.getenv("CW_STALEMATE_PENALTY")
+        if (e == null || e.trim.isEmpty) 0.25
+        else try math.max(0.0, math.min(1.0, e.trim.toDouble)) catch { case _ : NumberFormatException => 0.25 }
+    }
 
     /** Terminal label for `me`: a true WINNER is 1.0 (unconditional — the win itself
      *  guarantees the top score); every non-winner gets the doom-equivalent shaping score
@@ -55,27 +86,38 @@ object Outcome {
      *  so 1.0 is unreachable without actually winning. Doom/spellbooks are counted once, in
      *  the shaping score — no separate end-game doom reward.
      *
-     *  PLATEAU LEVER (b), 2026-07-29 (R12 plateaued: best-checkpoint flat 4 iters @ 3.48,
-     *  doom settled ~22-23 well short of 30, arena 0/32). ROOT CAUSE: under weak self-play
-     *  most games hit the decision cap with NO faction qualified, so the engine declares
-     *  "humanity won" (winners empty). Every seat then gets a below-1.0 label — the net NEVER
-     *  sees a "THIS is winning" target, so nothing pulls doom toward 30. DOOM-RACE TERMINAL:
-     *  when there is no engine winner (the stalemate case ONLY), treat the highest-doom seat(s)
-     *  as the winner for the value label (1.0) — the real-CW endgame tiebreak (most doom wins).
-     *  A genuinely-decided game (winners.nonEmpty) is UNTOUCHED: its real winner is 1.0 and its
-     *  real losers stay capped below 1.0, so the user's hard rule ("impossible to reach 1
-     *  without winning") still holds for every game the engine actually decided. This gives
-     *  high-doom seats in stalemated games the win gradient the ES/SB-gated condition denies. */
+     *  STALEMATE PUNISHMENT 2026-08-02 (user directive: "punish stalemates hard"). HISTORY:
+     *  lever (b) added 2026-07-29 handed the highest-doom seat in a NO-WINNER game a full 1.0,
+     *  because back then NO game ever finished (weak self-play stalemated every time) and a flat
+     *  0.0-everywhere label gave the net no gradient. That band-aid EXPIRED the moment games
+     *  started finishing (40-65% now do): it was actively teaching "farm doom to a draw and still
+     *  score full marks" — the exact "out-dooms everyone but can't close" plateau. The 1.0 fallback
+     *  is REMOVED. A no-winner game is now the failure it is: its label is the shaping score,
+     *  multiplied by BOTH the non-winner ceiling AND a hard StalematePenalty, so a draw scores
+     *  strictly LESS than the same play in a game that actually resolved. A genuinely-decided game
+     *  (winners.nonEmpty) is untouched: real winner = 1.0, real loser = ceiling × shaping. This
+     *  makes closing the game out the only path to a high label — the incentive the brain needs to
+     *  stop truce-farming, and it generalizes to bot-less factions (no faction is named). */
     def valueShaped(game : Game, winners : $[Faction], me : Faction, shaping : Double) : Double = {
         if (winners.contains(me)) return 1.0
-        // Doom-race fallback: ONLY when the game ended with no engine winner (stalemate at cap).
-        if (winners.isEmpty) {
-            val doomByF = game.setup.map(f => f -> game.players(f).doom).toMap
-            val topDoom = doomByF.values.max
-            // Require a positive doom lead so a 0-doom stalemate doesn't hand out a spurious win.
-            if (topDoom > 0 && doomByF.getOrElse(me, 0) == topDoom) return 1.0
+        val capped = NonWinnerCeiling * math.max(0.0, math.min(1.0, shaping))
+
+        // PLACEMENT BONUS (user directive 2026-08-14): +0.1 per place above last, added AFTER
+        // the ceiling (so it can exceed 0.5). Rewards beating opponents even without winning.
+        // 3rd place (1 above last) = +0.1, 2nd = +0.2, 1st still 1.0 (handled above).
+        val placementBonus = if (winners.isEmpty) {
+            // Stalemate: no placement ranking possible, no bonus
+            StalematePenalty * capped
+        } else {
+            // Calculate placement by doom ranking
+            val allFactions = game.setup.toList
+            val doomRanking = allFactions.sortBy(f => -game.players(f).doom)
+            val myRank = doomRanking.indexOf(me)
+            val placesAboveLast = allFactions.size - 1 - myRank  // 0 for last, 1 for 3rd (4p), etc
+            val bonus = placesAboveLast * 0.1
+            capped + bonus
         }
-        NonWinnerCeiling * math.max(0.0, math.min(1.0, shaping))
+        placementBonus
     }
 
     // ─── STATE POTENTIAL Φ(s) — the immediate-reward fix (2026-07-29) ──────────────

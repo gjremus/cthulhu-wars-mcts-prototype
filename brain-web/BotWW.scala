@@ -1,0 +1,826 @@
+package cws
+
+import hrf.colmat._
+
+object BotWW extends BotX(implicit g => new GameEvaluationWW)
+
+class GameEvaluationWW(implicit game : Game) extends GameEvaluation(WW)(game) {
+    def eval(a : Action) : $[Evaluation] = {
+        var result : $[Evaluation] = $
+
+        implicit class condToEval(val bool : Boolean) {
+            def |=> (e : (Int, String)) { if (bool) result +:= Evaluation(e._1, e._2) }
+        }
+
+        def opposite = game.board.starting(self).but(game.starting(self)).head
+        def pole(r : Region) = game.board.starting(self).contains(r)
+
+        def canStrikeCC(r : Region) = (r.foes.got(Nyarlathotep) && CC.power > 0) || (CC.power > 1 && CC.allSB && r.near012.%(_.foes(Nyarlathotep).any).any)
+        def canStrikeGC(r : Region) = (r.foes.got(Cthulhu) && GC.power > 0) || (GC.power > 1 && GC.allSB && r.near.%(_.foes(Cthulhu).any).any) || (GC.power > 0 && GC.allSB && GC.at(GC.deep).any)
+
+        def checkAttack(r : Region, f : Faction, allies : $[UnitFigure], foes : $[UnitFigure], d : Int) {
+            val enemyStr = f.strength(foes, self)
+            val ownStr = adjustedOwnStrengthForCosmicUnity(self.strength(allies, f), allies, foes, opponent = f)
+
+            val igh = others.%(_.has(Necrophagy))./(_.all(Ghoul).diff(foes).num).sum
+
+            var ac = allies(Acolyte).num
+            var we = allies(Wendigo).num
+            var gk = allies(GnophKeh).num
+            val rha = allies.got(RhanTegoth)
+            val ith = allies.got(Ithaqua)
+
+            val rhas = rha.??(3)
+            val iths = ith.??((f.doom + 1) / 2)
+
+            var eby = foes.got(Byatis)
+            var eab = foes.got(Abhoth)
+            var eny = foes(Nyogtha).num
+            var egug = foes(Gug).num
+            var esht = foes(Shantak).num
+            var esv = foes(StarVampire).num
+            var efi = eab.??(foes(Filth).num)
+
+            f match {
+                case GC =>
+                    var ec = foes(Acolyte).num
+                    var dp = foes(DeepOne).num
+                    var sh = foes(Shoggoth).num
+                    var ss = foes(Starspawn).num
+                    var cth = foes.got(Cthulhu)
+
+                    if (cth) {
+                        if (ac > 0)
+                            ac -= 1
+                        else
+                        if (we > 0)
+                            we -= 1
+                        else
+                        if (gk > 0)
+                            gk -= 1
+                    }
+
+                    var shield = ac + we + gk
+
+                    val ownStr = adjustedOwnStrengthForCosmicUnity(we + gk * 3 + rhas + iths, allies, foes, opponent = f)
+
+                    var enemyStr = (f.has(Absorb) && sh > 0).?(ec * 3 + dp * 3).|(dp) + sh * 2 + ss * 3 + cth.??(6) + egug * 3 + esht * 2 + esv + eby.??(4) + eab.??(efi) + eny
+
+                    val enough1 = shield * 5 > enemyStr * 4 && ownStr >= foes.num * 3
+                    val enough2 = shield * 5 > enemyStr * 3 && ownStr >= 12
+
+                    enough1 && (cth || foes.num > 1) |=> 11000 -> "fight gc 1"
+                    enough2 && (cth || foes.num > 2) |=> 10000 -> "fight gc 2"
+
+                case BG =>
+                    var ec = foes(Acolyte).num
+                    var gh = foes(Ghoul).num
+                    var fu = foes(Fungi).num
+                    var dy = foes(DarkYoung).num
+                    var shu = foes.got(ShubNiggurath)
+
+                    var shield = ac + we + gk
+
+                    val ownStr = adjustedOwnStrengthForCosmicUnity(we + gk * 3 + rhas + iths, allies, foes, opponent = f)
+
+                    var enemyStr = ec * f.has(Frenzy).??(1) + fu + dy * 2 + shu.??(f.gates.num + f.all(Acolyte).num + f.all(DarkYoung).num * f.has(RedSign).??(1)) + egug * 3 + esht * 2 + esv + eby.??(4) + eab.??(efi) + eny
+
+                    val enough1 = shield * 5 > enemyStr * 4 && ownStr >= foes.num * 3
+                    val enough2 = shield * 5 > enemyStr * 3 && ownStr >= 12
+
+                    enough1 && (shu || dy - gh > 0 || foes.num - gh > 1) |=> 11000 -> "fight bg 1"
+                    enough2 && (shu || dy - gh > 0 || foes.num - gh > 2) |=> 10000 -> "fight bg 2"
+
+                case CC =>
+                    var ec = foes(Acolyte).num
+                    var ng = foes(Nightgaunt).num
+                    var fp = foes(FlyingPolyp).num
+                    var hh = foes(HuntingHorror).num
+                    var nya = foes.got(Nyarlathotep)
+
+                    var abd = f.has(Abduct).??(ng)
+
+                    while (abd > 0) {
+                        abd -= 1
+                        if (ac > 0)
+                            ac -= 1
+                        else
+                        if (we > 0)
+                            we -= 1
+                        else
+                        if (gk > 0)
+                            gk -= 1
+                    }
+
+                    var inv = f.has(Invisibility).??(fp)
+
+                    while (inv > 0) {
+                        inv -= 1
+                        if (gk > 0)
+                            gk -= 1
+                        else
+                        if (we > 0)
+                            we -= 1
+                        else
+                        if (ac > 0)
+                            ac -= 1
+                    }
+
+                    var shield = ac + we + gk + (rha && power > 1).??(1)
+
+                    if (!ith && gk == 0)
+                        shield *= 2
+
+                    val ownStr = adjustedOwnStrengthForCosmicUnity(we + gk * 3 + rhas + iths, allies, foes, opponent = f)
+
+                    var ihh = f.has(SeekAndDestroy).??(f.all(HuntingHorror).diff(foes).num)
+
+                    var enemyStr = fp + (hh + ihh) * 2 + nya.??(f.numSB + self.numSB) + egug * 3 + esht * 2 + esv + eby.??(4) + eab.??(efi) + eny
+
+                    val enough = shield * 5 > enemyStr * 4 && ownStr > foes.num * 3
+
+                    f.has(Invisibility) && fp == foes.num |=> -1000000 -> "invis"
+                    enemyStr > shield * 5 |=> -500000 -> "not enough shield"
+                    rha && nya && enough && (ownStr > 2 + (foes.num - 1) * 6 || (!f.active && ownStr > enemyStr && power > 1)) |=> 13000/d -> "rha attack nya"
+
+                    ith && ec < foes.num && enough |=> 12000/d -> "attack cc"
+                    ith && nya && enough |=> 19000/d -> "attack nya"
+                    hh == foes.num && enough && ownStr > 3 |=> 11000/d -> "attack hh"
+                    hh + fp == foes.num && enough && ownStr > 4 |=> 10000/d -> "attack hhfp"
+
+                    0 -> "todo"
+
+                case YS =>
+                    var ec = foes(Acolyte).num
+                    var un = foes(Undead).num
+                    var by = foes(Byakhee).num
+                    var kiy = foes.got(KingInYellow)
+                    var has = foes.got(Hastur)
+
+                    val shield = ac + we + gk
+
+                    val ownStr = adjustedOwnStrengthForCosmicUnity(we + gk * 3 + rhas + iths, allies, foes, opponent = f)
+
+                    val enemyStr = (un > 0).??(un - 1) + (by > 0).??(by + 1) + has.??(game.ritualCost) + egug * 3 + esht * 2 + esv + eby.??(4) + eab.??(efi) + eny
+
+                    val enough1 = shield * 5 > enemyStr * 4 && ownStr >= foes.num * 3
+                    val enough2 = shield * 5 > enemyStr * 3 && ownStr >= 12
+
+                    enough1 && !has && (kiy || foes.num > 1) |=> 11000 -> "fight ys 1"
+                    enough2 && !has && (kiy || foes.num > 1) |=> 10000 -> "fight ys 2"
+                    enough1 && has && !ith |=> 9000 -> "fight ys 3"
+
+                case SL =>
+                    var ec = foes(Acolyte).num
+                    var wz = foes(Wizard).num
+                    var sm = foes(SerpentMan).num
+                    var fs = foes(FormlessSpawn).num
+                    var tsa = foes.got(Tsathoggua)
+
+                    val shield = ac + we + gk
+
+                    val ownStr = adjustedOwnStrengthForCosmicUnity(we + gk * 3 + rhas + iths, allies, foes, opponent = f)
+
+                    val enemyStr = wz + sm + fs * (f.all(FormlessSpawn).num + f.all(Tsathoggua).num) + tsa.??(max(2, power - 1)) + egug * 3 + esht * 2 + esv + eby.??(4) + eab.??(efi) + eny
+
+                    val enough1 = shield * 5 > enemyStr * 4 && ownStr >= foes.num * 3
+                    val enough2 = shield * 5 > enemyStr * 3 && ownStr >= 12
+
+                    enough1 && (tsa || fs > 0 || foes.num > 1) |=> 11000 -> "fight sl 1"
+                    enough2 && (tsa || fs > 0 || foes.num > 2) |=> 10000 -> "fight sl 2"
+
+                case OW =>
+                    0 -> "todo"
+
+                case AN =>
+                    allies.goos.any && game.cathedrals.contains(r) && AN.has(UnholyGround) |=> -50000 -> "unholy ground with goo"
+                    AN.has(Extinction) && foes.num == 1 && foes(Yothan).any && ((rha && self.power > 1) || (ith && allies.num >= 3 && ownStr >= 6) || (allies.goos.none && ownStr >= 6)) |=> 1000 -> "attack lone extinct yothan"
+
+                case TS =>
+                    true |=> 0 -> "ts"
+
+                // Firstborn (FB): opponent combat evaluation
+                case FB =>
+                    true |=> 0 -> "fb"
+
+                // Daemon Sultan (DS): opponent combat evaluation
+                case DS =>
+                    0 -> "todo"
+            }
+        }
+
+        // Round 9: FB-awareness negative scores (see OTHER_BOTS_FB_STRATEGY.md).
+        // WW exception: Arctic Wind used for TRANSIT through a crater is OK —
+        // the destination is what matters, not the transit region. Since we
+        // only block destinations here (not transits), the exception is implicit.
+        a.unwrap match {
+            case MoveAction(_, _, _, r, _) =>
+                fbMoveAvoidance(r).foreach(e => true |=> e)
+            case BuildGateAction(_, r) =>
+                hasFBCrater(r) |=> -8000 -> "cannot build gate on FB crater"
+            case RecruitAction(_, _, r) =>
+                hasFBCrater(r) |=> -5000 -> "avoid recruiting at FB crater"
+            case SummonAction(_, _, r) =>
+                hasFBCrater(r) |=> -5000 -> "avoid summoning at FB crater"
+                (fbHasCG && isFBGazeRegion(r)) |=> -6000 -> "avoid summoning into FB gaze region"
+            case _ =>
+        }
+
+        a match {
+            case FirstPlayerAction(_, f) =>
+                f == self && areas.%(_.allies.goos.any).%(_.foes.goos.any).any |=> 100 -> "play first goos together"
+                f == self && allSB |=> 100 -> "play first all SB"
+                f == self |=> -50 -> "stall"
+
+                (game.factions.indexOf(f) - game.factions.indexOf(self)).abs == 2 |=> 10 -> "stall opposite"
+                f == CC && !CC.allSB |=> 1 -> "cc first"
+                CC.allSB |=> 1000 -> "first, cc allsb"
+
+            case PlayDirectionAction(_, order) =>
+                order(1).power < order.last.power |=> 100 -> "low power first"
+
+            case SpellbookAction(_, sb, _) => sb match {
+                case Cannibalism =>
+                    true |=> 1000 -> "must have if have rha and ith"
+                case Howl =>
+                    true |=> 700 -> "too good"
+                case ArcticWind =>
+                    true |=> 800 -> "very good"
+                    have(Ithaqua) |=> 1200 -> "must have if ith"
+                case Herald =>
+                    true |=> 900 -> "just good"
+                    have(Ithaqua) && have(RhanTegoth) |=> 1100 -> "must have if both goos"
+                case IceAge =>
+                    true |=> 1600 -> "almost good"
+                case Berserkergang =>
+                    true |=> 500 -> "not good"
+                case _ =>
+                    true |=> -1000 -> "unknown"
+            }
+
+            case RitualAction(_, cost, _) =>
+                instantDeathNow |=> 10000 -> "instant death now"
+                instantDeathNext && self.allSB && others.all(!_.allSB) |=> 10000 -> "ritual if ID next and all SB"
+
+                self.allSB && self.realDoom + maxDoomGain >= 30 |=> 1100 -> "can break 30, and all SB"
+                instantDeathNext && !self.allSB && others.%(_.allSB).any |=> -1000 -> "don't ritual if ID next and not all SB"
+                instantDeathNext && !self.allSB && others.all(!_.allSB) && self.realDoom < others./(_.aprxDoom).max |=> 900 -> "ritual so ID next and nobody wins"
+                !self.allSB && self.doom + self.gates.num >= 30 |=> -5000 -> "will break 30, but not all SB"
+                !self.allSB && self.doom + self.gates.num < 30 && self.realDoom <= 29 && self.realDoom + maxDoomGain >= 29 |=> 700 -> "won't break 30, but come near"
+                self.numSB >= 5 && cost * 2 <= power |=> 800 -> "5 SB and less than half available power"
+                self.numSB >= 2 && aprxDoomGain / cost > 1 |=> 600 -> "very sweet deal"
+                self.numSB >= 3 && aprxDoomGain / cost > 0.75 |=> 400 -> "sweet deal"
+                self.numSB >= 4 && aprxDoomGain / cost > 0.5 |=> 200 -> "ok deal"
+                cost == 5 |=> 100 -> "ritual first"
+                self.pool.goos.any |=> -200 -> "not all goos in play"
+                true |=> -250 -> "don't ritual unless have reasons"
+
+                !self.allSB |=> -1000 -> "spellbooks first"
+
+                self.pool.goos.none && cost == 5 |=> 2000 -> "very much"
+                power - cost > 13 |=> 2000 -> "very much"
+                power - cost > 10 && maxDoomGain > 4 |=> 1200 -> "much"
+                power - cost > 8 && maxDoomGain > 5 |=> 1100 -> "minimuch"
+
+            case NeutralMonstersAction(_, _) =>
+                true |=> -100000 -> "don't obtain loyalty cards (for now)"
+
+            // Azathoth Synthesis bidding — never let DS win; prefer power, fall back to doom
+            case AzathothSynthesisPowerAskAction(_, x, offers, forum, time, _, p) =>
+                val gap = x - offers./(_.n).sum
+                val panic = time <= forum.num
+                p == -1 && gap <= 0  |=>   2000 -> "target met skip"
+                p == -1 && gap > 0   |=> -50000 -> "refuse lets DS win"
+                p == 0 && !panic     |=> (5*5*5*5*5*5 * math.random()).round.toInt -> "wait for others"
+                p == 0 && panic      |=>  -8000 -> "panic must contribute"
+                p == 1               |=> (2*5*5*5*5*5 * math.random()).round.toInt -> "pay 1"
+                p == 2               |=> (2*2*5*5*5*5 * math.random()).round.toInt -> "pay 2"
+                p == 3               |=> (2*2*2*5*5*5 * math.random()).round.toInt -> "pay 3"
+                p == 4               |=> (2*2*2*2*5*5 * math.random()).round.toInt -> "pay 4"
+                p == 5               |=> (2*2*2*2*2*5 * math.random()).round.toInt -> "pay 5"
+                p >= 6               |=> (2*2*2*2*2*2 * math.random()).round.toInt -> "pay 6+"
+                p >= gap && panic    |=>  10000 -> "meet gap in panic"
+            case AzathothSynthesisDoomAskAction(_, x, offers, forum, time, _, p, d) =>
+                val gap = x - offers./(_.n).sum - p
+                val panic = time <= forum.num
+                d == -1 && gap <= 0  |=>   2000 -> "target met skip"
+                d == -1 && gap > 0   |=> -50000 -> "refuse lets DS win"
+                d == 0 && !panic     |=> (5*5*5*5*5*5 * math.random()).round.toInt -> "wait for others"
+                d == 0 && panic      |=>  -8000 -> "panic must contribute"
+                d == 1               |=> (2*5*5*5*5*5 * math.random()).round.toInt -> "pay 1"
+                d == 2               |=> (2*2*5*5*5*5 * math.random()).round.toInt -> "pay 2"
+                d == 3               |=> (2*2*2*5*5*5 * math.random()).round.toInt -> "pay 3"
+                d == 4               |=> (2*2*2*2*5*5 * math.random()).round.toInt -> "pay 4"
+                d == 5               |=> (2*2*2*2*2*5 * math.random()).round.toInt -> "pay 5"
+                d >= 6               |=> (2*2*2*2*2*2 * math.random()).round.toInt -> "pay 6+"
+                d >= gap && panic    |=>  10000 -> "meet gap in panic"
+
+            case DoomDoneAction(_) =>
+                true |=> 10 -> "doom done"
+
+            case PassAction(_) =>
+                true |=> -500 -> "wasting power bad"
+
+            case MoveDoneAction(_) =>
+                true |=> 1000 -> "move done"
+
+            case NextPlayerAction(_) =>
+                true |=> 0 -> "cancel"
+
+            case MoveAction(_, u, o, d, cost) if u.uclass == GnophKeh =>
+                true |=> -100 -> "gnophkeh dont move"
+                o.ownGate && o.foes.monsterly.active.any && o.allies.monsterly.num == 1 && o.allies.goos.none |=> -500 -> "dont abandon gate"
+                o.ownGate |=> -20 -> "leave own gate"
+
+            case MoveAction(_, u, o, d, cost) if u.uclass == Wendigo =>
+                o.allies(RhanTegoth).any |=> -200 -> "wendigo dont leave rha"
+                o.ownGate && o.foes.monsterly.active.any && o.allies.monsterly.num == 1 && o.allies.goos.none |=> -500 -> "dont abandon gate"
+                o.ownGate |=> -20 -> "leave own gate"
+
+            case MoveAction(_, u, o, d, cost) if u.uclass == RhanTegoth =>
+                self.has(ScreamingDead) && !oncePerRound.contains(ScreamingDead) |=> -1000 -> "dont walk just scream"
+
+                val protecting1 = o.ownGate && o.allies.goos.num == 1 && o.foes.goos.active.any
+                val protecting2 = o.ownGate && o.allies.goos.num == 1 && o.allies.monsterly.none && o.foes.monsterly.active.any
+                val protecting3 = o.ownGate && o.allies.goos.num == 1 && YS.power > 1 && YS.has(Hastur)
+                val protecting4 = o.ownGate && o.allies.goos.num == 1 && YS.power > 1 && o.near.%(_.foes(KingInYellow).any).any
+                val protecting5 = o.ownGate && o.allies.goos.num == 1 && BG.power > 0 && BG.has(ShubNiggurath) && o.allies.cultists.num == 1
+
+                val protecting = protecting1 || protecting2 || protecting3 || protecting4 || protecting5
+
+                d.enemyGate && !(protecting) && d.controllers.num == 1 && d.controllers.monsterly.none && d.foes.goos.none && d.owner.blind(self) && power > 2 |=> 950 -> "go get a gate"
+                d.enemyGate && !(protecting) && d.controllers.num == 2 && d.controllers.monsterly.none && d.foes.goos.none && d.owner.blind(self) && power > 3 |=> 900 -> "go get a gate"
+                true && !(protecting) && d.enemyGate && d.owner.at(d).goos.none && power > 2 |=> 450 -> "maybe capture"
+                true && !(protecting) && d.foes.%(_.vulnerableG).%(u => !u.faction.has(Devolve) || u.faction.pool(DeepOne).num >= u.faction.at(d).cultists.num).any && power > 2 |=> 180 -> "maybe capture"
+
+                !o.ownGate && d.ownGate && d.allies.goos.none && d.foes.active.goos.any |=> 1350 -> "protect gate"
+                o.ownGate && o.foes.active.goos.none && (have(Ithaqua) || o.foes.monsterly.active.none) && d.ownGate && d.allies.goos.none && d.foes.active.goos.any |=> 1300 -> "protect gate"
+
+                !o.ownGate && d.ownGate && others.%(_.power > 1).any |=> 350 -> "protect gate"
+
+                o.ownGate && o.foes.any && o.allies.monsterly.none |=> -2100 -> "protect gate"
+
+                power == 1 && o.allies(Ithaqua).any |=> -5000 -> "stay with ithaqua"
+
+                active.none && d.enemyGate && d.foes.goos.none |=> 150 -> "enemy gate imp"
+                active.none && d.near.%(n => n.enemyGate && n.foes.goos.none).any |=> 125 -> "enemy gate near imp"
+
+                d.ownGate && power == 1 |=> 100 -> "own gate"
+                d.freeGate && self.gates.num < self.cultists.num + self.pool.cultists.num |=> 75 -> "free gate"
+                d.enemyGate && d.controllers.num == 1 |=> 60 -> "enemy gate"
+                d.enemyGate |=> 50 -> "enemy gate"
+                d.allies.cultists.any |=> 25 -> "hug cultist"
+
+                game.cathedrals.contains(o) && AN.has(UnholyGround) && o.str(AN) > 0 && (AN.power > 0 || power == 1) |=> 50000 -> "flee from unholy ground"
+                game.cathedrals.contains(d) && AN.has(UnholyGround) && d.str(AN) > 0 && (AN.power > 0 || power < 3) |=> -50000 -> "beware unholy ground"
+
+            case MoveAction(_, u, o, d, cost) if u.uclass == Ithaqua =>
+                true |=> 100 -> "walk"
+
+                o.allies.cultists.any && need(OppositeGate) && game.board.distance(d, opposite) < game.board.distance(o, opposite) |=> 900 -> "go build opposite gate"
+                d.allies.num > o.allies.num |=> 600 -> "gather"
+                d.near.%(_.allies.num > o.allies.num).any |=> 300 -> "gather 2"
+                d.enemyGate && d.foes.num < o.allies.num && d.foes.goos.none |=> 400 -> "poke at gate"
+                d.enemyGate && d.foes.num < o.allies.num * 2 && d.foes.goos.none |=> 200 -> "poke at gate"
+                d.freeGate && o.allies.cultists.num > o.ownGate.??(1) && d.foes.goos.active.none |=> 6000 -> "free gate"
+                d.freeGate && o.allies.cultists.num > o.ownGate.??(1) && d.foes.goos.active.any |=> 1500 -> "free gate with goo"
+                o.foes.goos.any && active.%(f => f.strength(f.at(o), self) > o.allies.num * 2).any |=> 3000 -> "too hot"
+
+                o.ownGate && d.allies.num == 1 && d.allies.goos.any && d.foes.goos.none |=> -10000 -> "rha will manage"
+
+                o.ownGate && o.foes.active.goos.none && d.ownGate && d.allies.goos.none && d.foes.active.goos.any |=> 1300 -> "protect gate"
+
+                game.cathedrals.contains(o) && AN.has(UnholyGround) && o.str(AN) > 0 && (AN.power > 0 || power == 1) |=> 50000 -> "flee from unholy ground"
+                game.cathedrals.contains(d) && AN.has(UnholyGround) && d.str(AN) > 0 && (AN.power > 0 || power < 3) |=> -50000 -> "beware unholy ground"
+
+            case ArcticWindAction(_, o, u, r) if u.uclass == Acolyte =>
+                val awMovers = self.at(o).num
+                fbMultiMoveAvoidance(r, awMovers).foreach(e => true |=> e)
+                true |=> 100 -> "move a"
+                o.ownGate && o.allies.cultists.num == 1 && (o.allies.goos.any || o.foes.active.goos.none) |=> -1000 -> "leave gate keeper"
+
+            case ArcticWindAction(_, o, u, r) if u.uclass == Wendigo =>
+                val awMovers = self.at(o).num
+                fbMultiMoveAvoidance(r, awMovers).foreach(e => true |=> e)
+                true |=> 200 -> "move w"
+
+            case ArcticWindAction(_, o, u, r) if u.uclass == GnophKeh =>
+                val awMovers = self.at(o).num
+                fbMultiMoveAvoidance(r, awMovers).foreach(e => true |=> e)
+                true |=> 300 -> "move gk"
+
+            case ArcticWindAction(_, o, u, r) if u.uclass == RhanTegoth =>
+                val awMovers = self.at(o).num
+                fbMultiMoveAvoidance(r, awMovers).foreach(e => true |=> e)
+                o.ownGate |=> -2000 -> "stay on gate"
+                o.noGate |=> 1000 -> "move no gate"
+
+            case MoveAction(_, u, o, d, cost) if u.uclass == Acolyte =>
+                u.onGate |=> -10 -> "on gate"
+
+                // Adjusted to stop moving cultist if they will be captured at opposite pole
+                need(OppositeGate) && opposite.capturers.%(_.active).none && self.cultists.num == 6 && game.board.distance(d, opposite) < game.board.distance(o, opposite) && game.board.distance(d, opposite) == 0 |=> 900 -> "go build opposite gate"
+                need(OppositeGate) && opposite.capturers.%(_.active).none && self.cultists.num == 6 && game.board.distance(d, opposite) < game.board.distance(o, opposite) && game.board.distance(d, opposite) == 1 |=> 800 -> "go build opposite gate"
+                need(OppositeGate) && opposite.capturers.%(_.active).none && self.cultists.num == 6 && game.board.distance(d, opposite) < game.board.distance(o, opposite) && game.board.distance(d, opposite) == 2 |=> 700 -> "go build opposite gate"
+                need(OppositeGate) && opposite.capturers.%(_.active).none && self.cultists.num == 6 && game.board.distance(d, opposite) < game.board.distance(o, opposite) && game.board.distance(d, opposite) == 3 |=> 600 -> "go build opposite gate"
+
+                !u.gateKeeper && d.freeGate && d.allies.cultists.none && self.gates.num < self.allInPlay.%(_.canControlGate).num && d.allies.goos.any && d.foes.goos.active.none |=> 5500 -> "ic free gate"
+                !u.gateKeeper && d.freeGate && d.allies.cultists.none && self.gates.num < self.allInPlay.%(_.canControlGate).num && d.capturers.none |=> 1400 -> "ic free gate"
+                !u.gateKeeper && d.freeGate && d.allies.cultists.none && self.gates.num < self.allInPlay.%(_.canControlGate).num && self.iceAge.has(d) && d.capturers.%(_.power > 1).none |=> 1400 -> "ic free ice gate"
+
+            case AttackAction(_, r, f, _) if f.neutral =>
+                true |=> -100000 -> "don't attack uncontrolled filth (for now)"
+
+            case AttackAction(_, r, f, _) =>
+                val allies = self.at(r)
+                val foes = f.at(r)
+
+                val enemyStr = f.strength(foes, self)
+                val ownStr = adjustedOwnStrengthForCosmicUnity(self.strength(allies, f), allies, foes, opponent = f)
+
+                checkAttack(r, f, allies, foes, 1)
+
+                f.has(Abhoth) && enemyStr == 0 && ownStr >= foes(Filth).num * 2 |=> 200 -> "get rid of filth"
+                f.has(Abhoth) && f.has(TheBrood) && enemyStr == 0 && ownStr >= foes(Filth).num * 2 |=> 400 -> "get rid of brood filth"
+
+            case CaptureAction(_, r, f, _) =>
+                r.enemyGate && f == r.owner && r.controllers.num == 1 && r.allies.cultists.none && r.foes.%(_.canControlGate).num > 1 |=> -700 -> "give gate away"
+                r.enemyGate && f == r.owner && r.controllers.num == 1 |=> 3000 -> "capture and open gate"
+                r.enemyGate && f == r.owner && r.controllers.num == 1 && f.power > 0 |=> 4000 -> "capture and open gate"
+                r.enemyGate && f == r.owner && r.controllers.num == 1 && f.has(CursedSlumber) && f.power > 0 && f.gates.%(_.glyph == Slumber).none |=> 7000 -> "capture and prevent slumber"
+                r.enemyGate && f == r.owner && r.controllers.num == 2 |=> 3000 -> "capture and nearly open gate"
+                true |=> 2000 -> "capture"
+                r.enemyGate |=> 100 -> "enemy gate"
+                power == 1 && oncePerRound.contains(ScreamingDead) |=> 6000 -> "capture now"
+
+            case BuildGateAction(_, r) =>
+                need(OppositeGate) && opposite == r && r.capturers.none && !(YS.power > 1 && r.allies.goos.none && r.near.%(_.foes(KingInYellow).any).any) |=> 2000 -> "build gate for sb"
+
+                r.allies(Ithaqua).any && power > 3 |=> -5000 -> "move ith"
+                r.allies(Ithaqua).any && power == 3 |=> 1200 -> "ith tied"
+
+                BG.has(ShubNiggurath) && BG.power > 0 && r.allies.cultists.num == 1 && r.allies.goos.none |=> -800 -> "shub in play and lone cultist"
+                GC.has(Dreams) && GC.power > 1 && r.allies.cultists.num == 1 && r.allies.goos.none |=> -700 -> "cthulhu ith dreams"
+                power >= 3 + maxEnemyPower && maxEnemyPower < 10 && r.capturers.none && !canStrikeCC(r) && !canStrikeGC(r) |=> 150 -> "building gates is ok"
+                self.gates.num <= 1 && !have(Ithaqua) && r.capturers.none && !canStrikeCC(r) && !canStrikeGC(r) |=> 500 -> "building gates is good"
+                self.gates.num <= 1 && r.allies(RhanTegoth).any && power > 5 |=> 400 -> "building gates is ok"
+                self.gates.num <= 1 && r.allies(Ithaqua).any && power > 5 |=> 400 -> "building gates is ok"
+
+            case RecruitAction(_, Acolyte, r) =>
+                need(OppositeGate) && opposite == r && r.allies.cultists.none && power > 3 |=> 2000 -> "build gate for sb"
+
+                r.capturers.%(_.power > 0).any |=> -2000 -> "don't recruit to be captured"
+                r.freeGate |=> 1700 -> "free gate"
+                r.freeGate && r.allies.goos.any && r.foes.goos.active.none |=> 5700 -> "free gate"
+                self.pool.cultists.num >= power && self.pool.goos.any |=> 300 -> "recover lost cultists"
+                self.pool.cultists.num >= power && r.allies.goos.any && r.allies.num == 1 |=> 250 -> "near goo 1"
+                self.pool.cultists.num >= power && r.allies.goos.any && r.allies.num == 2 |=> 240 -> "near goo 2"
+                self.pool.cultists.num >= power && r.allies.goos.any && r.allies.num == 3 |=> 230 -> "near goo 3"
+                self.pool.cultists.num >= power && r.allies.goos.any && r.allies.num == 4 |=> 220 -> "near goo 4"
+                self.pool.cultists.num >= power && r.allies.goos.any && r.allies.num == 5 |=> 210 -> "near goo 5"
+                self.pool.cultists.num >= power && r.allies.goos.any && r.allies.num == 6 |=> 200 -> "near goo 6"
+                self.pool.cultists.num >= power && r.allies.goos.any && r.allies.num == 7 |=> 190 -> "near goo 7"
+                self.pool.cultists.num >= power && r.allies.goos.any && r.allies.num == 8 |=> 180 -> "near goo 8"
+                r.ownGate && r.allies.cultists.num == 1 |=> -100 -> "cultists not friends"
+                r.ownGate && r.allies.cultists.num == 2 |=> -200 -> "cultists not friends"
+                r.ownGate && r.allies.cultists.num >= 3 |=> -250 -> "own gate"
+
+            case RecruitAction(_, HighPriest, r) =>
+                true |=> -100000 -> "inactivated"
+
+            case SummonAction(_, Wendigo, r) =>
+                r.allies(Ithaqua).any |=> 450 -> "summon to ith"
+                r.allies(RhanTegoth).any |=> 50 -> "summon to rha"
+
+                pole(r) && !have(Ithaqua) && r.allies.cultists.num > 1 |=> 200 -> "army for ith"
+                pole(r) && !have(Ithaqua) && r.allies.cultists.num > 2 |=> 210 -> "army for ith"
+                pole(r) && !have(Ithaqua) && r.allies.monsterly.num > 0 |=> 220 -> "army for ith"
+                pole(r) && !have(Ithaqua) && r.allies.monsterly.num > 1 |=> 230 -> "army for ith"
+                pole(r) && !have(Ithaqua) && r.allies.monsterly.num > 2 |=> 240 -> "army for ith"
+                pole(r) && !have(Ithaqua) && r.allies.monsterly.num > 3 |=> 250 -> "army for ith"
+
+                r.controllers.num == 1 && r.foes.monsterly.any && r.foes.goos.none && !have(Ithaqua) |=> 60 -> "prevent losing gate"
+                r.controllers.num == 1 && r.controllers.%(_.capturable).any && r.foes.goos.none && !have(Ithaqua) |=> 600 -> "prevent losing gate"
+                r.controllers.num == 1 && r.allies.num == 1 && r.foes.goos.none && r.foes.monsterly.active.any && !have(Ithaqua) |=> 4200 -> "prevent losing gate"
+                r.allies.goos.num == 2 && r.foes.goos.any |=> 9000 -> "summon for defense"
+
+            case SummonAction(_, GnophKeh, r) =>
+                val cost = self.summonCost(GnophKeh, r)
+                r.allies(Ithaqua).any |=> 100 -> "summon to ith"
+                r.allies(RhanTegoth).any |=> 50 -> "summon to rha"
+                !have(Ithaqua) |=> -200 -> "no ithaqua no gnophkeh"
+                cost == 4 && r.allies(Ithaqua).any && power >= others./(_.power).max |=> 250 -> "only when leading on power"
+                cost == 3 && r.allies(Ithaqua).any |=> 500 -> "only to ith"
+                cost == 2 && r.allies(Ithaqua).any |=> 1000 -> "yes"
+                cost == 1 && r.allies(Ithaqua).any |=> 2000 -> "very yes"
+
+            case AwakenAction(_, RhanTegoth, r, _) =>
+                true |=> -1000 -> "awaken rha"
+
+                power > 6 && need(OppositeGate) && r == opposite && r.allies.cultists.any |=> 4000 -> "awaken to cultist"
+                power > 6 && need(OppositeGate) && r == opposite && self.pool.cultists.any |=> 3000 -> "awaken to recruit"
+
+                power > 6 && !need(OppositeGate) && r.allies.num >= 4 |=> 1500 -> "awaken to allies"
+                power > 5 && !need(OppositeGate) && r.ownGate && r.allies.cultists.num == 1 |=> 3000 -> "awaken to protect gate"
+                power > 7 && !need(OppositeGate) && r.enemyGate |=> 2000 -> "awaken at enemy gate"
+                power > 5 && !need(OppositeGate) && r.ownGate && r.foes.active.goos.any |=> 3500 -> "awaken to save gate"
+
+            case AwakenAction(_, Ithaqua, r, _) =>
+                power > 9 |=> 4000 -> "yes awaken"
+                power >= 9 && r.allies.monsterly.num >= 3 |=> 3400 -> "maybe awaken"
+                power >= 9 && self.pool(Wendigo).none |=> 3400 -> "maybe awaken"
+
+                r.allies.monsterly.none && self.pool(Wendigo).any |=> -5000 -> "no monsters"
+
+                r.allies(RhanTegoth).any && r.allies.notGOOs.num < 2 && canStrikeCC(r) |=> -6000 -> "nya can crush"
+                r.allies(RhanTegoth).none && r.allies.notGOOs.num < 4 && canStrikeCC(r) |=> -6000 -> "nya can crush"
+
+                r.allies(RhanTegoth).any && r.allies.notGOOs.num < 2 && canStrikeGC(r) |=> -6000 -> "cth can crush"
+                r.allies(RhanTegoth).none && r.allies.notGOOs.num < 4 && canStrikeGC(r) |=> -6000 -> "cth can crush"
+
+            case HibernateMainAction(_, n) =>
+                power == n |=> 1000 -> "optimal power"
+                power == n + 1 |=> 900 -> "if nothing better 1"
+                power == n + 2 |=> 40 -> "if nothing better 2"
+                power == n + 3 |=> 30 -> "if nothing better 3"
+                power == n + 4 |=> 20 -> "if nothing better 4"
+                power == n + 5 |=> 10 -> "if nothing better 5"
+                others.%(ofinale).any |=> -2000 -> (others.%(ofinale).mkString("/") + " ofinale")
+
+            case AnytimeGainElderSignsAction(_, n, _) =>
+                n == 3 |=> 10000000 -> "max es"
+                numSB == 5 && self.realDoom + n >= 30 |=> 10000000 -> "last sb over 30"
+                true |=> -1000 -> "delay"
+
+            case IceAgeAction(_, r) =>
+                def checkPos(r : Region, f : Int => Int) {
+                    r.ownGate && r.allies.goos.none |=> f(1100) -> "protect own gate"
+                    r.ownGate && r.foes.goos.active.any && r.allies.goos.none |=> f(1200) -> "protect own gate from goo"
+                    r.ownGate && r.foes.goos.active.any && r.allies.goos.any && active.%(f => f.strength(f.at(r), self) > r.allies.num * 2).any |=> f(1300) -> "protect own gate from goo attack goo"
+
+                    r.ownGate && r.allies.goos.none && YS.power > 1 && r.near.%(_.foes(KingInYellow).any).any |=> f(1000) -> "protect own gate from kiy"
+
+
+
+
+                    r.enemyGate && r.owner == GC && game.starting(GC) == r && GC.power == 10 && GC.needs(AwakenCthulhu) && !GC.has(Cthulhu) |=> f(2000) -> "prevent cth 10"
+                    r.enemyGate && r.owner == GC && game.starting(GC) == r && GC.power == 4 && !GC.needs(AwakenCthulhu) && !GC.has(Cthulhu) |=> f(1200) -> "prevent cth 4"
+
+                    r.enemyGate && r.owner == CC && CC.power == 10 && CC.gates.num == 1 && !CC.has(Nyarlathotep) |=> f(2000) -> "prevent nya"
+
+                    r.enemyGate && r.owner == BG && BG.power == 8 && BG.gates.num == 1 && !BG.has(ShubNiggurath) |=> f(1600) -> "prevent nya"
+
+                    r.enemyGate && r.owner == YS && YS.power == 10 && r.foes(KingInYellow).any && !YS.has(Hastur) |=> f(2100) -> "prevent has"
+
+                    SL.power == 8 && r.foes(FormlessSpawn).any && r.foes(FormlessSpawn).num == SL.all(FormlessSpawn).num && !SL.has(Tsathoggua) |=> f(1600) -> "prevent tsa"
+
+                    r.noGate && r.foes.cultists./(_.faction).%(f => f.power == 3 && f.goos.none).any |=> f(600) -> "prevent gate"
+
+                    YS.power > 0 && ofinale(YS) && !r.desecrated && r.foes(KingInYellow).any |=> f(7000) -> "prevent ys desecrate"
+
+                    GC.power > 0 && ofinale(GC) && game.starting(GC) == r && !GC.has(Cthulhu) |=> f(5000) -> "prevent gc reawaken"
+
+                    CC.power > 0 && ofinale(CC) && r.foes(Nyarlathotep).any && r.foes.goos.num > 1 |=> f(6000) -> "prevent gc reawaken"
+                }
+
+                active.none |=> -5000 -> "active none"
+
+                self.iceAge match {
+                    case None =>
+                        checkPos(r, x => x)
+                    case Some(o) =>
+                        checkPos(o, x => -(x + 1))
+                        checkPos(r, x => x)
+                }
+
+            case CannibalismAction(_, r, Acolyte) =>
+                r.allies.goos.any |=> 1000 -> "allied goo"
+                have(Ithaqua) && r.foes.goos.active.none |=> 800 -> "no active enemy goos"
+                r.freeGate && r.foes.active.none |=> 1200 -> "free gate"
+                r.freeGate && r.foes.goos.active.none && have(Ithaqua) |=> 1100 -> "free gate"
+                r.freeGate && r.allies.cultists.none && self.iceAge.has(r) && r.capturers.%(_.power > 1).none |=> 1400 -> "free ice gate"
+
+            case CannibalismAction(_, r, Wendigo) =>
+                true |=> 500 -> "ok"
+                r.allies.none && r.foes.active(Cthulhu).any |=> -1000 -> "dont feed cth"
+
+            case AvatarReplacementAction(_, _, r, o, u) =>
+                u.cultist && o.capturers.%(_.power > 0).any |=> -100 -> "don't send cultist to be captured"
+                u.cultist && o.capturers.none |=> 150 -> "no capturers"
+                u.cultist && o.capturers.any && o.capturers.%(_.power > 0).none |=> 100 -> "no capturers with power"
+                u.monsterly && o.foes.%(_.capturable).any && power > 0 |=> 200 -> "send to capture"
+                u.monsterly && u.friends.cultists.num > 1 && u.friends.monsterly.none && r.foes.monsterly./(_.faction).%(_ != BG).%(_.power > 0).any |=> -200 -> "dont sent temp defender"
+
+            case RevealESAction(_, es, false, _) if self.es != es =>
+                true |=> -10000 -> "better reveal all"
+
+            case RevealESAction(_, _, _, next) if next == DoomAction(self) =>
+                self.allSB && self.realDoom >= 30 |=> 1000 -> "reveal and try to win"
+                true |=> -100 -> "don't reveal"
+                canRitual |=> -2000 -> "ritual first"
+
+            case RevealESAction(_, _, _, _) =>
+                self.allSB && self.realDoom >= 30 |=> 1000 -> "reveal and try to win"
+                self.allSB && self.realDoom < 30 && self.realDoom < self.aprxDoom && self.realDoom < others./(_.aprxDoom).max |=> 900 -> "reveal bad ESs to take off heat"
+                !self.allSB && self.realDoom >= 30 && others.all(!_.allSB) && others./(_.aprxDoom).max >= 27 |=> 800 -> "reveal so 30 broken and nobody wins"
+                true |=> -100 -> "don't reveal"
+
+            case ThousandFormsAskAction(f, r, offers, _, _, _, p) =>
+                r < p + offers./(_.n).sum |=> -6*6*6*6*6*6 -> "dont overpay"
+                p == -1 && power >= f.power + r && !f.allSB |=> (4*4*4*4*4*4 * Math.random()).round.toInt -> "refuse pay"
+                p == 0 |=> (3*3*3*3*3*3 * Math.random()).round.toInt -> "pay 0"
+                p == 1 |=> (2*3*3*3*3*3 * Math.random()).round.toInt -> "pay 1"
+                p == 2 |=> (2*2*3*3*3*3 * Math.random()).round.toInt -> "pay 2"
+                p == 3 |=> (2*2*2*3*3*3 * Math.random()).round.toInt -> "pay 3"
+                p == 4 |=> (2*2*2*2*3*3 * Math.random()).round.toInt -> "pay 4"
+                p == 5 |=> (2*2*2*2*2*3 * Math.random()).round.toInt -> "pay 5"
+                p == 6 |=> (2*2*2*2*2*2 * Math.random()).round.toInt -> "pay 6"
+
+            case GhrothAskAction(_, _, _, _, _, _, n) =>
+                n == -1 |=> 1000 -> "refuse"
+                n == 0 |=> 1000 -> "wait"
+                n == 1 && have(Passion) |=> 2000 -> "cash passion"
+
+            case GhrothTargetAction(_, c, f, _) =>
+                c.friends.cultists.none && c.region.capturers.%(!_.blind(f)).any |=> 1000 -> "will be captured anyway"
+                c.gateKeeper |=> -900 -> "gate keeper"
+                c.friends.cultists.none && c.region.capturers.any |=> 800 -> "can be captured one"
+                c.friends.cultists.any && c.region.capturers.any |=> 700 -> "can be captured many"
+                c.friends.cultists.any |=> 600 -> "cultist friends"
+                c.friends.goos.any |=> -500 -> "goo huggers"
+
+            case GiveWorstMonsterAskAction(_, _, uc, r, _)  =>
+                result = eval(SummonAction(self, uc, r))
+
+            case GiveBestMonsterAskAction(_, _, uc, r, _)  =>
+                result = eval(SummonAction(self, uc, r))
+
+            case EndTurnAction(_) =>
+                (oncePerRound.contains(HWINTBN) || oncePerRound.contains(ScreamingDead)) && active.%(_.allSB).none |=> 5000 -> "double action done"
+                true |=> 500 -> "main done"
+
+            case ControlGateAction(_, r, u, _) =>
+                r.allies.%(_.onGate).foreach { c =>
+                    c.uclass == u.uclass |=> -1000000 -> "remain calm"
+                    c.uclass == HighPriest && u.uclass == Acolyte |=> 1000 -> "high priest not on gate"
+                }
+
+            case TSRemoveTomeAction(_, _) =>
+                true |=> 300 -> "remove face-down tome to avoid end-game doom penalty"
+
+            case TSSkipRemoveTomeAction(_) =>
+                true |=> -300 -> "keeping face-down tomes loses doom at game end"
+
+            case AbandonGateAction(_, _, _) =>
+                true |=> -1000000 -> "never"
+
+            case ControlGateAction(_, _, _, _) =>
+                true |=> 1000000 -> "always"
+
+            case _ if game.battle.none =>
+                // battle
+
+            case _ =>
+                true |=> 1000000 -> "todo"
+        }
+
+        // BATTLE
+        if (game.battle.any) {
+            if (game.battle./~(_.sides).has(self).not) {
+                a match {
+                    case _ =>
+                        true |=> 1000 -> "todo"
+                }
+            }
+            else {
+                implicit val battle = game.battle.get
+
+                val opponent = self.opponent
+                val allies = self.forces
+                val enemies = self.opponent.forces
+                val attacking = battle.attacker == self
+
+                def elim(u : UnitFigure) {
+                    u.is(Acolyte) |=> 800 -> "elim acolyte"
+                    u.is(RhanTegoth) && self.power > 1 |=> 500 -> "sacrifice rha"
+                    u.is(Wendigo) |=> 400 -> "elim wendigo"
+                    u.is(GnophKeh) |=> 200 -> "elim gnophkeh"
+                    u.is(RhanTegoth) && self.power == 0  |=> 100 -> "elim rha"
+                    u.is(Ithaqua) |=> -1 -> "elim ith"
+                }
+
+                def retreat(u : UnitFigure) {
+                    u.gateKeeper && self.forces./(battle.canAssignPains).sum > 2 |=> -1000 -> "retr gate keeper"
+                    u.is(Acolyte) |=> 800 -> "retr acolyte"
+                    u.is(GnophKeh) |=> 400 -> "retr gnophkeh"
+                    u.is(Wendigo) |=> 200 -> "retr wendigo"
+                    u.is(RhanTegoth) |=> -10000 -> "retr rha"
+                    u.is(Ithaqua) |=> -100000 -> "retr ith"
+                }
+
+                a match {
+                    case DevourAction(_, u) =>
+                        elim(u)
+
+                    case AbductAction(_, _, u) =>
+                        elim(u)
+
+                    case DemandSacrificeKillsArePainsAction(_) =>
+                        self.str < opponent.str |=> 1000 -> "less str"
+                        self.str > opponent.str |=> -1000 -> "more str"
+
+                    case DemandSacrificeProvideESAction(_) =>
+                        true |=> 0 -> "whatever"
+
+                    case UnholyGroundEliminateAction(_, _, u) =>
+                        u.uclass == RhanTegoth |=> 1000 -> "rha yes"
+                        u.uclass == Ithaqua |=> -1000 -> "ith no"
+
+                    case AssignKillAction(_, _, _, u) =>
+                        elim(u)
+
+                    case AssignPainAction(_, _, _, u) =>
+                        retreat(u)
+
+                    case EliminateNoWayAction(_, u) =>
+                        elim(u)
+
+                    case EternalPayAction(_, _, Kill) =>
+                        true |=> 1000 -> "save from kill"
+
+                    case EternalPayAction(_, _, Pain) =>
+                        true |=> -1000 -> "dont save from pain"
+
+                    case HowlPreBattleAction(_) =>
+                        attacking && enemies.num == 1 |=> -1000 -> "dont howl only foe"
+                        true |=> -100 -> "dont generally"
+
+                    case RetreatUnitAction(_, u, r) =>
+                        u.cultist && r.allies.monsterly.any |=> 1000 -> "send cultist to be protected by monsters"
+                        u.cultist && r.allies.goos.any |=> 2000 -> "send cultist to be protectd by goos"
+                        u.cultist && r.foes.none && r.ownGate |=> 300 -> "send cultist where no foes"
+                        u.cultist && r.foes.none && !r.gate |=> 200 -> "send cultist where no foes"
+                        u.cultist && r.foes.none && r.freeGate |=> 4000 -> "send cultist to free gate"
+                        u.cultist && r.foes.goos.none && r.freeGate && have(Ithaqua) |=> 3500 -> "send cultist to semifree gate"
+                        u.cultist && r.ownGate |=> 100 -> "sent cultist to own gate"
+                        u.cultist && r.enemyGate |=> -100 -> "dont send cultist to enemy gate"
+                        u.cultist && r.freeGate |=> -300 -> "dont send cultist to free gate"
+
+                        u.is(Wendigo) && r.allies(Ithaqua).any |=> 3000 -> "wendigo go rha"
+                        u.is(Wendigo) && r.allies(Wendigo).num >= 4 |=> 2400 -> "groupw"
+                        u.is(Wendigo) && r.allies(Wendigo).num == 3 |=> 2300 -> "groupw"
+                        u.is(Wendigo) && r.allies(Wendigo).num == 2 |=> 2200 -> "groupw"
+                        u.is(Wendigo) && r.allies(Wendigo).num == 1 |=> 2100 -> "groupw"
+
+                        u.goo && r.allies.num >= 9 |=> 3100 -> "regrouphug"
+                        u.goo && r.allies.num == 8 |=> 3000 -> "regrouphug"
+                        u.goo && r.allies.num == 7 |=> 2900 -> "regrouphug"
+                        u.goo && r.allies.num == 6 |=> 2800 -> "regrouphug"
+                        u.goo && r.allies.num == 5 |=> 2700 -> "regrouphug"
+                        u.goo && r.allies.num == 4 |=> 2600 -> "regrouphug"
+                        u.goo && r.allies.num == 3 |=> 2500 -> "regrouphug"
+                        u.goo && r.allies.num == 2 |=> 2400 -> "regrouphug"
+                        u.goo && r.allies.num == 1 |=> 2300 -> "regrouphug"
+
+                        u.monsterly && r.allies.%(_.capturable).any && !r.foes.goos.any |=> 1000 -> "send monster to prevent capture"
+                        u.goo && r.allies.%(_.capturable).any |=> 1000 -> "send goo to prevent capture"
+
+                        u.monsterly && r.foes.%(_.vulnerableM).any && !r.foes.goos.any && r.allies.monsterly.none |=> 1000 -> "send monster to capture"
+                        u.goo && r.foes.%(_.vulnerableG).any |=> 1000 -> "send goo to capture"
+
+                        u.monsterly && r.allies.goos.any |=> 500 -> "send monster to friendly goo"
+                        u.goo && r.allies.goos.any |=> 500 -> "send goo to friendly goo"
+
+                        u.monsterly && r.ownGate |=> 400 -> "send monster to own gate"
+                        u.goo && r.ownGate |=> 400 -> "send goo to own gate"
+
+                        u.monsterly && r.freeGate |=> 300 -> "send monster to free gate"
+                        u.goo && r.freeGate |=> 300 -> "send goo to free gate"
+
+                        u.monsterly && r.enemyGate |=> 300 -> "send monster to enemy gate"
+                        u.goo && r.enemyGate |=> 300 -> "send goo to enemy gate"
+
+                        u.monsterly && r.foes(Tsathoggua).any |=> -450 -> "dont send monster to tsa"
+
+                        if (u.goo)
+                            result ++= eval(MoveAction(u.faction, u, u.region, r, 0))
+
+                        true |=> (r.connected ++ r.connected./~(_.connected)).distinct.num -> "reachable regions"
+
+                    case _ =>
+                        true |=> 1000 -> "todo"
+                }
+            }
+        }
+
+        // Round 8 (FB): score CG/Eye Opens prompts that get asked of this faction
+        result ++= fbPromptedEvals(a)
+
+        result.none |=> 0 -> "none"
+
+        true |=> -((1 + math.random() * 4).round.toInt) -> "random"
+
+        result.sortBy(v => -v.weight.abs)
+    }
+
+}

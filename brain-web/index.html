@@ -1,0 +1,1254 @@
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <title id="cws-options" data-server="###SERVER-URL###" data-delay="1" data-menu="222" data-scroll="true" data-online="true">Cthulhu Wars Solo library-at-celaeno-v2</title>
+        <style>
+            html {
+                height: 100%;
+                overflow: hidden;
+                overscroll-behavior: none;
+            }
+
+            body {
+                font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, sans-serif;
+                font-size: 20px;
+                font-size: 2.05vh;
+                line-height: 1.2;
+                color: #707070;
+                background-color: black;
+                overflow: hidden;
+            }
+
+            * {
+                scrollbar-width: thin;
+                scrollbar-color: gray transparent;
+            }
+
+            *::-webkit-scrollbar {
+                width: 7px;
+                width: 0.7vmin;
+            }
+
+            *::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            *::-webkit-scrollbar-thumb {
+                background-color: gray;
+                border-radius: 14px;
+                border-radius: 1.4vmin;
+                border: 2px solid black;
+                border: 0.2vmin solid black;
+            }
+
+            .hide-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+
+            .hide-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+
+            .overlay {
+                overflow-y: auto !important;
+                background-color: #22222200 !important;
+            }
+
+            a {
+                text-decoration: none;
+            }
+
+            .asset {
+                display: none;
+            }
+
+            .full-height {
+                height: 100%;
+            }
+
+            @font-face {
+                font-family: "Bohemian Typewriter";
+                src:
+                    url("fonts/bohemian-typewriter.woff2") format("woff2"),
+                    url("fonts/bohemian-typewriter.woff")  format("woff");
+            }
+
+            .bohemian-typewriter {
+                font-family: "Bohemian Typewriter", san-serif;
+                font-size: 20px;
+                font-size: 2.05vh;
+            }
+
+            @font-face {
+                font-family: "Abaddon";
+                x-font-style: normal;
+                x-font-weight: normal;
+                src:
+                    url("fonts/abaddon.woff2") format("woff2"),
+                    url("fonts/abaddon.woff") format("woff");
+            }
+
+            .abaddon {
+                font-family: "Abaddon", serif;
+                font-size: 20px;
+                font-size: 2.05vh;
+            }
+
+            .unselectable {
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+
+            .region {
+                color: #eecccc;
+            }
+
+            .sea {
+                color: #ccccee;
+            }
+
+            .kill {
+                color: crimson;
+            }
+
+            .pain {
+                color: orange;
+            }
+
+            .miss {
+                color: darkturquoise;
+            }
+
+            .power {
+                color: white;
+            }
+
+            .highlight {
+                color: #d3d3d3;
+            }
+
+            .halfhigh {
+                color: #a0a0a0;
+            }
+
+            .doom {
+                color: #9F2344;
+            }
+
+            .str {
+                color: crimson;
+            }
+
+            .es {
+                color: olive;
+            }
+
+            .hibernate {
+                color: #485b6a !important;
+                color: #36434a !important;
+                color: #6c8694 !important;
+            }
+
+            .nt {
+                color: #ffffff;
+            }
+
+            .lb {
+                color: #d4a574;
+            }
+
+            .gc {
+                color: #008000;
+                xcolor: #a3ca50;
+                xcolor: #51a528;
+            }
+
+            .cc {
+                color: #3344ff;
+                xcolor: #6ca0d2;
+                xcolor: #5072e9;
+            }
+
+            .bg {
+                color: #ff0000;
+                xcolor: #dc494a;
+                xcolor: #ed2425;
+            }
+
+            .ys {
+                color: #cccc00;
+                xcolor: #f7d757;
+            }
+
+            .sl {
+                color: #ef764b;
+                xcolor: #d5a07e;
+                xcolor: #e48e65;
+            }
+
+            .ww {
+                color: #90b7d4;
+                color: #b9dfee;
+                color: #a5cbe1;
+            }
+
+            .ow {
+                color: #6b4499;
+                color: #995593;
+            }
+
+            .an {
+                color: #30d5c8;
+            }
+
+            .ts {
+                color: #bfd8b9;
+            }
+
+            .fb {
+                color: #CB307E;
+            }
+
+            .ds {
+                color: #8B4513;
+            }
+
+            .ds-background {
+                background-color: #3d2b1b !important;
+            }
+
+            .ds-border {
+                border-color: #3d2b1b !important;
+            }
+
+            .gc-background {
+                background-color: #002b00 !important;
+            }
+
+            .cc-background {
+                background-color: #111755 !important;
+            }
+
+            .bg-background {
+                background-color: #550000 !important;
+            }
+
+            .ys-background {
+                background-color: #444400 !important;
+            }
+
+            .sl-background {
+                background-color: #502719 !important;
+            }
+
+            .ww-background {
+                background-color: #485b6a !important;
+                background-color: #36434a !important;
+            }
+
+            .ow-background {
+                background-color: #241633 !important;
+                background-color: #331d31 !important;
+            }
+
+            .an-background {
+                background-color: #3c5c5c !important;
+            }
+
+            .ts-background {
+                background-color: #758d75 !important;
+            }
+
+            .fb-background {
+                background-color: #5c1836 !important;
+            }
+
+            .gc-border {
+                outline-color: #002b00 !important;
+            }
+
+            .cc-border {
+                outline-color: #111755 !important;
+            }
+
+            .bg-border {
+                outline-color: #550000 !important;
+            }
+
+            .ys-border {
+                outline-color: #444400 !important;
+            }
+
+            .sl-border {
+                outline-color: #502719 !important;
+            }
+
+            .ww-border {
+                outline-color: #485b6a !important;
+                outline-color: #36434a !important;
+            }
+
+            .ow-border {
+                outline-color: #241633 !important;
+                outline-color: #331d31 !important;
+            }
+
+            .an-border {
+                outline-color: #3c5c5c !important;
+            }
+
+            .ts-border {
+                outline-color: #758d75 !important;
+            }
+
+            .fb-border {
+                outline-color: #5c1836 !important;
+            }
+
+            .p8 {
+                padding-left: 40px;
+                padding-left: 8ch;
+                text-indent: -40px;
+                text-indent: -8ch;
+            }
+
+            .p2 {
+                padding-left: 10px;
+                padding-left: 2ch;
+                text-indent: -10px;
+                text-indent: -2ch;
+            }
+
+            .indent1 {
+                padding-left: 4ch;
+                text-indent: 0ch;
+            }
+
+            .active {
+                font-style: italic;
+            }
+
+            .outer {
+                border: #111111 solid 5px;
+                border: #111111 solid 0.5vmin;
+                width: 100%;
+                height: 100%;
+                box-sizing: border-box;
+            }
+
+            .inner {
+                border: #222222 solid 10px;
+                border: #222222 solid 1vmin;
+                width: 100%;
+                height: 100%;
+                background-color: #222222;
+                overflow-y: hidden;
+                overflow-x: hidden;
+                box-sizing: border-box;
+                position: relative;
+            }
+
+            .option {
+                outline: #333333 solid 4px;
+                outline: #333333 solid 0.4vmin;
+                padding: 4px;
+                padding: 0.4vh;
+                margin: 12px;
+                margin-top: 11px;
+                margin: 1.22vh;
+                margin-top: 1.12vh;
+                background-color: #111111;
+                cursor: pointer;
+            }
+
+            .thin {
+                outline-width: 1px;
+                outline-width: 0.1vmin;
+                cursor: default;
+            }
+
+            .spellbook {
+                border: #333333 solid 2px;
+                border: #333333 solid 0.2vmin;
+                padding: 1px;
+                padding: 0.1vh;
+                margin: 2px;
+                margin: 0.2vh;
+                background-color: #111111c0;
+                font-size: 90%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .loyalty-card-icon {
+                bottom: 0.25vh;
+                bottom: 0.25dvh;
+                transform: scale(0.8);
+                transform-origin: bottom right;
+                position: absolute;
+                height: 5vh;
+                height: 5dvh;
+            }
+
+            .expl {
+                font-size: 75%;
+            }
+
+            .action {
+                text-align: center;
+                font-size: 110%;
+                overflow-y: auto;
+            }
+
+            .log {
+                font-size: 100%;
+                overflow-y: auto;
+            }
+
+            .status {
+                border-width: 4px;
+                border-width: 0.4vmin;
+                text-align: center;
+                font-size: 90%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            canvas {
+                position: absolute;
+                top: 0px;
+                left: 0px;
+            }
+
+            .name {
+                font-size: 120%;
+                font-weight: bold;
+            }
+
+            .used {
+                text-decoration: line-through;
+            }
+
+            .map {
+                font-size: 100%;
+            }
+
+            .top {
+                position: relative;
+                z-index: 1;
+                text-shadow: 0 -2px 1px #000000ff, 0 2px 1px #000000ff, -2px 0 1px #000000ff, 2px 0 1px #000000ff, 0 -3px 1px #00000080, 0 3px 1px #00000080, -3px 0 1px #00000080, 3px 0 1px #00000080;
+            }
+
+            .right {
+                text-align: right;
+            }
+
+            .center {
+                text-align: center;
+            }
+
+            .smaller {
+                font-size: 90%;
+            }
+
+            .no-pointer-events {
+                pointer-events: none;
+            }
+
+            #replay {
+                display: none;
+            }
+
+            .pointer {
+                cursor: pointer;
+            }
+
+            td, th {
+                padding: 0;
+            }
+
+            .white-border {
+                text-shadow: 0 -1px 1px #ffffff80, 0 1px 1px #ffffff80, 0 0 1px #ffffff80, 0 0 1px #ffffff80, 0 0 2px #ffffff80, 0 0 3px #ffffff80, 0 0 4px #ffffff80;
+            }
+
+            .border-outer {
+                border: 2px solid #888;
+                border-radius: 4px;
+                padding: 1ex;
+                background-color: rgba(0,0,0,0.3);
+            }
+
+            .border-inner {
+                padding: 0.3ex;
+                font-size: 95%;
+            }
+
+            .yellow-border {
+                text-shadow: 0 -1px 1px #ff0, 0 1px 1px #ff0, 0 0 1px #ff0, 0 0 1px #ff0, 0 0 2px #ff0, 0 0 3px #ff0, 0 0 4px #ff0;
+            }
+
+            .black-border {
+                text-shadow: 0 -1px 1px #000, 0 1px 1px #000, 0 0 1px #000, 0 0 1px #000, 0 0 2px #000, 0 0 3px #000, 0 0 4px #000;
+            }
+
+            .faction-table {
+                background-color: #22222280;
+                background-size: 100%;
+                border-spacing: 0;
+                color: #d3d3d3;
+                font-weight: bold;
+                font-size: 80%;
+                table-layout: fixed;
+                width: 100%;
+                min-height: 100%;
+                padding: 1ex;
+                text-align: center;
+                overflow: hidden;
+            }
+
+            .spellbook-table {
+                background-color: #22222280;
+                background-size: 100%;
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-image:
+                    url("webp/info/spellbook.webp");
+                border-spacing: 0;
+                color: #020202;
+                font-weight: bold;
+                font-size: 100%;
+                table-layout: fixed;
+                width: 100%;
+                min-height: 100%;
+                padding: 1ex;
+                text-align: center;
+                overflow: hidden;
+            }
+
+            .requirement-table {
+                background-color: #22222280;
+                background-size: 100%;
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-image:
+                    url("webp/info/requirement.webp");
+                border-spacing: 0;
+                color: #020202;
+                font-weight: bold;
+                font-size: 100%;
+                table-layout: fixed;
+                width: 100%;
+                min-height: 100%;
+                padding: 1ex;
+                text-align: center;
+                overflow: hidden;
+            }
+
+            .loyalty-card-table {
+                background-color: #22222280;
+                background-size: 100%;
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-image:
+                    url("webp/info/loyalty-card.webp");
+                border-spacing: 0;
+                color: #020202;
+                font-weight: bold;
+                font-size: 100%;
+                table-layout: fixed;
+                width: 100%;
+                min-height: 100%;
+                padding: 1ex;
+                text-align: center;
+                overflow: hidden;
+            }
+
+
+            .h1 {
+                font-size: 250%;
+                font-weight: 500;
+                x-font-family: "Abaddon", serif;
+                font-variant: small-caps;
+                line-height: 1;
+                margin-bottom: 0.32ex;
+            }
+
+            .h2 {
+                font-size: 150%;
+                /* font-weight: 500; */
+                x-font-family: "Abaddon", serif;
+                font-variant: small-caps;
+                line-height: 1;
+                margin-bottom: 0.32ex;
+            }
+
+            .h3 {
+                line-height: 1.2;
+                font-size: 120%;
+                font-variant: small-caps;
+                font-weight: bold;
+                text-align: center;
+            }
+
+            .deh3 {
+                font-size: 83.3333333333%;
+            }
+
+            .img {
+                vertical-align: middle;
+                display: inline;
+                width: 6ex;
+            }
+
+            sup {
+                line-height: 0;
+                position: relative;
+                top: -1ex;
+                vertical-align: baseline;
+                font-size: 70%;
+                margin-left: 0.5ex;
+            }
+
+            .combat-color {
+                color: #ea8685;
+            }
+
+            .cost-color {
+                color: #4cc8ef;
+            }
+
+            .class-color {
+                color: #555555;
+            }
+
+            .ability-color {
+                color: #fbf285;
+            }
+
+            .dimmed {
+                opacity: 0.4;
+            }
+
+            .notes {
+                text-align: left;
+                font-size: 90%;
+                line-height: 2.2ex;
+            }
+
+            .unit-desc {
+                line-height: 1.8ex;
+                text-align: left;
+            }
+
+            .unit-name {
+                white-space: nowrap;
+            }
+
+            .unit-type {
+                color: #666666;
+                font-size: 80%;
+            }
+
+            .separator {
+                background-image:
+                    url(webp/info/units-separator.webp);
+                background-position: bottom;
+                background-repeat: no-repeat;
+                background-size: 100% 0.22ex;
+                height: 0.33ex;
+                opacity: 0.5;
+                margin-top: 0.33ex;
+            }
+
+            .p {
+                margin: 0.9ex;
+            }
+
+            .inline-glyph {
+                width: 3.6ex;
+                height: 3.6ex;
+                vertical-align: middle;
+            }
+            .ds-glyph {
+                width: 3.6ex !important;
+                height: 3.6ex !important;
+            }
+
+            .inline-block {
+                display: inline-block;
+            }
+
+            .explain {
+                position: absolute;
+                right: 1.4ex;
+                height: 2.4ex;
+                width: 2.4ex;
+                cursor: help;
+            }
+
+            .direction {
+                position: absolute;
+                margin-right: 1ex;
+                margin-left: 1ex;
+                height: 2.2ex;
+                width: 2.2ex;
+            }
+
+            .sbdiv {
+                padding-right: 1.6ex;
+                padding-left: 1.6ex;
+            }
+        </style>
+        <link id="icon" type="image/x-icon" rel="shortcut icon" href="data:image/png;base64,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" />
+    </head>
+    <body class="bohemian-typewriter">
+        <div id="force-allow-scroll" style="position: absolute; width: 0.100svw; height: 0.100svh; left: 0; top: 0; opacity: 0.01; z-index: -1000;"></div>
+
+        <textarea id="clipboard" style="position: absolute; width: 1px; height: 1px; border: 0px; margin: 0px; padding: 0px; opacity: 0.01; z-index: -1000;">
+        </textarea>
+
+        <script id="thumb">
+            try {
+                if (window.location.search.indexOf("thumb") >= 0) {
+                    document.styleSheets[0].insertRule(".option { margin: 2.4ex !important; padding: 1.2ex !important; }", 0)
+                }
+            } catch (error) {
+                console.log("thumb error");
+                console.error(error);
+            }
+        </script>
+
+        <script id="switch-fullscreen-on-triple-click">
+            let switchFullScreen = function () {
+                try {
+                    if (document.fullscreenElement) {
+                        document.getElementById("force-allow-scroll").style.display = "";
+                        document.exitFullscreen();
+                    }
+                    else {
+                        document.getElementById("force-allow-scroll").style.display = "none";
+                        document.documentElement.requestFullscreen();
+                    }
+                } catch (error) {
+                    console.log("switch fullscreen error");
+                    console.error(error);
+                }
+            }
+
+            let lastClick = 0;
+            let lastX = 0;
+            let lastY = 0;
+            let count = 0;
+
+            window.clicksToSwitchFullScreen = 3;
+
+            window.onmousedown = function (e) {
+                if (Date.now() - lastClick < 400 && Math.abs(e.screenX - lastX) < 30 && Math.abs(e.screenY - lastY) < 30)
+                    count += 1;
+                else
+                    count = 1;
+
+                lastClick = Date.now();
+                lastX = e.screenX;
+                lastY = e.screenY;
+
+                if (window.clicksToSwitchFullScreen == 0 && document.fullscreenElement)
+                    return;
+
+                if (count >= window.clicksToSwitchFullScreen) {
+                    lastClick = 0;
+                    count = 0;
+                    switchFullScreen();
+                }
+            };
+        </script>
+
+        <img class="asset" id="earth33" src="webp/images/earth33-dark.webp" />
+        <img class="asset" id="earth33-place" src="webp/images/earth33-place.webp" />
+
+        <img class="asset" id="earth35" src="webp/images/earth35-dark.webp" />
+        <img class="asset" id="earth35-place" src="webp/images/earth35-place.webp" />
+
+        <img class="asset" id="earth53" src="webp/images/earth53-dark.webp" />
+        <img class="asset" id="earth53-place" src="webp/images/earth53-place.webp" />
+
+        <img class="asset" id="earth55" src="webp/images/earth55-dark.webp" />
+        <img class="asset" id="earth55-place" src="webp/images/earth55-place.webp" />
+
+        <img class="asset" id="library3" src="webp/images/library3-dark.webp" />
+        <img class="asset" id="library3-place" src="webp/images/library3-place.webp" />
+        <img class="asset" id="library3-h" src="webp/images/library3-h-dark.webp" />
+        <img class="asset" id="library3-h-place" src="webp/images/library3-h-place.webp" />
+        <img class="asset" id="library53" src="webp/images/library53-dark.webp" />
+        <img class="asset" id="library53-place" src="webp/images/library53-place.webp" />
+        <img class="asset" id="library53-h" src="webp/images/library53-h-dark.webp" />
+        <img class="asset" id="library53-h-place" src="webp/images/library53-h-place.webp" />
+        <img class="asset" id="library35" src="webp/images/library35-dark.webp" />
+        <img class="asset" id="library35-place" src="webp/images/library35-place.webp" />
+        <img class="asset" id="library35-h" src="webp/images/library35-h-dark.webp" />
+        <img class="asset" id="library35-h-place" src="webp/images/library35-h-place.webp" />
+        <img class="asset" id="library5" src="webp/images/library5-dark.webp" />
+        <img class="asset" id="library5-place" src="webp/images/library5-place.webp" />
+        <img class="asset" id="library5-h" src="webp/images/library5-h-dark.webp" />
+        <img class="asset" id="library5-h-place" src="webp/images/library5-h-place.webp" />
+
+        <img class="asset" id="silence-token" src="webp/icons/silence-token.png" />
+        <img class="asset" id="custodian-icon" src="webp/icons/custodian.png" />
+        <img class="asset" id="librarian-icon" src="webp/icons/librarian.png" />
+        <img class="asset" id="custodian-silhouette" src="webp/icons/custodian-silhouette.png" />
+        <img class="asset" id="librarian-silhouette" src="webp/icons/librarian-silhouette.png" />
+        <img class="asset" id="library-hint-card" src="webp/images/library-hint-card.webp" />
+        <img class="asset" id="archway-glyph" src="webp/icons/archway-glyph.webp" />
+        <img class="asset" id="stairwell-A" src="webp/icons/stairwell-A.webp" />
+        <img class="asset" id="stairwell-B" src="webp/icons/stairwell-B.webp" />
+        <img class="asset" id="stairwell-C" src="webp/icons/stairwell-C.webp" />
+        <img class="asset" id="stairwell-D" src="webp/icons/stairwell-D.webp" />
+        <img class="asset" id="stairwell-E" src="webp/icons/stairwell-E.webp" />
+        <img class="asset" id="stairwell-F" src="webp/icons/stairwell-F.webp" />
+        <img class="asset" id="library-tome" src="webp/images/library-tome.webp" />
+        <img class="asset" id="library-tome-card" src="webp/images/library-tome-card.webp" />
+        <img class="asset" id="tome-barrier" src="webp/images/tome-barrier.webp" />
+        <img class="asset" id="tome-guardian" src="webp/images/tome-guardian.webp" />
+        <img class="asset" id="tome-larvae" src="webp/images/tome-larvae.webp" />
+        <img class="asset" id="tome-yr" src="webp/images/tome-yr.webp" />
+
+        <img class="asset" id="gate" src="webp/images/gate.webp" />
+        <img class="asset" id="kill" src="webp/images/kill.webp" />
+        <img class="asset" id="pain" src="webp/images/pain.webp" />
+
+        <img class="asset" id="bg-glyph"          src="webp/images/bg-glyph.webp" />
+        <img class="asset" id="bg-acolyte"        src="webp/images/bg-acolyte.webp" />
+        <img class="asset" id="bg-high-priest"    src="webp/images/bg-high-priest.webp" />
+        <img class="asset" id="bg-ghoul"          src="webp/images/bg-ghoul.webp" />
+        <img class="asset" id="bg-fungi"          src="webp/images/bg-fungi.webp" />
+        <img class="asset" id="bg-dark-young"     src="webp/images/bg-dark-young.webp" />
+        <img class="asset" id="bg-shub"           src="webp/images/bg-shub.webp" />
+
+        <img class="asset" id="cc-glyph"          src="webp/images/cc-glyph.webp" />
+        <img class="asset" id="cc-acolyte"        src="webp/images/cc-acolyte.webp" />
+        <img class="asset" id="cc-high-priest"    src="webp/images/cc-high-priest.webp" />
+        <img class="asset" id="cc-nightgaunt"     src="webp/images/cc-nightgaunt.webp" />
+        <img class="asset" id="cc-flying-polyp"   src="webp/images/cc-flying-polyp.webp" />
+        <img class="asset" id="cc-hunting-horror" src="webp/images/cc-hunting-horror.webp" />
+        <img class="asset" id="cc-nyarly"         src="webp/images/cc-nyarly.webp" />
+
+        <img class="asset" id="gc-glyph"          src="webp/images/gc-glyph.webp" />
+        <img class="asset" id="gc-acolyte"        src="webp/images/gc-acolyte.webp" />
+        <img class="asset" id="gc-high-priest"    src="webp/images/gc-high-priest.webp" />
+        <img class="asset" id="gc-deep-one"       src="webp/images/gc-deep-one.webp" />
+        <img class="asset" id="gc-shoggoth"       src="webp/images/gc-shoggoth.webp" />
+        <img class="asset" id="gc-starspawn"      src="webp/images/gc-starspawn.webp" />
+        <img class="asset" id="gc-cthulhu"        src="webp/images/gc-cthulhu.webp" />
+
+        <img class="asset" id="ys-glyph"          src="webp/images/ys-glyph.webp" />
+        <img class="asset" id="ys-acolyte"        src="webp/images/ys-acolyte.webp" />
+        <img class="asset" id="ys-high-priest"    src="webp/images/ys-high-priest.webp" />
+        <img class="asset" id="ys-undead"         src="webp/images/ys-undead.webp" />
+        <img class="asset" id="ys-byakhee"        src="webp/images/ys-byakhee.webp" />
+        <img class="asset" id="ys-king-in-yellow" src="webp/images/ys-king-in-yellow.webp" />
+        <img class="asset" id="ys-hastur"         src="webp/images/ys-hastur.webp" />
+        <img class="asset" id="ys-desecration"    src="webp/images/ys-desecration.webp" />
+
+        <img class="asset" id="sl-glyph"          src="webp/images/sl-glyph.webp" />
+        <img class="asset" id="sl-acolyte"        src="webp/images/sl-acolyte.webp" />
+        <img class="asset" id="sl-high-priest"    src="webp/images/sl-high-priest.webp" />
+        <img class="asset" id="sl-wizard"         src="webp/images/sl-wizard.webp" />
+        <img class="asset" id="sl-serpent-man"    src="webp/images/sl-serpent-man.webp" />
+        <img class="asset" id="sl-formless-spawn" src="webp/images/sl-formless-spawn.webp" />
+        <img class="asset" id="sl-tsathoggua"     src="webp/images/sl-tsathoggua.webp" />
+
+        <img class="asset" id="ww-glyph"          src="webp/images/ww-glyph.webp" />
+        <img class="asset" id="ww-acolyte"        src="webp/images/ww-acolyte.webp" />
+        <img class="asset" id="ww-high-priest"    src="webp/images/ww-high-priest.webp" />
+        <img class="asset" id="ww-wendigo"        src="webp/images/ww-wendigo.webp" />
+        <img class="asset" id="ww-gnoph-keh"      src="webp/images/ww-gnoph-keh.webp" />
+        <img class="asset" id="ww-rhan-tegoth"    src="webp/images/ww-rhan-tegoth.webp" />
+        <img class="asset" id="ww-ithaqua"        src="webp/images/ww-ithaqua.webp" />
+        <img class="asset" id="ww-ice-age"        src="webp/images/ww-ice-age.webp" />
+
+        <img class="asset" id="ow-glyph"                src="webp/images/ow-glyph.webp" />
+        <img class="asset" id="ow-acolyte"              src="webp/images/ow-acolyte.webp" />
+        <img class="asset" id="ow-high-priest"          src="webp/images/ow-high-priest.webp" />
+        <img class="asset" id="ow-mutant"               src="webp/images/ow-mutant.webp" />
+        <img class="asset" id="ow-abomination"          src="webp/images/ow-abomination.webp" />
+        <img class="asset" id="ow-spawn-of-yog-sothoth" src="webp/images/ow-spawn-of-yog-sothoth.webp" />
+        <img class="asset" id="ow-yog-sothoth"          src="webp/images/ow-yog-sothoth.webp" />
+
+        <img class="asset" id="an-glyph"          src="webp/images/an-glyph.webp" />
+        <img class="asset" id="an-acolyte"        src="webp/images/an-acolyte.webp" />
+        <img class="asset" id="an-high-priest"    src="webp/images/an-high-priest.webp" />
+        <img class="asset" id="an-un-man"         src="webp/images/an-un-man.webp" />
+        <img class="asset" id="an-reanimated"     src="webp/images/an-reanimated.webp" />
+        <img class="asset" id="an-yothan"         src="webp/images/an-yothan.webp" />
+        <img class="asset" id="an-cathedral"      src="webp/images/an-cathedral.webp" />
+
+        <img class="asset" id="ts-glyph"          src="webp/images/ts-glyph.webp" />
+        <img class="asset" id="ts-acolyte"        src="webp/images/ts-acolyte.webp" />
+        <img class="asset" id="ts-tomb-herd"      src="webp/images/ts-tomb-herd.webp" />
+        <img class="asset" id="ts-tendril"        src="webp/images/ts-tendril.webp" />
+        <img class="asset" id="ts-glaaki"         src="webp/images/ts-glaaki.webp" />
+        <img class="asset" id="ts-cursed-tome"    src="webp/images/ts-cursed-tome.webp" />
+
+        <img class="asset" id="fb-glyph"          src="webp/images/fb-glyph.webp" />
+        <img class="asset" id="fb-acolyte"        src="webp/images/fb-acolyte.webp" />
+        <img class="asset" id="fb-high-priest"    src="webp/images/fb-high-priest.webp" />
+        <img class="asset" id="fb-desiccated"     src="webp/images/fb-desiccated.webp" />
+        <img class="asset" id="fb-revenant"       src="webp/images/fb-revenant.webp" />
+        <img class="asset" id="fb-ghatanothoa"    src="webp/images/fb-ghatanothoa.webp" />
+        <img class="asset" id="fb-crater"         src="webp/images/fb-crater.webp" />
+        <img class="asset" id="fb-augury-skull"   src="webp/images/fb-augury-skull.webp" />
+
+        <img class="asset" id="ds-glyph"          src="webp/images/ds-glyph.webp" />
+        <img class="asset" id="ds-acolyte"        src="webp/images/ds-acolyte.webp" />
+        <img class="asset" id="ds-high-priest"    src="webp/images/ds-high-priest.webp" />
+        <img class="asset" id="ds-larva-thesis"   src="webp/images/ds-larva-thesis.webp" />
+        <img class="asset" id="ds-larva-antithesis" src="webp/images/ds-larva-antithesis.webp" />
+        <img class="asset" id="ds-larva-synthesis" src="webp/images/ds-larva-synthesis.webp" />
+        <img class="asset" id="ds-chaos-gate"     src="webp/images/ds-chaos-gate.webp" />
+        <img class="asset" id="ds-avatar-thesis"  src="webp/images/ds-avatar-thesis.webp" />
+        <img class="asset" id="ds-avatar-antithesis" src="webp/images/ds-avatar-antithesis.webp" />
+        <img class="asset" id="ds-avatar-synthesis" src="webp/images/ds-avatar-synthesis.webp" />
+
+        <img class="asset" id="n-ghast"           src="webp/images/n-ghast.webp" />
+        <img class="asset" id="n-gug"             src="webp/images/n-gug.webp" />
+        <img class="asset" id="n-shantak"         src="webp/images/n-shantak.webp" />
+        <img class="asset" id="n-star-vampire"    src="webp/images/n-star-vampire.webp" />
+        <img class="asset" id="n-voonith"         src="webp/images/n-voonith.webp" />
+        <img class="asset" id="n-dimensional-shambler" src="webp/images/n-dimensional-shambler.webp" />
+        <img class="asset" id="n-filth"           src="webp/images/n-filth.webp" />
+        <img class="asset" id="n-byatis"          src="webp/images/n-byatis.webp" />
+        <img class="asset" id="n-abhoth"          src="webp/images/n-abhoth.webp" />
+        <img class="asset" id="n-daoloth"         src="webp/images/n-daoloth.webp" />
+        <img class="asset" id="n-nyogtha"         src="webp/images/n-nyogtha.webp" />
+        <img class="asset" id="n-tulzscha"  src="webp/images/n-tulzscha.webp" />
+        <img class="asset" id="n-gnorri"   src="webp/images/n-gnorri.webp" />
+        <img class="asset" id="n-ygolonac" src="webp/images/n-ygolonac.webp" />
+
+        <img class="asset" id="roa-icon"          src="webp/images/RoA.png" />
+        <img class="asset" id="ritual-track-3p"   src="webp/images/ritual_track_3p.jpg" />
+        <img class="asset" id="ritual-track-4p"   src="webp/images/ritual_track_4p.jpg" />
+        <img class="asset" id="ritual-track-5p"   src="webp/images/ritual_track_5p.jpg" />
+        
+        <img class="asset" id="ghast-icon"        src="webp/info/n-ghast.svg" />
+        <img class="asset" id="gug-icon"          src="webp/info/n-gug.svg" />
+        <img class="asset" id="shantak-icon"      src="webp/info/n-shantak.svg" />
+        <img class="asset" id="star-vampire-icon" src="webp/info/n-star-vampire.svg" />
+        <img class="asset" id="dimensional-shambler-icon" src="webp/info/n-dimensional-shambler.svg" />
+        <img class="asset" id="voonith-icon"       src="webp/info/n-voonith.svg" />
+        <img class="asset" id="byatis-icon"       src="webp/info/n-byatis.svg" />
+        <img class="asset" id="abhoth-icon"       src="webp/info/n-abhoth.svg" />
+        <img class="asset" id="daoloth-icon"      src="webp/info/n-daoloth.svg" />
+        <img class="asset" id="nyogtha-icon"      src="webp/info/n-nyogtha.svg" />
+        <img class="asset" id="tulzscha-icon"  src="webp/info/n-tulzscha.svg" />
+        <img class="asset" id="gnorri-icon"   src="webp/info/n-gnorri.svg" />
+        <img class="asset" id="ygolonac-icon" src="webp/info/n-ygolonac.svg" />
+        <img class="asset" id="high-priest-icon"  src="webp/info/n-high-priest.svg" />
+
+        <img class="asset" id="question-mark" src="webp/info/question-mark.webp" />
+
+        <img class="asset" id="move-deg-0"   src="webp/icons/move-deg-0.webp" />
+        <img class="asset" id="move-deg-15"  src="webp/icons/move-deg-15.webp" />
+        <img class="asset" id="move-deg-30"  src="webp/icons/move-deg-30.webp" />
+        <img class="asset" id="move-deg-45"  src="webp/icons/move-deg-45.webp" />
+        <img class="asset" id="move-deg-60"  src="webp/icons/move-deg-60.webp" />
+        <img class="asset" id="move-deg-75"  src="webp/icons/move-deg-75.webp" />
+        <img class="asset" id="move-deg-90"  src="webp/icons/move-deg-90.webp" />
+        <img class="asset" id="move-deg-105" src="webp/icons/move-deg-105.webp" />
+        <img class="asset" id="move-deg-120" src="webp/icons/move-deg-120.webp" />
+        <img class="asset" id="move-deg-135" src="webp/icons/move-deg-135.webp" />
+        <img class="asset" id="move-deg-150" src="webp/icons/move-deg-150.webp" />
+        <img class="asset" id="move-deg-165" src="webp/icons/move-deg-165.webp" />
+        <img class="asset" id="move-deg-180" src="webp/icons/move-deg-180.webp" />
+        <img class="asset" id="move-deg-195" src="webp/icons/move-deg-195.webp" />
+        <img class="asset" id="move-deg-210" src="webp/icons/move-deg-210.webp" />
+        <img class="asset" id="move-deg-225" src="webp/icons/move-deg-225.webp" />
+        <img class="asset" id="move-deg-240" src="webp/icons/move-deg-240.webp" />
+        <img class="asset" id="move-deg-255" src="webp/icons/move-deg-255.webp" />
+        <img class="asset" id="move-deg-270" src="webp/icons/move-deg-270.webp" />
+        <img class="asset" id="move-deg-285" src="webp/icons/move-deg-285.webp" />
+        <img class="asset" id="move-deg-300" src="webp/icons/move-deg-300.webp" />
+        <img class="asset" id="move-deg-315" src="webp/icons/move-deg-315.webp" />
+        <img class="asset" id="move-deg-330" src="webp/icons/move-deg-330.webp" />
+        <img class="asset" id="move-deg-345" src="webp/icons/move-deg-345.webp" />
+
+        <img class="asset" id="sign-aa" src="webp/info/sign-aa.webp" />
+        <img class="asset" id="sign-oo" src="webp/info/sign-oo.webp" />
+        <img class="asset" id="sign-ww" src="webp/info/sign-ww.webp" />
+
+        <img class="asset" id="info:an-acolyte" src="webp/info/an-acolyte.svg" />
+        <img class="asset" id="info:an-background" src="webp/info/an-background.webp" />
+        <img class="asset" id="info:an-cathedral" src="webp/info/an-cathedral.svg" />
+        <img class="asset" id="info:an-reanimated" src="webp/info/an-reanimated.svg" />
+        <img class="asset" id="info:an-un-man" src="webp/info/an-un-man.svg" />
+        <img class="asset" id="info:an-yothan" src="webp/info/an-yothan.svg" />
+
+        <img class="asset" id="info:ts-acolyte" src="webp/info/ts-acolyte.svg" />
+        <img class="asset" id="info:ts-background" src="webp/info/ts-background.webp" />
+        <img class="asset" id="info:ts-gla'aki" src="webp/info/ts-glaaki.svg" />
+        <img class="asset" id="info:ts-tomb-herd" src="webp/info/ts-tomb-herd.svg" />
+        <img class="asset" id="info:ts-deep-tendril" src="webp/info/ts-tendril.svg" />
+
+        <img class="asset" id="info:fb-acolyte" src="webp/info/fb-acolyte.svg" />
+        <img class="asset" id="info:fb-background" src="webp/info/fb-background.webp" />
+        <img class="asset" id="info:fb-desiccated" src="webp/info/fb-desiccated.svg" />
+        <img class="asset" id="info:fb-revenant-of-k'naa" src="webp/info/fb-revenant.svg" />
+        <img class="asset" id="info:fb-ghatanothoa" src="webp/info/fb-ghatanothoa.svg" />
+
+        <img class="asset" id="info:bg-acolyte" src="webp/info/bg-acolyte.svg" />
+        <img class="asset" id="info:bg-background" src="webp/info/bg-background.webp" />
+        <img class="asset" id="info:bg-dark-young" src="webp/info/bg-dark-young.svg" />
+        <img class="asset" id="info:bg-fungi-from-yuggoth" src="webp/info/bg-fungi-from-yuggoth.svg" />
+        <img class="asset" id="info:bg-ghoul" src="webp/info/bg-ghoul.svg" />
+        <img class="asset" id="info:bg-shub-niggurath" src="webp/info/bg-shub-niggurath.svg" />
+
+        <img class="asset" id="info:cc-acolyte" src="webp/info/cc-acolyte.svg" />
+        <img class="asset" id="info:cc-background" src="webp/info/cc-background.webp" />
+        <img class="asset" id="info:cc-flying-polyp" src="webp/info/cc-flying-polyp.svg" />
+        <img class="asset" id="info:cc-hunting-horror" src="webp/info/cc-hunting-horror.svg" />
+        <img class="asset" id="info:cc-nightgaunt" src="webp/info/cc-nightgaunt.svg" />
+        <img class="asset" id="info:cc-nyarlathotep" src="webp/info/cc-nyarlathotep.svg" />
+
+        <img class="asset" id="info:ds-acolyte" src="webp/info/ds-acolyte.svg" />
+        <img class="asset" id="info:ds-background" src="webp/info/ds-background.webp" />
+        <img class="asset" id="info:ds-larva-thesis" src="webp/info/ds-larva-thesis.svg" />
+        <img class="asset" id="info:ds-larva-antithesis" src="webp/info/ds-larva-antithesis.svg" />
+        <img class="asset" id="info:ds-larva-synthesis" src="webp/info/ds-larva-synthesis.svg" />
+        <img class="asset" id="info:ds-chaos-gate" src="webp/info/ds-chaos-gate.svg" />
+        <img class="asset" id="info:ds-avatar-thesis" src="webp/info/ds-avatar-thesis.svg" />
+        <img class="asset" id="info:ds-avatar-antithesis" src="webp/info/ds-avatar-antithesis.svg" />
+        <img class="asset" id="info:ds-avatar-synthesis" src="webp/info/ds-avatar-synthesis.svg" />        
+
+        <img class="asset" id="info:gc-acolyte" src="webp/info/gc-acolyte.svg" />
+        <img class="asset" id="info:gc-background" src="webp/info/gc-background.webp" />
+        <img class="asset" id="info:gc-cthulhu" src="webp/info/gc-cthulhu.svg" />
+        <img class="asset" id="info:gc-deep-one" src="webp/info/gc-deep-one.svg" />
+        <img class="asset" id="info:gc-shoggoth" src="webp/info/gc-shoggoth.svg" />
+        <img class="asset" id="info:gc-starspawn" src="webp/info/gc-starspawn.svg" />
+
+        <img class="asset" id="info:ow-abomination" src="webp/info/ow-abomination.svg" />
+        <img class="asset" id="info:ow-acolyte" src="webp/info/ow-acolyte.svg" />
+        <img class="asset" id="info:ow-background" src="webp/info/ow-background.webp" />
+        <img class="asset" id="info:ow-mutant" src="webp/info/ow-mutant.svg" />
+        <img class="asset" id="info:ow-sothoth" src="webp/info/ow-sothoth.svg" />
+        <img class="asset" id="info:ow-spawn-of-yog-sothoth" src="webp/info/ow-spawn-of-yog-sothoth.svg" />
+        <img class="asset" id="info:ow-yog-sothoth" src="webp/info/ow-yog-sothoth.svg" />
+
+        <img class="asset" id="info:sl-acolyte" src="webp/info/sl-acolyte.svg" />
+        <img class="asset" id="info:sl-background" src="webp/info/sl-background.webp" />
+        <img class="asset" id="info:sl-formless-spawn" src="webp/info/sl-formless-spawn.svg" />
+        <img class="asset" id="info:sl-serpent-man" src="webp/info/sl-serpent-man.svg" />
+        <img class="asset" id="info:sl-tsathoggua" src="webp/info/sl-tsathoggua.svg" />
+        <img class="asset" id="info:sl-wizard" src="webp/info/sl-wizard.svg" />
+
+        <img class="asset" id="info:ww-acolyte" src="webp/info/ww-acolyte.svg" />
+        <img class="asset" id="info:ww-background" src="webp/info/ww-background.webp" />
+        <img class="asset" id="info:ww-gnoph-keh" src="webp/info/ww-gnoph-keh.svg" />
+        <img class="asset" id="info:ww-ithaqua" src="webp/info/ww-ithaqua.svg" />
+        <img class="asset" id="info:ww-rhan-tegoth" src="webp/info/ww-rhan-tegoth.svg" />
+        <img class="asset" id="info:ww-wendigo" src="webp/info/ww-wendigo.svg" />
+
+        <img class="asset" id="info:ys-acolyte" src="webp/info/ys-acolyte.svg" />
+        <img class="asset" id="info:ys-background" src="webp/info/ys-background.webp" />
+        <img class="asset" id="info:ys-byakhee" src="webp/info/ys-byakhee.svg" />
+        <img class="asset" id="info:ys-hastur" src="webp/info/ys-hastur.svg" />
+        <img class="asset" id="info:ys-king-in-yellow" src="webp/info/ys-king-in-yellow.svg" />
+        <img class="asset" id="info:ys-undead" src="webp/info/ys-undead.svg" />
+
+        <img class="asset" id="info:n-ghast" src="webp/info/n-ghast.svg" />
+        <img class="asset" id="info:n-gug" src="webp/info/n-gug.svg" />
+        <img class="asset" id="info:n-shantak" src="webp/info/n-shantak.svg" />
+        <img class="asset" id="info:n-star-vampire" src="webp/info/n-star-vampire.svg" />
+        <img class="asset" id="info:n-voonith" src="webp/info/n-voonith.svg" />
+        <img class="asset" id="info:n-dimensional-shambler" src="webp/info/n-dimensional-shambler.svg" />
+        <img class="asset" id="info:n-byatis" src="webp/info/n-byatis.svg" />
+        <img class="asset" id="info:n-abhoth" src="webp/info/n-abhoth.svg" />
+        <img class="asset" id="info:n-daoloth" src="webp/info/n-daoloth.svg" />
+        <img class="asset" id="info:n-nyogtha" src="webp/info/n-nyogtha.svg" />
+        <img class="asset" id="info:n-tulzscha"  src="webp/info/n-tulzscha.svg" />
+        <img class="asset" id="info:n-gnorri"   src="webp/info/n-gnorri.svg" />
+        <img class="asset" id="info:n-ygolonac" src="webp/info/n-ygolonac.svg" />
+        <img class="asset" id="info:n-high-priest" src="webp/info/n-high-priest.svg" />
+    <img class="asset" id="info:n-dimensional-shambler" src="webp/info/n-dimensional-shambler.svg" />
+
+        <div style="position: absolute; left: 0%; top: 0%; width: 60%; height: 60%; left: 0vw; top: 0vh; width: 60vw; height: 60vh; left: 0dvw; top: 0dvh; width: 60dvw; height: 60dvh;">
+            <div class="outer">
+                <div class="inner map unselectable" id="map-small" style="border: 2px;">
+                </div>
+            </div>
+        </div>
+        <div style="position: absolute; left: 0%; top: 0%; width: 60%; height: 60%; left: 0vw; top: 0vh; width: 60vw; height: 60vh; left: 0dvw; top: 0dvh; width: 60dvw; height: 60dvh; display: none;">
+            <div class="outer">
+                <div class="inner overlay unselectable hide-scrollbar" id="overlay" style="border: 2px;">
+                </div>
+            </div>
+        </div>
+        <div style="position: absolute; left: 60%; top: 0%; width: 20%; height: 30%; left: 60vw; top: 0vh; width: 20vw; height: 30vh; left: 60dvw; top: 0dvh; width: 20dvw; height: 30dvh;">
+            <div class="outer">
+                <div class="inner status unselectable" id="status-1">
+                </div>
+            </div>
+        </div>
+        <div style="position: absolute; left: 80%; top: 0%; width: 20%; height: 30%; left: 80vw; top: 0vh; width: 20vw; height: 30vh; left: 80dvw; top: 0dvh; width: 20dvw; height: 30dvh;">
+            <div class="outer">
+                <div class="inner status unselectable" id="status-2">
+                </div>
+            </div>
+        </div>
+        <div style="position: absolute; left: 60%; top: 30%; width: 20%; height: 30%; left: 60vw; top: 30vh; width: 20vw; height: 30vh; left: 60dvw; top: 30dvh; width: 20dvw; height: 30dvh;">
+            <div class="outer">
+                <div class="inner status unselectable" id="status-4">
+                </div>
+            </div>
+        </div>
+        <div style="position: absolute; left: 80%; top: 30%; width: 20%; height: 30%; left: 80vw; top: 30vh; width: 20vw; height: 30vh; left: 80dvw; top: 30dvh; width: 20dvw; height: 30dvh;">
+            <div class="outer">
+                <div class="inner status unselectable" id="status-3">
+                </div>
+            </div>
+        </div>
+
+        <div style="position: absolute; left: 0%; top: 60%; width: 40%; height: 40%; left: 0vw; top: 60vh; width: 40vw; height: 40vh; left: 0dvw; top: 60dvh; width: 40dvw; height: 40dvh;">
+            <div class="outer">
+                <div class="inner action unselectable" id="action">
+                </div>
+            </div>
+        </div>
+        <div style="position: absolute; left: 0%; top: 60%; width: 40%; height: 40%; left: 0vw; top: 60vh; width: 40vw; height: 40vh; left: 0dvw; top: 60dvh; width: 40dvw; height: 40dvh; display: none;">
+            <div class="outer">
+                <div class="inner action unselectable" id="undo">
+                </div>
+            </div>
+        </div>
+        <div style="position: absolute; left: 40%; top: 60%; width: 30%; height: 40%; left: 40vw; top: 60vh; width: 30vw; height: 40vh; left: 40dvw; top: 60dvh; width: 30dvw; height: 40dvh;">
+            <div class="outer">
+                <div class="inner map" id="map-west">
+                </div>
+            </div>
+        </div>
+        <div style="position: absolute; left: 70%; top: 60%; width: 30%; height: 40%; left: 70vw; top: 60vh; width: 30vw; height: 40vh; left: 70dvw; top: 60dvh; width: 30dvw; height: 40dvh;">
+            <div class="outer" >
+                <div class="inner map" id="map-east">
+                </div>
+            </div>
+        </div>
+
+        <div style="position: absolute; left: 40%; top: 60%; width: 60%; height: 40%; left: 40vw; top: 60vh; width: 60vw; height: 40vh; left: 40dvw; top: 60dvh; width: 60dvw; height: 40dvh;">
+            <div class="outer" >
+                <div class="inner log" id="log">
+                </div>
+            </div>
+        </div>
+
+        <div style="position: absolute; left: 80%; top: 60%; width: 20%; height: 30%; left: 80vw; top: 60vh; width: 20vw; height: 30vh;  left: 80dvw; top: 60dvh; width: 20dvw; height: 30dvh; display: none;">
+            <div class="outer" >
+                <div class="inner status unselectable" id="status-5">
+                </div>
+            </div>
+        </div>
+
+        <div id="to-cw">
+            <div style="position: absolute; width: 0; height: 0; left: calc(80vw - 0.4vmin); top: calc(15vh - 2vmin); left: calc(80dvw - 0.4dvmin); top: calc(15dvh - 2dvmin);">
+                <div style="width: 0; height: 0; border-top: 2vmin solid transparent; border-left: 0.8vmin solid #ccc; border-bottom: 2vmin solid transparent; box-sizing: border-box;">
+                </div>
+            </div>
+            <div style="position: absolute; width: 0; height: 0; left: calc(90vw - 2vmin); top: calc(30vh - 0.4vmin); left: calc(90dvw - 2dvmin); top: calc(30dvh - 0.4dvmin);">
+                <div style="width: 0; height: 0; border-right: 2vmin solid transparent; border-top: 0.8vmin solid #ccc; border-left: 2vmin solid transparent; box-sizing: border-box;">
+                </div>
+            </div>
+
+            <div id="to-cw4">
+                <div style="position: absolute; width: 0; height: 0; left: calc(80vw - 0.4vmin); top: calc(45vh - 2vmin); left: calc(80dvw - 0.4dvmin); top: calc(45dvh - 2dvmin);">
+                    <div style="width: 0; height: 0; border-top: 2vmin solid transparent; border-right: 0.8vmin solid #ccc; border-bottom: 2vmin solid transparent; box-sizing: border-box;">
+                    </div>
+                </div>
+            </div>
+
+            <div style="position: absolute; width: 0; height: 0; left: calc(70vw - 2vmin); top: calc(30vh - 0.4vmin); left: calc(70dvw - 2dvmin); top: calc(30dvh - 0.4dvmin);">
+                <div style="width: 0; height: 0; border-right: 2vmin solid transparent; border-bottom: 0.8vmin solid #ccc; border-left: 2vmin solid transparent; box-sizing: border-box;">
+                </div>
+            </div>
+
+            <div id="to-cw6">
+                <div style="position: absolute; width: 0; height: 0; left: calc(90vw - 2vmin); top: calc(60vh - 0.4vmin); left: calc(90dvw - 2dvmin); top: calc(60dvh - 0.4dvmin);">
+                    <div style="width: 0; height: 0; border-right: 2vmin solid transparent; border-top: 0.8vmin solid #ccc; border-left: 2vmin solid transparent; box-sizing: border-box;">
+                    </div>
+                </div>
+                <div style="position: absolute; width: 0; height: 0; left: calc(80vw - 0.4vmin); top: calc(75vh - 2vmin); left: calc(80dvw - 0.4dvmin); top: calc(75dvh - 2dvmin);">
+                    <div style="width: 0; height: 0; border-top: 2vmin solid transparent; border-right: 0.8vmin solid #ccc; border-bottom: 2vmin solid transparent; box-sizing: border-box;">
+                    </div>
+                </div>
+                <div style="position: absolute; width: 0; height: 0; left: calc(70vw - 2vmin); top: calc(60vh - 0.4vmin); left: calc(70dvw - 2dvmin); top: calc(60dvh - 0.4dvmin);">
+                    <div style="width: 0; height: 0; border-right: 2vmin solid transparent; border-bottom: 0.8vmin solid #ccc; border-left: 2vmin solid transparent; box-sizing: border-box;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="to-ccw">
+            <div style="position: absolute; width: 0; height: 0; left: calc(80vw - 0.4vmin); top: calc(15vh - 2vmin); left: calc(80dvw - 0.4dvmin); top: calc(15dvh - 2dvmin);">
+                <div style="width: 0; height: 0; border-top: 2vmin solid transparent; border-right: 0.8vmin solid #ccc; border-bottom: 2vmin solid transparent; box-sizing: border-box;">
+                </div>
+            </div>
+            <div style="position: absolute; width: 0; height: 0; left: calc(90vw - 2vmin); top: calc(30vh - 0.4vmin); left: calc(90dvw - 2dvmin); top: calc(30dvh - 0.4dvmin);">
+                <div style="width: 0; height: 0; border-right: 2vmin solid transparent; border-bottom: 0.8vmin solid #ccc; border-left: 2vmin solid transparent; box-sizing: border-box;">
+                </div>
+            </div>
+
+            <div id="to-ccw4">
+                <div style="position: absolute; width: 0; height: 0; left: calc(80vw - 0.4vmin); top: calc(45vh - 2vmin); left: calc(80dvw - 0.4dvmin); top: calc(45dvh - 2dvmin);">
+                    <div style="width: 0; height: 0; border-top: 2vmin solid transparent; border-left: 0.8vmin solid #ccc; border-bottom: 2vmin solid transparent; box-sizing: border-box;">
+                    </div>
+                </div>
+            </div>
+
+            <div style="position: absolute; width: 0; height: 0; left: calc(70vw - 2vmin); top: calc(30vh - 0.4vmin); left: calc(70dvw - 2dvmin); top: calc(30dvh - 0.4dvmin);">
+                <div style="width: 0; height: 0; border-right: 2vmin solid transparent; border-top: 0.8vmin solid #ccc; border-left: 2vmin solid transparent; box-sizing: border-box;">
+                </div>
+            </div>
+
+            <div id="to-ccw6">
+                <div style="position: absolute; width: 0; height: 0; left: calc(90vw - 2vmin); top: calc(60vh - 0.4vmin); left: calc(90dvw - 2dvmin); top: calc(60dvh - 0.4dvmin);">
+                    <div style="width: 0; height: 0; border-right: 2vmin solid transparent; border-bottom: 0.8vmin solid #ccc; border-left: 2vmin solid transparent; box-sizing: border-box;">
+                    </div>
+                </div>
+                <div style="position: absolute; width: 0; height: 0; left: calc(80vw - 0.4vmin); top: calc(75vh - 2vmin); left: calc(80dvw - 0.4dvmin); top: calc(75dvh - 2dvmin);">
+                    <div style="width: 0; height: 0; border-top: 2vmin solid transparent; border-left: 0.8vmin solid #ccc; border-bottom: 2vmin solid transparent; box-sizing: border-box;">
+                    </div>
+                </div>
+                <div style="position: absolute; width: 0; height: 0; left: calc(70vw - 2vmin); top: calc(60vh - 0.4vmin); left: calc(70dvw - 2dvmin); top: calc(60dvh - 0.4dvmin);">
+                    <div style="width: 0; height: 0; border-right: 2vmin solid transparent; border-top: 0.8vmin solid #ccc; border-left: 2vmin solid transparent; box-sizing: border-box;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="position: absolute; left: 0%; top: 0%; width: 100%; height: 100%; left: 0vw; top: 0vh; width: 100vw; height: 100vh; left: 0dvw; top: 0dvh; width: 100dvw; height: 100dvh;">
+            <div class="outer" >
+                <div class="inner map unselectable" id="map-big" style="border: #111111 solid 0px; z-index: 2;">
+                </div>
+            </div>
+        </div>
+
+        <!-- { | REPLAY | { -->
+        <div id="replay" style="display: none" ></div>
+        <!-- } | REPLAY | } -->
+
+        <!-- { | ASSETS | { -->
+        <!-- } | ASSETS | } -->
+
+        <!-- { | SCRIPT | { -->
+        <script id="script" type="text/javascript" src="./target/scala-2.13/cthulhu-wars-solo-hrf-fastopt/main.js?v=20260504-lace49"></script>
+        <!-- } | SCRIPT | } -->
+
+    </body>
+</html>

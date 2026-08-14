@@ -73,9 +73,12 @@ object ActionFeatures {
     private val INTS     = 3           // first few Int args (cost / amount), normalised
     private val FLAGS    = 2           // isMore, isCancel (menu-navigation leaves)
 
-    // Derived dimension — stays in lock-step with the blocks written in `of`.
+    // Derived dimension — stays in lock-step with the blocks written in `of`. Uses the
+    // SAME reserved region capacity as the state encoder (Features.maxRegions), so raising
+    // CW_MAX_REGIONS grows both vectors together and a smaller map just leaves trailing
+    // region slots zero. Default cap reproduces the historical action dim of 128.
     val dim : Int = {
-        val nr = 17                                  // EarthMap4v35 on-map regions
+        val nr = Features.maxRegions                 // reserved on-map region slots (Earth 4v3.5 = 17)
         KIND +                                        // 1. action kind one-hot
         nr +                                          // 2. primary target region
         nr +                                          // 3. secondary target region (e.g. move destination)
@@ -95,7 +98,11 @@ object ActionFeatures {
         val a = new Array[Double](dim)
         val unw = action.unwrap
         val (_, ridx) = Features.regionIndexOf(game)
-        val nr = ridx.size
+        // Reserved region capacity as the block STRIDE (matches state encoder), so the
+        // two region blocks land at constant offsets on any map. Region writes are
+        // guarded against `stride` below; overflow regions (bigger map than the cap) are
+        // dropped rather than corrupting later blocks.
+        val stride = Features.maxRegions
         val slots = Features.slotsOf(me)
 
         // Relative faction order (me first), for placing faction args by seat.
@@ -111,8 +118,8 @@ object ActionFeatures {
         a(cur + kindSlot(kname)) = 1.0
         cur += KIND
 
-        val regA = cur;             cur += nr
-        val regB = cur;             cur += nr
+        val regA = cur;             cur += stride
+        val regB = cur;             cur += stride
         val uslot = cur;            cur += Features.unitSlotWidth
         val utype = cur;            cur += UTYPES
         val fac  = cur;             cur += Features.numFactions
@@ -131,7 +138,7 @@ object ActionFeatures {
 
         def markRegion(r : Region) : Unit = {
             val ri = ridx.getOrElse(r, -1)
-            if (ri >= 0) {
+            if (ri >= 0 && ri < stride) {
                 if (regionsSeen == 0)      a(regA + ri) = 1.0
                 else if (regionsSeen == 1) a(regB + ri) = 1.0
                 // 3rd+ region (rare) folds into the secondary block

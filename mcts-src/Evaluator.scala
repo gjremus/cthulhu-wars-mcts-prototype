@@ -56,10 +56,37 @@ object Features {
     //   6. bias         : 1.0
 
     private val DoomGoal    = 30.0
-    private val NumFactions = 4                 // base-4 seating (GC/BG/YS/CC)
-    private val UnitSlots    = 6                 // per-faction distinct unit classes (base-4 uses 5; 1 spare)
-    private val AbilitySlots = 4                 // innate abilities per faction (base-4 max = 3; 1 spare)
-    private val PerFaction   = 38                // scalar block width per faction (see layout below)
+
+    // ─── ENVIRONMENT CAPACITIES (Phase 1 extensibility, 2026-08-01) ────────────────
+    // The encoding was always shape-agnostic (relative seats, own-order unit/spellbook
+    // slots — it never says "if faction==X"), but four SIZES were hardcoded to base-4 /
+    // Earth: seat count, per-faction unit slots, ability slots, and the on-map region
+    // count used as the board-tensor STRIDE. That silently bound the whole net to
+    // 17-region, 4-player games. These are now CAPACITIES — the MAX the tensor reserves —
+    // and are env-overridable. DEFAULTS ARE TODAY'S EXACT VALUES, so with no env set the
+    // vector is byte-identical (dim stays 777/128) and the running champion + its on-disk
+    // checkpoint keep working unchanged. To expand (more players, a bigger map, factions
+    // with more unit classes/abilities) you RAISE a capacity via env; live data then fills
+    // a prefix of the larger reserved block and the extra slots stay zero until used. A
+    // capacity change resizes `dim`, so the champion's base-4 weights must be TRANSFERRED
+    // into the larger layout (see Checkpoint.migrate) rather than loaded raw — that is the
+    // warm-start the directive calls for, never a cold relearn. Clamped to a sane floor so
+    // a garbage env can't shrink the tensor below what base-4 needs.
+    private def capEnv(name : String, dflt : Int, floor : Int) : Int = {
+        val e = System.getenv(name)
+        if (e == null || e.trim.isEmpty) dflt
+        else try math.max(floor, e.trim.toInt) catch { case _ : NumberFormatException => dflt }
+    }
+    private val NumFactions  = capEnv("CW_MAX_FACTIONS",  4,  4)   // seats reserved (base-4; raise for 5p or expansions)
+    private val UnitSlots     = capEnv("CW_MAX_UNITSLOTS", 6,  6)  // per-faction distinct unit classes (base-4 uses 5; 1 spare)
+    private val AbilitySlots  = capEnv("CW_MAX_ABILITIES", 4,  4)  // innate abilities per faction (base-4 max = 3; 1 spare)
+    private val MaxRegions    = capEnv("CW_MAX_REGIONS",   17, 17) // on-map region slots reserved (Earth 4v3.5 = 17)
+    private val PerFaction    = 38                // scalar block width per faction (see layout below)
+
+    // package-private so the action encoder and checkpoint-migration share the SAME caps.
+    private[cws] def maxRegions   : Int = MaxRegions
+    private[cws] def maxFactions  : Int = NumFactions
+    private[cws] def maxUnitSlots : Int = UnitSlots
 
     // Board-OBJECT layers (region-list state on Game). Faction-agnostic map features.
     // Base-4 only populates `desecrated` (YS); the rest are wired now so the encoding
@@ -119,9 +146,12 @@ object Features {
     //            the conjunction "GC can Devour = owns Devour AND has an awakened GOO",
     //            and lets it see that a RIVAL just has a reusable power up (imitation).
 
-    // Derived dimension — stays in lock-step with the layout.
+    // Derived dimension — stays in lock-step with the layout. Uses MaxRegions (the
+    // reserved capacity), NOT the live region count, so the vector length is CONSTANT
+    // for a given set of caps regardless of which map is loaded — a smaller map just
+    // leaves trailing region slots zero. Default caps reproduce the historical 777.
     val dim : Int = {
-        val nr = 17 // EarthMap4v35 on-map regions
+        val nr = MaxRegions
         nr * NumFactions * UnitSlots +   // 1. board tensor (per SPECIFIC unit class)
         nr * NumFactions +               // 2. per-region combat strength (real dice)
         nr * NumFactions +               // 3. gate control
@@ -137,7 +167,13 @@ object Features {
     def of(game : Game, me : Faction) : Array[Double] = {
         implicit val g : Game = game
         val (regions, ridx) = regionsOf(game)
-        val nr = regions.length
+        // `nr` = live on-map region count for ITERATION; `stride` = MaxRegions reserved
+        // capacity used for CURSOR MATH so every block lands at a constant offset no
+        // matter which map is loaded. A map with more regions than the cap fills the
+        // first MaxRegions and drops the overflow (guarded per write) rather than
+        // corrupting later blocks; a smaller map leaves the tail zero.
+        val stride = MaxRegions
+        val nr = math.min(regions.length, stride)
 
         // Relative faction order: me first, then the rest in stable seating order.
         val order : Array[Faction] = {
@@ -159,13 +195,13 @@ object Features {
                 if (u.region.glyph.onMap) {
                     val ri = ridx.getOrElse(u.region, -1)
                     val slot = slots.getOrElse(u.uclass, -1)
-                    if (ri >= 0 && slot >= 0 && slot < UnitSlots)
+                    if (ri >= 0 && ri < stride && fi < NumFactions && slot >= 0 && slot < UnitSlots)
                         a(boardBase + ((ri * NumFactions) + fi) * UnitSlots + slot) += 1.0 / 3.0
                 }
             }
             fi += 1
         }
-        cur += nr * NumFactions * UnitSlots
+        cur += stride * NumFactions * UnitSlots
 
         // --- 2. per-region COMBAT strength (real engine dice, per faction) --------
         // The engine's own strength() folds in each unit's combat AND its faction's
@@ -180,12 +216,12 @@ object Features {
             var ri = 0
             while (ri < nr) {
                 val here = p.at(regions(ri))
-                if (here.nonEmpty) a(combatBase + ri * NumFactions + fi) = f.strength(here, opp) / 10.0
+                if (here.nonEmpty && fi < NumFactions) a(combatBase + ri * NumFactions + fi) = f.strength(here, opp) / 10.0
                 ri += 1
             }
             fi += 1
         }
-        cur += nr * NumFactions
+        cur += stride * NumFactions
 
         // --- 3. gate control: 1.0 where that faction holds a gate -----------------
         val gateBase = cur
@@ -193,11 +229,11 @@ object Features {
         while (fi < order.length) {
             game.players(order(fi)).allGates.foreach { r =>
                 val ri = ridx.getOrElse(r, -1)
-                if (ri >= 0) a(gateBase + ri * NumFactions + fi) = 1.0
+                if (ri >= 0 && ri < stride && fi < NumFactions) a(gateBase + ri * NumFactions + fi) = 1.0
             }
             fi += 1
         }
-        cur += nr * NumFactions
+        cur += stride * NumFactions
 
         // --- 4. board OBJECTS: region-indexed tokens/structures --------------------
         // Layer 0 desecration (YS, live in base-4), 1 cathedral, 2 chaos gate, 3 crater.
@@ -205,12 +241,12 @@ object Features {
         // exist so the net's shape never changes when they do.
         val objBase = cur
         def markObjects(layer : Int, rs : $[Region]) : Unit =
-            rs.foreach { r => val ri = ridx.getOrElse(r, -1); if (ri >= 0) a(objBase + ri * ObjectLayers + layer) = 1.0 }
+            rs.foreach { r => val ri = ridx.getOrElse(r, -1); if (ri >= 0 && ri < stride) a(objBase + ri * ObjectLayers + layer) = 1.0 }
         markObjects(0, game.desecrated)
         markObjects(1, game.cathedrals)
         markObjects(2, game.chaosGateRegions)
         markObjects(3, game.fbCraters)
-        cur += nr * ObjectLayers
+        cur += stride * ObjectLayers
 
         // --- 5. per-faction block: globals + books + cooldowns + requirements + events
         fi = 0

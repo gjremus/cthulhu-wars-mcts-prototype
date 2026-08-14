@@ -1,0 +1,24 @@
+ 0 GC won=false brainDoom= 9 leaderDoom=55 decisions=2841
+ 1 GC won=false brainDoom=25 leaderDoom=45 decisions=2804
+ 2 GC won=false brainDoom=14 leaderDoom=49 decisions=3111
+ 3 GC won=false brainDoom= 9 leaderDoom=41 decisions=1619
+ 4 GC won=false brainDoom= 8 leaderDoom=44 decisions=2232
+ 5 GC won=false brainDoom=11 leaderDoom=31 decisions=1756
+ 6 BG won=false brainDoom=21 leaderDoom=51 decisions=2959
+ 7 BG won=false brainDoom=17 leaderDoom=48 decisions=2773
+ 8 BG won=false brainDoom=16 leaderDoom=40 decisions=1784
+ 9 BG won=false brainDoom=10 leaderDoom=46 decisions=2680
+10 BG won=false brainDoom=11 leaderDoom=52 decisions=2373
+11 BG won=false brainDoom=13 leaderDoom=39 decisions=2211
+12 YS won=false brainDoom=15 leaderDoom=41 decisions=2214
+13 YS won=false brainDoom= 3 leaderDoom=37 decisions=1865
+14 YS won=false brainDoom= 5 leaderDoom=42 decisions=2488
+15 YS won=false brainDoom= 7 leaderDoom=48 decisions=2173
+16 YS won=false brainDoom=12 leaderDoom=48 decisions=2660
+17 YS won=false brainDoom= 4 leaderDoom=46 decisions=2830
+18 CC won=false brainDoom= 2 leaderDoom=44 decisions=2846
+19 CC won=false brainDoom= 4 leaderDoom=48 decisions=2389
+20 CC won=false brainDoom= 2 leaderDoom=45 decisions=1581
+21 CC won=false brainDoom= 4 leaderDoom=45 decisions=2132
+22 CC won=false brainDoom=12 leaderDoom=54 decisions=3060
+23 CC won=false brainDoom= 5 leaderDoom=44 decisions=2547

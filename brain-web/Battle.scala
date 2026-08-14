@@ -1,0 +1,1540 @@
+package cws
+
+import hrf.colmat._
+
+import html._
+
+
+sealed trait BattleRoll extends Record
+case object Miss extends BattleRoll {
+    override def toString = "Miss".styled("miss")
+}
+case object Pain extends BattleRoll {
+    override def toString = "Pain".styled("pain")
+}
+case object Kill extends BattleRoll {
+    override def toString = "Kill".styled("kill")
+}
+
+object BattleRoll {
+    def roll() = randomInRange(1, 6) @@ {
+        case 6 => Kill
+        case 5 | 4 => Pain
+        case 3 | 2 | 1 => Miss
+    }
+}
+
+sealed abstract class UnitHealth(val text : String) {
+    override def toString = text
+}
+
+sealed trait BaseUnitHealth extends UnitHealth
+
+case object Alive extends UnitHealth("alive") with BaseUnitHealth
+case object Killed extends UnitHealth("killed") with BaseUnitHealth
+case object Pained extends UnitHealth("pained") with BaseUnitHealth
+case class DoubleHP(left : BaseUnitHealth, right : BaseUnitHealth) extends UnitHealth((left, right) match {
+    case (Killed, Alive) => "half-killed"
+    case (Alive, Killed) => "half-killed"
+    case (Pained, Alive) => "half-pained"
+    case (Alive, Pained) => "half-pained"
+    case (Alive, Alive) => "alive"
+    case (a, b) => "" + a + "/" + b
+})
+case class Spared(now : BaseUnitHealth) extends UnitHealth("spared-" + now)
+
+
+sealed trait BattlePhase extends Record
+case object BattleStart extends BattlePhase
+case object AttackerPreBattle extends BattlePhase
+case object DefenderPreBattle extends BattlePhase
+case object PreRoll extends BattlePhase
+case object RollAttackers extends BattlePhase
+case object RollDefenders extends BattlePhase
+case object ChannelPowerPhase extends BattlePhase
+case object NecrophagyPhase extends BattlePhase
+case object PostRoll extends BattlePhase
+case object AssignDefenderKills extends BattlePhase
+case object AssignAttackerKills extends BattlePhase
+case object AllKillsAssignedPhase extends BattlePhase
+case object HarbingerKillPhase extends BattlePhase
+case object EternalKillPhase extends BattlePhase
+case object YgolonacOrificesPhase extends BattlePhase
+case object CosmicRulerPhase extends BattlePhase
+case object EliminatePhase extends BattlePhase
+case object BerserkergangPhase extends BattlePhase
+case object UnholyGroundPhase extends BattlePhase
+case object AssignDefenderPains extends BattlePhase
+case object AssignAttackerPains extends BattlePhase
+case object AllPainsAssignedPhase extends BattlePhase
+// Tombstalker (TS): Oleaginous post-battle phase where Gla'aki/Deep Tendril pains become retreats
+case object OleaginousPhase extends BattlePhase
+case object HarbingerPainPhase extends BattlePhase
+case object EternalPainPhase extends BattlePhase
+case object MadnessPhase extends BattlePhase
+case object AttackerDefenderRetreats extends BattlePhase
+case object DefenderAttackerRetreats extends BattlePhase
+case object AzathothCombatDiePhase extends BattlePhase
+case object PostBattlePhase extends BattlePhase
+case object BattleEnd extends BattlePhase
+
+
+trait PreBattleQuestion extends FactionAction {
+    def question(implicit game : Game) = (game.battle./(_.attacker).has(self)).?("Attacker").|("Defender") + " pre-battle"
+}
+
+case class BattleDoneAction(self : Faction) extends ForcedAction
+case class PreBattleDoneAction(self : Faction, next : BattlePhase) extends OptionFactionAction("Done") with PreBattleQuestion
+case class BattleProceedAction(next : BattlePhase) extends ForcedAction
+
+case class BattleRollAction(f : Faction, rolls : $[BattleRoll], next : BattlePhase) extends ForcedAction
+
+case class AssignKillAction(self : Faction, count : Int, faction : Faction, ur : UnitRef) extends BaseFactionAction("Assign " + (count > 1).??(count.styled("highlight") + " ") + ("Kill" + (count > 1).??("s")).styled("kill"), ur.full)
+case class AssignPainAction(self : Faction, count : Int, faction : Faction, ur : UnitRef) extends BaseFactionAction("Assign " + (count > 1).??(count.styled("highlight") + " ") + ("Pain" + (count > 1).??("s")).styled("pain"), ur.full)
+
+case class RetreatOrderAction(self : Faction, a : Faction, b : Faction) extends BaseFactionAction("Retreat order", "" + a + " then " + b)
+
+case class EliminateNoWayAction(self : Faction, ur : UnitRef) extends ForcedAction
+
+case class RetreatAllAction(self : Faction, f : Faction, r : Region) extends BaseFactionAction("Retreat all pained " + f + " units to", r)
+case class RetreatSeparatelyAction(self : Faction, f : Faction, destinations : $[Region]) extends BaseFactionAction(None, "Retreat separately") with More
+
+case class RetreatUnitAction(self : Faction, ur : UnitRef, r : Region) extends ForcedAction
+
+// Tombstalker (TS): Oleaginous retreat action — pained Gla'aki/Deep Tendrils retreat to adjacent area instead
+case class OleaginousRetreatAction(self : Faction, ur : UnitRef, r : Region) extends BaseFactionAction(implicit g => "Retreat " + ur.faction.full + " " + g.unit(ur).full + " with " + Oleaginous + " to", r)
+
+
+// GC
+case class DevourPreBattleAction(self : Faction) extends OptionFactionAction(Devour) with PreBattleQuestion
+case class DevourAction(self : Faction, ur : UnitRef) extends ForcedAction
+
+case class AbsorbPreBattleAction(self : Faction) extends OptionFactionAction(Absorb) with PreBattleQuestion with Soft
+case class AbsorberAction(self : Faction, ur : UnitRef) extends ForcedAction
+case class AbsorbeeAction(self : Faction, ur : UnitRef, tr : UnitRef) extends ForcedAction
+
+// CC
+case class AbductPreBattleAction(self : Faction) extends OptionFactionAction(Abduct) with PreBattleQuestion
+case class AbductAction(self : Faction, ur : UnitRef, tr : UnitRef) extends BaseFactionAction(Abduct, tr.full)
+
+case class InvisibilityPreBattleAction(self : Faction) extends OptionFactionAction(Invisibility) with PreBattleQuestion with Soft
+case class InvisibilityAction(self : Faction, ur : UnitRef, tr : UnitRef) extends ForcedAction
+
+case class SeekAndDestroyPreBattleAction(self : Faction) extends OptionFactionAction(SeekAndDestroy) with PreBattleQuestion with Soft
+case class SeekAndDestroyAction(self : Faction, uc : UnitClass, r : Region) extends BaseFactionAction("Bring with " + SeekAndDestroy, uc.styled(self) + " from " + r)
+
+case class HarbingerPowerAction(self : Faction, ur : UnitRef, n : Int) extends ForcedAction
+case class HarbingerESAction(self : Faction, ur : UnitRef, e : Int) extends ForcedAction
+case class HarbingerAction(self : Faction, ur : UnitRef) extends ForcedAction
+
+// BG
+case class NecrophagyAction(self : Faction, ur : UnitRef, r : Region) extends ForcedAction
+
+// SL
+case class DemandSacrificePreBattleAction(self : Faction) extends OptionFactionAction(DemandSacrifice) with PreBattleQuestion
+case class DemandSacrificeProvideESAction(self : Faction) extends ForcedAction
+case class DemandSacrificeKillsArePainsAction(self : Faction) extends ForcedAction
+
+// WW
+case class HowlPreBattleAction(self : Faction) extends OptionFactionAction(Howl) with PreBattleQuestion
+case class HowlUnitAction(self : Faction, ur : UnitRef) extends ForcedAction
+case class HowlAction(self : Faction, ur : UnitRef, r : Region) extends ForcedAction
+
+case class EternalPayAction(self : Faction, u : UnitRef, result : BattleRoll) extends ForcedAction
+
+case class BerserkergangAction(self : Faction, n : Int, u : UnitRef) extends ForcedAction
+
+case class CannibalismAction(self : Faction, r : Region, uc : UnitClass) extends BaseFactionAction("Spawn with " + Cannibalism + " in " + r, uc.styled(self))
+
+// OW
+case class ChannelPowerAction(self : Faction, n : Int) extends BaseFactionAction(ChannelPower, "Reroll " + n + " " + (n > 1).?("Misses").|("Miss").styled("miss") + " for " + 1.power)
+
+case class MillionFavoredOnesAction(self : Faction, r : Region, uc : UnitClass, nw : $[UnitClass]) extends BaseFactionAction(MillionFavoredOnes, uc.styled(self) + " in " + r + " to " + ((nw.num > 1).?("" + nw.num + " " + nw(0).plural).|(nw(0).name)).styled(self))
+case class MillionFavoredOnesXAction(self : Faction, r : Region, u : UnitRef, nw : $[UnitClass]) extends ForcedAction
+
+// AN
+case class UnholyGroundAction(self : Faction, o : Faction, cr : Region) extends ForcedAction
+case class UnholyGroundEliminateAction(self : Faction, f : Faction, ur : UnitRef) extends ForcedAction
+
+// Independent Great Old Ones
+case class CosmicUnityPreBattleAction(self : Faction) extends OptionFactionAction(CosmicUnity.styled(self)) with PreBattleQuestion
+case class CosmicUnityAction(self : Faction, ur : UnitRef) extends ForcedAction
+
+// Neutral Spellbooks
+case class ShrivelingPreBattleAction(self : Faction) extends OptionFactionAction(Shriveling) with PreBattleQuestion
+case class ShrivelingAction(self : Faction, ur : UnitRef) extends ForcedAction
+
+
+trait BattleImplicits {
+    implicit class BattleFactionEx(f : Faction) {
+        def opponent(implicit battle : Battle) : Faction =
+            f match {
+                case f if f == battle.attacker => battle.defender
+                case f if f == battle.defender => battle.attacker
+                case _ => throw new Error("faction " + f.name + " is not a side in the battle")
+            }
+
+    }
+
+    implicit def factionToSide(f : Faction)(implicit battle : Battle) : Side =
+        f match {
+            case f if f == battle.attacker => battle.attackers
+            case f if f == battle.defender => battle.defenders
+            case _ => throw new Error("faction " + f.name + " is not a side in the battle")
+        }
+
+}
+
+
+class Side(private val self : Faction, var forces : $[UnitFigure], var str : Int, var rolls : $[BattleRoll], var effects : $[BattleSpellbook])(implicit val game : Game) {
+    def tag(s : BattleSpellbook) = effects.has(s)
+    def add(s : BattleSpellbook) { effects :+= s }
+    def remove(s : BattleSpellbook) { effects = effects.but(s) }
+    def count(s : BattleSpellbook) = effects.count(s)
+}
+
+class Battle(val arena : Region, val attacker : Faction, val defender : Faction, val effect : |[Spellbook])(implicit val game : Game) {
+    implicit val battle : Battle = this
+
+    val attackers = new Side(attacker, $, 0, $, $)
+    val defenders = new Side(defender, $, 0, $, $)
+
+    val sides = $(attacker, defender)
+
+    var phase : BattlePhase = AzathothCombatDiePhase
+
+    var exempted : $[UnitFigure] = $
+
+    // Round 8 Bug 45: flag preventing the post-battle Cyclopean Gaze hook from
+    // re-firing each time the battle re-enters PostBattlePhase. After CG completes,
+    // it calls proceed() which resumes the battle from PostBattlePhase, which would
+    // otherwise hit the CG hook again with the same Ghatanothoa/Revenant sources.
+    var fbCyclopeanGazeFiredThisBattle : Boolean = false
+
+    def exempt(u : UnitFigure) {
+        exempted :+= u
+        sides.foreach(_.forces :-= u)
+    }
+
+    var eliminated : $[UnitFigure] = $
+
+    def eliminate(u : UnitFigure) {
+        exempt(u)
+        eliminated :+= u
+        game.eliminate(u)
+        u.faction.satisfy(LoseUnitInBattle, "Lose " + u.short + " in battle")
+    }
+
+    def retreat(u : UnitFigure, r : Region) = {
+        game.fbSuppressCGForPlacement = true
+        u.region = r
+        game.fbSuppressCGForPlacement = false
+        u.onGate = false
+        u.add(Retreated)
+        u.health = Alive
+    }
+
+    def assignedKills(unit : UnitFigure) : Int =
+        unit.health match {
+            case Killed => 1
+            case DoubleHP(Killed, Killed) => 2
+            case DoubleHP(Killed, _) => 1
+            case DoubleHP(_, Killed) => 1
+            case _ => 0
+        }
+
+    def canAssignKills(unit : UnitFigure) : Int =
+        unit.health match {
+            case DoubleHP(Killed, Killed) => 0
+            case DoubleHP(Killed, _) => 1
+            case DoubleHP(_, Killed) => 1
+            case DoubleHP(_, _) => 2
+            case Alive => 1
+            case _ => 0
+        }
+
+    def assignKill(unit : UnitFigure) {
+        unit.health = unit.health match {
+            case Killed => log("ERROR - Assign KILL to KILLED"); Killed
+            case Spared(_) => log("ERROR - Assign KILL to SPARED"); Killed
+            case DoubleHP(Killed, Killed) => log("ERROR - Assign KILL to DBL-KILLED"); Killed
+            case DoubleHP(Killed, _) => DoubleHP(Killed, Killed)
+            case DoubleHP(_, Killed) => log("ERROR - Assign KILL to HALF-PAINED"); DoubleHP(Killed, Killed)
+            case DoubleHP(Pained, _) => log("ERROR - Assign KILL to HALF-PAINED"); DoubleHP(Pained, Killed)
+            case DoubleHP(_, Pained) => DoubleHP(Killed, Pained)
+            case DoubleHP(Alive, Alive) => DoubleHP(Killed, Alive)
+            case Pained => log("ERROR - Assign KILL to PAINED"); Killed
+            case Alive => Killed
+        }
+    }
+
+    def assignedPains(unit : UnitFigure) : Int =
+        unit.health match {
+            case Pained => 1
+            case DoubleHP(Pained, Pained) => 2
+            case DoubleHP(Pained, _) => 1
+            case DoubleHP(_, Pained) => 1
+            case _ => 0
+        }
+
+    def canAssignPains(unit : UnitFigure) : Int =
+        unit.health match {
+            case DoubleHP(Alive, Alive) => 2
+            case DoubleHP(Alive, _) => 1
+            case DoubleHP(_, Alive) => 1
+            case Alive => 1
+            case _ => 0
+        }
+
+    def assignPain(unit : UnitFigure) {
+         unit.health = unit.health match {
+            case Killed => log("ERROR - Assign PAIN to KILLED"); Pained
+            case Spared(_) => log("ERROR - Assign PAIN to SPARED"); Killed
+            case Pained => log("ERROR - Assign PAIN to PAINED"); Pained
+            case DoubleHP(Killed, Killed) => log("ERROR - Assign PAIN to DBL-KILLED"); Pained
+            case DoubleHP(Pained, Killed) => log("ERROR - Assign PAIN to PAINED-KILLED"); Pained
+            case DoubleHP(Killed, Pained) => log("ERROR - Assign PAIN to KILLED-PAINED"); Pained
+            case DoubleHP(Pained, Pained) => log("ERROR - Assign PAIN to DBL-PAINED"); Pained
+            case DoubleHP(Killed, Alive) => DoubleHP(Killed, Pained)
+            case DoubleHP(Alive, Killed) => DoubleHP(Pained, Killed)
+            case DoubleHP(Pained, Alive) => DoubleHP(Pained, Pained)
+            case DoubleHP(Alive, Pained) => DoubleHP(Pained, Pained)
+            case DoubleHP(Alive, Alive) => DoubleHP(Pained, Alive)
+            case Alive => Pained
+        }
+    }
+
+    def prebattle(s : Faction, next : BattlePhase) : Continue = {
+        if (attackers.forces.none || defenders.forces.none) {
+            if (attackers.forces.none)
+                log(attacker, "had no units remaining")
+
+            if (defenders.forces.none)
+                log(defender, "had no units remaining")
+
+            checkKillSpellbooks(attacker)
+            checkKillSpellbooks(defender)
+
+            sides.foreach { s =>
+                s.forces.foreach(_.remove(Absorbed))
+                s.forces.foreach(_.remove(Invised))
+            }
+
+            return jump(PostBattlePhase)
+        }
+
+        var options : $[FactionAction] = $
+
+        if (s.has(Devour) && s.tag(Devour).not && s.forces(Cthulhu).any && s.opponent.forces.vulnerable.any)
+            options :+= DevourPreBattleAction(s)
+
+        if (s.has(Shriveling) && s.tag(Shriveling).not && s.opponent.forces.vulnerable.any)
+            options :+= ShrivelingPreBattleAction(s)
+
+        if (s.has(Absorb) && s.forces(Shoggoth).any && s.forces.vulnerable.num > 1)
+            options :+= AbsorbPreBattleAction(s)
+
+        if (s.has(Howl) && s.tag(Howl).not && s.forces(Wendigo).any && s.opponent.forces.%(_.canBeMoved).any)
+            options :+= HowlPreBattleAction(s)
+
+        if (s.has(Abduct) && s.forces(Nightgaunt).any && s.opponent.forces.vulnerable.any)
+            options :+= AbductPreBattleAction(s)
+
+        if (s.has(SeekAndDestroy) && s.all(HuntingHorror).%(_.region != arena).any)
+            options :+= SeekAndDestroyPreBattleAction(s)
+
+        if (s.has(Invisibility) && s.forces(FlyingPolyp).not(Invised).any)
+            options :+= InvisibilityPreBattleAction(s)
+
+        if (s.has(DemandSacrifice) && s.tag(DemandSacrifice).not && s.opponent.tag(KillsArePains).not)
+            if (game.options.has(DemandTsathoggua).?(s.forces(Tsathoggua).any).|(s.has(Tsathoggua)))
+                options :+= DemandSacrificePreBattleAction(s)
+
+        // Round 8 Bug 40: also check facedown state for IGOO spellbooks
+        if (s.has(CosmicUnity) && !s.oncePerGame.has(CosmicUnity) && s.tag(CosmicUnity).not && s.forces(Daoloth).any && s.opponent.forces.goos.any)
+            options :+= CosmicUnityPreBattleAction(s)
+
+        Ask(s).list(options).add(PreBattleDoneAction(s, next))
+    }
+
+    def preroll(s : Faction) {
+        val str = s.strength(s.forces, s.opponent)
+
+        if (str != s.str) {
+            log(s, "strength", (str > s.str).?("increased").|("decreased"), "to", str.str)
+            s.str = str
+        }
+
+        if (s.has(Harbinger) && s.forces(Nyarlathotep).any)
+            s.add(Harbinger)
+
+        if (s.has(Emissary) && s.forces(Nyarlathotep).any && s.opponent.forces.goos.none)
+            s.add(Emissary)
+
+        if (s.has(Vengeance) && s.forces(Hastur).any)
+            s.add(Vengeance)
+
+        if (s.has(ChannelPower))
+            s.add(ChannelPower)
+
+        if (s.has(Eternal) && s.forces(RhanTegoth).any)
+            s.add(Eternal)
+
+        if (s.has(Regenerate) && s.forces(Starspawn).any)
+            s.add(Regenerate)
+
+        if (s.has(MillionFavoredOnes))
+            s.add(MillionFavoredOnes)
+
+        if (s.has(UnholyGround))
+            s.add(UnholyGround)
+    }
+
+    def postroll(s : Faction) {
+        s.forces.foreach(_.remove(Absorbed))
+        s.forces.foreach(_.remove(Invised))
+
+        if (s.tag(Regenerate))
+            s.forces(Starspawn).foreach(_.health = DoubleHP(Alive, Alive))
+
+        if (s.tag(KillsArePains)) {
+            if (s.rolls.exists(_ == Kill)) {
+                s.rolls = s.rolls./(_.useIf(_ == Kill)(_ => Pain))
+            }
+        }
+    }
+
+    def assigner(s : Faction) : Faction =
+        if (s.opponent.tag(Vengeance))
+            s.opponent
+        else
+        if (s.neutral)
+            s.opponent
+        else
+            s
+
+    def assignKills(s : Faction, next : BattlePhase) : Continue = {
+        val kills = s.opponent.rolls.count(_ == Kill)
+        val assigned = s.forces./(assignedKills).sum
+        val canAssign = s.forces./(canAssignKills).sum
+
+        if (kills <= assigned)
+            return BattleProceedAction(next)
+
+        if (kills >= assigned + canAssign) {
+            s.forces.foreach(u => 1.to(canAssignKills(u)).foreach(_ => assignKill(u)))
+            return DelayedContinue(100, Then(BattleProceedAction(next)))
+        }
+
+        val f = assigner(s)
+
+        if (f != s && assigned == 0)
+            log(f, "assigned kills with", Vengeance)
+
+        return DelayedContinue(50, Ask(f, s.forces.%(u => canAssignKills(u) > 0).sortP./(u => AssignKillAction(f, kills - assigned, s, u))))
+    }
+
+    def assignPains(s : Faction, next : BattlePhase) : Continue = {
+        val pains = s.opponent.rolls.count(_ == Pain)
+        val assigned = s.forces./(assignedPains).sum
+        val canAssign = s.forces./(canAssignPains).sum
+
+        if (pains <= assigned)
+            return BattleProceedAction(next)
+
+        if (pains >= assigned + canAssign) {
+            s.forces.foreach(u => 1.to(canAssignPains(u)).foreach(_ => assignPain(u)))
+            return DelayedContinue(100, Then(BattleProceedAction(next)))
+        }
+
+        val f = assigner(s)
+
+        if (f != s && assigned == 0 && s.real)
+            log(f, "assigned pains with", Vengeance)
+
+        return DelayedContinue(50, Ask(f, s.forces.%(u => canAssignPains(u) > 0).sortP./(u => AssignPainAction(f, pains - assigned, s, u))))
+    }
+
+    def retreater(s : Faction) : Faction = {
+        factions.%(_.has(Madness)).starting | {
+            if (s.neutral)
+                s.opponent
+            else
+                s
+        }
+    }
+
+    def retreat(s : Faction) : Continue = {
+        val refugees = s.forces.%(_.health == Pained)
+
+        if (refugees.none)
+            return proceed()
+
+        val destinations = arena.connectedForRetreat.%(r => s.opponent.at(r).none)
+
+        val chooser : Faction = retreater(s)
+
+        if (destinations.none)
+            Ask(s).each(refugees.sortA)(u => EliminateNoWayAction(s, u).as(u)("Nowhere to retreat, a pained unit is eliminated"))
+        else
+        if (destinations.num == 1) {
+            val r = destinations.only
+
+            refugees.foreach(u => retreat(u, r))
+
+            log(refugees./(_.short).mkString(", "), "retreated to", r)
+
+            proceed()
+        }
+        else
+        if (refugees.num == 1 || s.forces.tag(Retreated).any)
+            Ask(chooser).each(destinations)(d => RetreatUnitAction(chooser, refugees.first, d).as(d)("Retreat", refugees.first, "to"))
+        else
+            Ask(chooser).each(destinations)(d => RetreatAllAction(chooser, s, d)).add(RetreatSeparatelyAction(chooser, s, destinations))
+    }
+
+    def checkKillSpellbooks(s : Faction) {
+        if (s.needs(KillDevour1) || s.needs(KillDevour2)) {
+            var devoured = s.count(Devour)
+            var kills = s.opponent.forces.count(_.health == Killed)
+
+            if (devoured + kills >= 2) {
+                if (s.needs(KillDevour2)) {
+                    if (kills >= 2) {
+                        s.satisfy(KillDevour2, "Kill two enemy units in a battle")
+                        kills -= 2
+                    }
+                    else {
+                        s.satisfy(KillDevour2, "Kill and Devour two enemy units in a battle")
+                        devoured -= 1
+                        kills -= 1
+                    }
+                }
+            }
+
+            if (devoured + kills >= 1) {
+                if (s.needs(KillDevour1)) {
+                    if (devoured == 1) {
+                        s.satisfy(KillDevour1, "Devour an enemy unit in a battle")
+                        devoured -= 1
+                    }
+                    else {
+                        s.satisfy(KillDevour1, "Kill an enemy unit in a battle")
+                        kills -= 1
+                    }
+                }
+            }
+        }
+    }
+
+    def checkByatisSpellbook(s : Faction) : Unit = {
+        if (s.upgrades.has(GodOfForgetfulness).not)
+            s.forces(Byatis).foreach { u =>
+                if (u.health != Killed && s.opponent.forces.exists(_.health == Killed)) {
+                    s.upgrades :+= GodOfForgetfulness
+
+                    log(s, "gained", GodOfForgetfulness.styled(s), "for", Byatis.styled(s))
+                }
+            }
+    }
+
+    def checkDaolothSpellbook() : Unit = {
+        factions.foreach { f =>
+            if (f.upgrades.has(Interdimensional).not && f.has(Daoloth)) {
+                if (sides.exists(s => s.forces.exists(u => u.goo && u.health == Killed))) {
+                    f.upgrades :+= Interdimensional
+
+                    log(f, "gained", Interdimensional.styled(f), "for", Daoloth.styled(f))
+                }
+            }
+        }
+    }
+
+    def jump(bp : BattlePhase) : Continue = {
+        phase = bp
+        proceed()
+    }
+
+    def proceed() : Continue = {
+        phase match {
+            case AzathothCombatDiePhase =>
+                if (sides.has(DS) && sides.exists(_.at(arena).%(_.uclass == AvatarSynthesis).any))
+                    return RollD6(_ => "Roll Azathoth die for " + AvatarSynthesis.styled(DS) + " combat", roll => AzathothCombatDieRollAction(DS, roll))
+                jump(BattleStart)
+
+            case BattleStart =>
+                if (attacker.hasAllSB.not)
+                    attacker.acted = true
+
+                attacker.forces = attacker.at(arena)
+
+                if (attacker.forces.none) {
+                    log("No attackers left to battle")
+
+                    return jump(PostBattlePhase)
+                }
+
+                defender.forces = defender.at(arena)
+
+                if (defender.forces.none) {
+                    log("No defenders left to battle")
+
+                    return jump(PostBattlePhase)
+                }
+
+                // Tombstalker (TS) Grasping Dead: only TombHerds participate in battle, exempt all other TS units
+                if (effect == |(GraspingDead)) {
+                    sides.%(f => f == TS).foreach { s =>
+                        s.forces.%(_.uclass != TombHerd).foreach { u => exempt(u) }
+                    }
+                    if (attackers.forces.none) {
+                        log("No Tomb-Herds left for Grasping Dead battle")
+                        return jump(PostBattlePhase)
+                    }
+                }
+
+                sides.foreach(s => s.str = s.strength(s.forces, s.opponent))
+
+                sides.foreach { s =>
+                    if (s.upgrades.has(NightmareWeb).not)
+                        s.forces(Nyogtha).foreach { u =>
+                            if (s.opponent.forces.goos.any)
+                                s.oncePerAction :+= NyogthaPrimed
+                        }
+                }
+
+                log(attacker, "attacked with", attacker.forces./(_.short).mkString(", "), "" + attacker.str.str)
+
+                attacker.forces(Nyogtha).foreach { u =>
+                    log(u, "had its strength at", 4.str, "while attacking")
+                }
+
+                if (attacker.forces.%(_.uclass == AvatarSynthesis).any)
+                    log(AvatarSynthesis.styled(DS), "Azathoth die", "[" + game.azathothDieRoll.styled("doom") + "]", "— strength", game.azathothDieRoll.max(1).str)
+
+                log(defender, "defended with", defender.forces./(_.short).mkString(", "), "" + defender.str.str)
+
+                if (defender.forces.%(_.uclass == AvatarSynthesis).any)
+                    log(AvatarSynthesis.styled(DS), "Azathoth die", "[" + game.azathothDieRoll.styled("doom") + "]", "— strength", game.azathothDieRoll.max(1).str)
+
+                jump(AttackerPreBattle)
+
+            case AttackerPreBattle =>
+                prebattle(attacker, DefenderPreBattle)
+
+            case DefenderPreBattle =>
+                prebattle(defender, PreRoll)
+
+            case PreRoll =>
+                preroll(attacker)
+                preroll(defender)
+
+                jump(RollAttackers)
+
+            case RollAttackers =>
+                RollBattle(attacker, "attack", attacker.str, x => BattleRollAction(attacker, x, RollDefenders))
+
+            case RollDefenders =>
+                RollBattle(defender, "defense", defender.str, x => BattleRollAction(defender, x, ChannelPowerPhase))
+
+            case ChannelPowerPhase =>
+                sides.of[OW].foreach { s =>
+                    if (s.tag(ChannelPower)) {
+                        s.remove(ChannelPower)
+
+                        if (s.rolls.%(_ == Miss).any)
+                            if (s.rolls.%(_ == Kill).num < s.opponent.forces./(canAssignKills).sum)
+                                if (s.power > 0)
+                                    return Ask(s).add(ChannelPowerAction(s, s.rolls.%(_ == Miss).num)).skip(BattleDoneAction(s))
+                                else
+                                if (s.want(DragonAscending) && factions.%(_.power > 0).any)
+                                    return DragonAscendingAskAction(s, |(s), "" + ChannelPower, BattleDoneAction(s))
+                    }
+                }
+
+                jump(PostRoll)
+
+           case PostRoll =>
+    postroll(attacker)
+    postroll(defender)
+
+    // VOONITH - Vicious
+    sides.foreach { s =>
+        val vooniths = s.forces.%(_.uclass == Voonith).num
+        if (vooniths > 0) {
+            val kills = s.rolls.count(_ == Kill)
+            val extra = max(0, vooniths - kills)
+            if (extra > 0) {
+                s.rolls ++= extra.times(Kill)
+                log(Voonith.styled(s), "Vicious added", extra, "Kill".s(extra).styled("kill"))
+            }
+        }
+    }
+
+    // Tombstalker (TS): check spellbook requirements after dice roll (Kill, 3 Pains, Gla'aki vs enemy GOO)
+    sides.%(f => f == TS).foreach { ts =>
+        if (ts.rolls.has(Kill))
+            ts.satisfy(TSRollKill, "Rolled a Kill in battle")
+        if (ts.rolls.count(_ == Pain) >= 3)
+            ts.satisfy(TSRoll3Pains, "Rolled 3 Pains in battle")
+        if (ts.forces.%(_.uclass == Glaaki).any && ts.opponent.forces.%(_.uclass.utype == GOO).any)
+            ts.satisfy(TSGlaakiBattlesGOO, "Gla'aki battled enemy GOO")
+    }
+
+    // Firstborn (FB) Augury spellbook: after dice are rolled, offer FB the option to
+    // replace some of their Miss results with Kill results drawn from the stored augury pool.
+    // Round 5 bug fix: explicitly handle BOTH FB-as-attacker and FB-as-defender cases.
+    // The offer must trigger whenever FB is any participant in the battle and rolled at least
+    // one Miss, not only when FB is the attacker. Pick FB's own Side directly via attacker/
+    // defender comparison rather than relying on an implicit Faction->Side conversion inside
+    // a sides.filter loop, so the behaviour is obviously symmetric across attacker/defender.
+    if (factions.has(FB) && sides.has(FB) && FB.has(Augury) && game.fbAuguryKills > 0) {
+        val fbSide : Side = if (attacker == FB) attackers else defenders
+        if (fbSide.rolls.has(Miss)) {
+            val misses = fbSide.rolls.count(_ == Miss)
+            val maxReplace = min(misses, game.fbAuguryKills)
+            implicit val asking = Asking(FB)
+            (1 to maxReplace).reverse.foreach { n =>
+                + FBAuguryBattleReplaceAction(FB, n)
+            }
+            + FBAuguryBattleCancelAction(FB)
+            return asking
+        }
+    }
+
+    jump(AssignDefenderKills)
+
+            case AssignDefenderKills =>
+                assignKills(defender, AssignAttackerKills)
+
+            case AssignAttackerKills =>
+                assignKills(attacker, AllKillsAssignedPhase)
+
+            case AllKillsAssignedPhase =>
+                sides.foreach { s =>
+                    if (s.tag(Emissary)) {
+                        s.forces.%(_.health == Killed)(Nyarlathotep).foreach { u =>
+                            log(u.uclass, "survived the kill as an", Emissary)
+                            u.health = Spared(Pained)
+                        }
+                    }
+
+                    val doubleKilled = s.forces.%(_.health == DoubleHP(Killed, Killed))
+                    val killed = s.forces.%(_.health == Killed)
+
+                    doubleKilled.foreach { u =>
+                        log(u, "was", "killed".styled("kill"), "with two", "Kills".styled("kill"))
+                        u.health = Killed
+                    }
+
+                    if (killed.any)
+                        log(killed./(_.short).mkString(", ") + (killed.num > 1).?(" were ").|(" was ") + "killed".styled("kill"))
+                }
+
+                jump(HarbingerKillPhase)
+
+            case HarbingerKillPhase =>
+                sides.foreach { s =>
+                    if (s.tag(Harbinger)) {
+                        s.opponent.units.goos.%(_.health == Killed).not(Harbinged).some.foreach { l =>
+                            val u = l.first
+                            val cost = u.uclass match {
+                                case AvatarThesis     => game.azathothTrack
+                                case AvatarAntithesis => (8 - game.azathothTrack).max(0)
+                                case _                => u.uclass.cost
+                            }
+                            val n = (cost + 1) / 2
+                            return Ask(s)
+                                .add(HarbingerPowerAction(s, u, n).as("Get", n.power)(Harbinger, "for", u))
+                                .add(HarbingerESAction(s, u, 2).as("Gain", 2.es)(Harbinger, "for", u))
+                        }
+                    }
+                }
+
+                jump(EternalKillPhase)
+
+            case EternalKillPhase =>
+                sides.foreach { s =>
+                    if (s.tag(Eternal) && s.power > 0) {
+                        val rt = s.forces(RhanTegoth).%(_.health == Killed)
+
+                        if (rt.any) {
+                            if (s.power > s.enemies./(_.power).max && s.enemies.exists(_.want(DragonAscending)))
+                                return DragonAscendingInstantAction(DragonAscendingDownAction(s, "" + Eternal, BattleDoneAction(s)))
+
+                            s.remove(Eternal)
+
+                            return Ask(s).each(rt)(u => EternalPayAction(s, u, Kill).as("Pay", 1.power, "for", Eternal)("Save", u, "from", Kill)).skip(BattleDoneAction(s))
+                        }
+                    }
+                }
+
+                jump(YgolonacOrificesPhase)
+
+            // Firstborn (FB): Ygolonac Orifices phase
+            case YgolonacOrificesPhase =>
+                sides.foreach { s =>
+                    val killed = s.forces(Ygolonac).%(_.health == Killed)
+                    if (killed.any) {
+                        val targets = s.opponent.forces.%(u => u.health != Killed && (u.uclass.utype == Terror || u.uclass.utype == Monster || u.uclass.utype == Cultist))
+                        if (targets.any)
+                            return Ask(s).each(targets.sortA)(t => YgolonacOrificesAction(s, t).as(t)(Ygolonac, "Orifices")).skip(BattleProceedAction(CosmicRulerPhase))
+                    }
+                }
+
+                jump(CosmicRulerPhase)
+
+            // Daemon Sultan (DS): Cosmic Ruler phase
+            case CosmicRulerPhase =>
+                if (sides.has(DS) && DS.all(AvatarSynthesis).any) {
+                    val killedAvatars = DS.forces.%(u => u.goo && u.health == Killed)
+                    if (killedAvatars.any) {
+                        // Exclude already-killed/eliminated units — a GOO sacrificed in a prior CR trigger
+                        // this same battle is no longer Alive and must not be offered again
+                        val sacrificeOptions = DS.goos.%(o => killedAvatars.has(o).not && o.health == Alive)
+                        if (sacrificeOptions.any) {
+                            val options = killedAvatars./~(saved =>
+                                sacrificeOptions./(sacrificed =>
+                                    CosmicRulerSacrificeAction(DS, saved, sacrificed)
+                                        .as("Eliminate", sacrificed)(CosmicRuler.styled(DS), "save", saved, "from", "Kill".styled("kill"))
+                                )
+                            )
+                            return Ask(DS).list(options).skip(CosmicRulerDeclineAction(DS))
+                        }
+                    }
+                }
+
+                jump(EliminatePhase)
+
+            case EliminatePhase =>
+                checkKillSpellbooks(attacker)
+                checkKillSpellbooks(defender)
+
+                factions.%(_.has(Cannibalism)).%(f => sides.but(f).%(_.forces.%(_.health == Killed).any).any).foreach { f =>
+                    f.oncePerAction :+= Cannibalism
+                }
+
+                sides.foreach { s =>
+                    if (s.has(Berserkergang))
+                        s.forces(GnophKeh).%(_.health == Killed).foreach(_ => s.add(Berserkergang))
+
+                    checkByatisSpellbook(s)
+                }
+
+                checkDaolothSpellbook()
+
+                sides.foreach { s =>
+                    s.forces.%(_.health == Killed).foreach(eliminate)
+                }
+
+                jump(BerserkergangPhase)
+
+            case BerserkergangPhase =>
+                sides.foreach { s =>
+                    if (s.tag(Berserkergang)) {
+                        val count = s.count(Berserkergang)
+                        s.remove(Berserkergang)
+                        val targets = s.opponent.forces.vulnerable
+                        if (targets.any)
+                            if (count >= targets.num) {
+                                log(targets./(_.short).mkString(", ") + (targets.num > 1).?(" were ").|(" was ") + "eliminated with", Berserkergang)
+                                targets.foreach(eliminate)
+                            }
+                            else
+                                return Ask(s.opponent).each(targets)(u => BerserkergangAction(s.opponent, count, u).as(u.full)(Berserkergang, "eliminates", (count > 1).?("" + count + " units")))
+                    }
+                }
+
+                jump(UnholyGroundPhase)
+
+            case UnholyGroundPhase =>
+                sides.foreach { s =>
+                    if (s.tag(UnholyGround)) {
+                        s.remove(UnholyGround)
+
+                        if (game.cathedrals.has(arena))
+                            return Ask(s).each(game.cathedrals)(r => UnholyGroundAction(s, s.opponent, r).as(r)("Remove a cathedral with", UnholyGround)).skip(BattleDoneAction(s))
+                    }
+                }
+
+                factions.%(_.has(Necrophagy)).foreach { f =>
+                    f.oncePerAction :+= Necrophagy
+                }
+
+                jump(NecrophagyPhase)
+
+            case NecrophagyPhase =>
+                factions.%(_.oncePerAction.has(Necrophagy)).foreach { f =>
+                    f.oncePerAction :-= Necrophagy
+
+                    return Ask(f)
+                        .each(f.all(Ghoul).diff(attacker.forces).diff(defender.forces).diff(exempted))(u => NecrophagyAction(f, u, u.region).as(u, "from", u.region)(Necrophagy, "to", arena))
+                        .done(BattleDoneAction(f))
+                }
+
+                jump(AssignDefenderPains)
+
+            case AssignDefenderPains =>
+                assignPains(defender, AssignAttackerPains)
+
+            case AssignAttackerPains =>
+                assignPains(attacker, AllPainsAssignedPhase)
+
+            case AllPainsAssignedPhase =>
+                sides.foreach { s =>
+                    s.forces.foreach(u => u.health match {
+                        case DoubleHP(Alive, Alive) =>
+                        case DoubleHP(Pained, Pained) => log(u, "was assigned two", "" + Pain + "s".styled("pain"))
+                        case DoubleHP(Killed, Alive) => log(u, "was assigned", Kill, "and was", "pained".styled("pain"))
+                        case DoubleHP(Pained, Alive) => log(u, "was assigned", Pain, "and was", "pained".styled("pain"))
+                        case DoubleHP(Killed, Pained) => log(u, "was assigned", Kill, "and", Pain, "and was", "pained".styled("pain"))
+                        case DoubleHP(l, r) => log(u, "was assigned", $(l, r).%(_ != Alive).mkString(" and "), "and was", "pained".styled("pain"))
+                        case _ =>
+                    })
+
+                    s.forces.foreach(u => u.health = u.health match {
+                        case DoubleHP(Alive, Alive) => Alive
+                        case DoubleHP(_, _) => Pained
+                        case Spared(now) => now
+                        case s => s
+                    })
+
+                    val pained = s.forces.%(_.health == Pained)
+
+                    if (pained.any)
+                        log(pained./(_.short).mkString(", ") + (pained.num > 1).?(" were ").|(" was ") + "pained".styled("pain"))
+                }
+
+                jump(OleaginousPhase)
+
+            case OleaginousPhase =>
+                // Tombstalker (TS) Oleaginous: pains on Gla'aki and Deep Tendrils become free retreats to any adjacent area
+                sides.foreach { s =>
+                    if (s.has(Oleaginous)) {
+                        val oleagPained = s.forces.%(u => u.health == Pained && (u.uclass == Glaaki || u.uclass == DeepTendril))
+                        if (oleagPained.any) {
+                            val u = oleagPained.first
+                            val destinations = arena.connected // ANY adjacent area, no enemy restriction
+                            if (destinations.any)
+                                return Ask(s).each(destinations)(r => OleaginousRetreatAction(TS, u, r))
+                        }
+                    }
+                }
+                jump(HarbingerPainPhase)
+
+            case HarbingerPainPhase =>
+                sides.foreach { s =>
+                    if (s.tag(Harbinger)) {
+                        s.opponent.units.goos.%(_.health == Pained).not(Harbinged).some.foreach { l =>
+                            val u = l.first
+                            val cost = u.uclass match {
+                                case AvatarThesis     => game.azathothTrack
+                                case AvatarAntithesis => (8 - game.azathothTrack).max(0)
+                                case _                => u.uclass.cost
+                            }
+                            val n = (cost + 1) / 2
+                            return Ask(s)
+                                .add(HarbingerPowerAction(s, u, n).as("Get", n.power)(Harbinger, "for", u))
+                                .add(HarbingerESAction(s, u, 2).as("Gain", 2.es)(Harbinger, "for", u))
+                        }
+                    }
+                }
+
+                jump(EternalPainPhase)
+
+            case EternalPainPhase =>
+                sides.foreach { s =>
+                    if (s.tag(Eternal) && s.power > 0) {
+                        val rt = s.forces(RhanTegoth).%(_.health == Pained)
+
+                        if (rt.any) {
+                            if (s.power > s.enemies./(_.power).max && s.enemies.exists(_.want(DragonAscending)))
+                                return DragonAscendingInstantAction(DragonAscendingDownAction(s, "" + Eternal, BattleDoneAction(s)))
+
+                            s.remove(Eternal)
+
+                            return Ask(s).each(rt)(u => EternalPayAction(s, u, Pain).as("Pay", 1.power, "for", Eternal)("Save", u, "from", Pain)).skip(BattleDoneAction(s))
+                        }
+                    }
+                }
+
+                jump(MadnessPhase)
+
+            case MadnessPhase =>
+                sides.foreach { s =>
+                    s.forces.foreach(u => u.health = u.health match {
+                        case Spared(now) => now
+                        case s => s
+                    })
+                }
+
+                sides.foreach { s =>
+                    s.forces.foreach(u => u.remove(Harbinged))
+                }
+
+                if (retreater(attacker) == retreater(defender) && sides.forall(_.units.exists(_.health == Pained))) {
+                    val f = retreater(attacker)
+
+                    Ask(f).add(RetreatOrderAction(f, attacker, defender)).add(RetreatOrderAction(f, defender, attacker))
+                }
+                else {
+                    jump(AttackerDefenderRetreats)
+                }
+
+            case AttackerDefenderRetreats =>
+                if (attackers.forces.%(_.health == Pained).any)
+                    retreat(attacker)
+                else
+                if (defenders.forces.%(_.health == Pained).any)
+                    retreat(defender)
+                else
+                    jump(PostBattlePhase)
+
+            case DefenderAttackerRetreats =>
+                if (defenders.forces.%(_.health == Pained).any)
+                    retreat(defender)
+                else
+                if (attackers.forces.%(_.health == Pained).any)
+                    retreat(attacker)
+                else
+                    jump(PostBattlePhase)
+
+            case PostBattlePhase =>
+                game.checkGatesLost()
+
+                sides.foreach { s =>
+                    if (s.tag(MillionFavoredOnes)) {
+                        s.remove(MillionFavoredOnes)
+
+                        val options = s.forces.sortA./~(u => u.uclass match {
+                            case Acolyte if s.pool(Mutant).any      => |(MillionFavoredOnesXAction(s, u.region, u, $(Mutant)).as(u.full, "in", u.region, "to", Mutant)(MillionFavoredOnes))
+                            case Mutant if s.pool(Abomination).any  => |(MillionFavoredOnesXAction(s, u.region, u, $(Abomination)).as(u.full, "in", u.region, "to", Abomination)(MillionFavoredOnes))
+                            case Abomination if s.pool(SpawnOW).any => |(MillionFavoredOnesXAction(s, u.region, u, $(SpawnOW)).as(u.full, "in", u.region, "to", SpawnOW)(MillionFavoredOnes))
+                            case SpawnOW if s.pool(Mutant).any      => |(MillionFavoredOnesXAction(s, u.region, u, s.pool(Mutant).num.times(Mutant)).as(u.full, "in", u.region, "to", "Mutant".s(s.pool(Mutant).num).styled(OW))(MillionFavoredOnes))
+                            case _ => None
+                        })
+
+                        return Ask(s).list(options).done(BattleDoneAction(s))
+                    }
+                }
+
+                factions.%(_.oncePerAction.has(Cannibalism)).foreach { f =>
+                    f.oncePerAction :-= Cannibalism
+
+                    return Ask(f)
+                        .when(f.pool(Acolyte).any)(CannibalismAction(f, arena, Acolyte))
+                        .when(f.pool(Wendigo).any)(CannibalismAction(f, arena, Wendigo))
+                        .skip(BattleDoneAction(f))
+                }
+
+                // Firstborn (FB) Carnage spellbook: if both FB and the opponent lost units in
+                // this battle, FB may pay 1 power or flip a spellbook facedown to gain an Elder Sign
+                // Carnage must not trigger if it has been flipped facedown (tracked in oncePerGame)
+                if (factions.has(FB) && FB.has(Carnage) && sides.has(FB) && !FB.oncePerAction.has(Carnage) && !FB.oncePerGame.has(Carnage)) {
+                    val opponent = if (attacker == FB) defender else attacker
+                    val opKilled = eliminated.%(_.faction == opponent).any
+                    val fbKilled = eliminated.%(_.faction == FB).any
+                    if (opKilled && fbKilled) {
+                        FB.oncePerAction :+= Carnage
+                        return Force(FBCarnagePostBattleAction(FB))
+                    }
+                }
+
+                // Bug fix Round 4 (Bug 1): Cyclopean Gaze must also fire when an enemy battles FB
+                // in a region containing FB's Revenants/Ghatanothoa. The action that triggered the
+                // battle "ends" in the arena, so any enemy units still present in the arena after
+                // the battle qualify as targets. Build the per-source pain queue from the FB
+                // Revenants and Ghatanothoa in the arena and dispatch FBCyclopeanGazePhaseAction
+                // with fromBattle=true so it returns to battle flow via FBCyclopeanGazeBattleDoneAction.
+                // Round 8 Bug 45: guard with fbCyclopeanGazeFiredThisBattle flag so the
+                // CG hook only fires ONCE per battle. After CG completes, FBCyclopeanGazeBattleDoneAction
+                // calls proceed() which resumes the battle from PostBattlePhase — this hook would
+                // otherwise re-fire with the same sources, causing CG to loop until the enemy
+                // had no units left to pain. Set the flag before dispatching CG.
+                //
+                // Round 8 Bug 59: removed the `sides.has(FB)` check. CG now fires when ANY
+                // battle happens in a gaze region (a region with FB Revenants/Ghatanothoa),
+                // not just battles where FB is one of the two sides. Per the user: if two
+                // non-FB factions battle in a gaze region, CG should still trigger against
+                // the attacker. The arena's rev/ghato presence (`revsHere + ghatosHere > 0`)
+                // is the only requirement for CG; FB doesn't need to be a battle participant.
+                // The `attacker != FB` check remains so FB can't pain themselves if they
+                // somehow attacked into a gaze region they own.
+                if (factions.has(FB) && FB.has(CyclopeanGaze) && !FB.oncePerGame.has(CyclopeanGaze) && attacker != FB && !fbCyclopeanGazeFiredThisBattle) {
+                    // Only count surviving (non-Zeroed) FB Revenants/Ghatanothoa as pain sources.
+                    val revsHere = FB.at(arena, RevenantOfKnaa).not(Zeroed).num
+                    val ghatosHere = FB.at(arena, Ghatanothoa).not(Zeroed).num
+                    val enemyHere = attacker.at(arena).not(Zeroed).%(u => u.uclass.utype != Building).any
+                    if ((revsHere + ghatosHere) > 0 && enemyHere) {
+                        fbCyclopeanGazeFiredThisBattle = true
+                        // One source per Revenant + one per Ghatanothoa, all in the arena
+                        val sources : $[FBCyclopeanGazeSource] =
+                            revsHere.times(FBCyclopeanGazeSource(arena, RevenantOfKnaa)) ++
+                            ghatosHere.times(FBCyclopeanGazeSource(arena, Ghatanothoa))
+                        return Force(FBCyclopeanGazePhaseAction(FB, attacker, sources, fromBattle = true))
+                    }
+                }
+
+                jump(BattleEnd)
+
+            case BattleEnd =>
+                // Firstborn (FB): reset the Carnage once-per-battle flag at end of battle
+                if (factions.has(FB))
+                    FB.oncePerAction :-= Carnage
+
+                // Firstborn (FB) Augury: after battle ends, count Kill results that were not applied
+                // (e.g. more kills than enemy units) and store them on the Augury spellbook for later use.
+                // Round 5 bug fix: surplus kills must be computed PER SIDE SEPARATELY, then summed,
+                // with each per-side surplus clamped at zero so one side's undercount doesn't cancel
+                // the other side's surplus. By the time BattleEnd runs, EliminatePhase has already moved
+                // every killed unit into the battle-level `exempted` list (see EliminatePhase, line ~768),
+                // so counting `exempted` units by faction gives the true per-side kill/elimination total.
+                if (factions.has(FB) && FB.has(Augury) && sides.has(FB)) {
+                    // Attacker side: kills rolled minus defender units actually killed/eliminated
+                    val attackerKillsRolled = attackers.rolls.count(_ == Kill)
+                    val defenderUnitsKilled = exempted.count(_.faction == defender)
+                    val attackerSurplus = max(0, attackerKillsRolled - defenderUnitsKilled)
+
+                    // Defender side: kills rolled minus attacker units actually killed/eliminated
+                    val defenderKillsRolled = defenders.rolls.count(_ == Kill)
+                    val attackerUnitsKilled = exempted.count(_.faction == attacker)
+                    val defenderSurplus = max(0, defenderKillsRolled - attackerUnitsKilled)
+
+                    val unapplied = attackerSurplus + defenderSurplus
+                    if (unapplied > 0) {
+                        game.fbAuguryKills += unapplied
+                        log(FB, Augury.styled(FB) + ": stored", unapplied, "Kill" + (unapplied > 1).?("s").|(("")), "(" + game.fbAuguryKills, "total)")
+                    }
+                }
+
+                sides.foreach(_.forces.foreach(_.remove(Retreated)))
+                sides.foreach(_.forces.foreach(_.remove(Zeroed)))
+
+                exempted.foreach(_.remove(Hidden))
+                exempted.foreach(_.remove(Absorbed))
+
+                attacker.battled :+= arena
+
+                if (game.nexed.none && attacker.hasAllSB.not)
+                    attacker.acted = true
+
+                game.battle = None
+
+                if (game.queue.starting.?(_.effect.has(FromBelow)))
+                    ProceedBattlesAction
+                else
+                    AfterAction(attacker)
+
+        }
+    }
+
+    def perform(a : Action) : Continue = a match {
+        // PROCEED
+        case BattleDoneAction(self) =>
+            proceed()
+
+        case BattleProceedAction(bf) =>
+            jump(bf)
+
+        case PreBattleDoneAction(self, bf) =>
+            jump(bf)
+
+        // ROLL
+        case BattleRollAction(f, rolls, next) =>
+            f.rolls ++= rolls
+
+            val sv = f.forces(StarVampire)
+
+            if (rolls.num > sv.num)
+                log(f, "rolled", rolls.drop(sv.num).mkString(" "))
+
+            0.until(sv.num).foreach { i =>
+                log(StarVampire.styled(f), "rolled", rolls(i))
+
+                if (f.opponent.real)
+                    rolls(i) match {
+                        case Pain if f.opponent.power > 0 =>
+                            f.opponent.power -= 1
+                            f.power += 1
+                            log(StarVampire.styled(f), "drained", 1.power, "from", f.opponent, "with a", "Pain".styled("pain"))
+                        case Kill if f.opponent.doom > 0 =>
+                            f.opponent.doom -= 1
+                            f.doom += 1
+                            log(StarVampire.styled(f), "drained", 1.doom, "from", f.opponent, "with a", "Kill".styled("kill"))
+                        case _ =>
+                    }
+            }
+
+            if (rolls.num >= 6)
+                f.satisfy(Roll6DiceInBattle, "Roll " + rolls.num + " dice in Battle")
+
+            jump(next)
+
+        // ASSIGN
+        case AssignKillAction(_, _, _, u) =>
+            assignKill(u)
+            proceed()
+
+        case AssignPainAction(_, _, _, u) =>
+            assignPain(u)
+            proceed()
+
+        // RETREAT
+        case RetreatOrderAction(self, a, b) =>
+            if (a == attacker)
+                jump(AttackerDefenderRetreats)
+            else
+                jump(DefenderAttackerRetreats)
+
+        case RetreatUnitAction(self, u, r) =>
+            retreat(u, r)
+            log(u, "retreated to", r)
+            proceed()
+
+        case RetreatAllAction(self, f, r) =>
+            val refugees = f.forces.%(_.health == Pained)
+
+            if (refugees.any) {
+                refugees.foreach(u => retreat(u, r))
+                log(refugees./(_.short).mkString(", "), "retreated to", r)
+            }
+
+            proceed()
+
+        case RetreatSeparatelyAction(self, f, l) =>
+            val u = f.forces.%(_.health == Pained).first
+
+            Ask(self).each(l)(r => RetreatUnitAction(self, u, r).as(r)("Retreat", u, "to"))
+
+        // Tombstalker (TS) Oleaginous: execute retreat for a pained Gla'aki or Deep Tendril, then re-check for more
+        case OleaginousRetreatAction(self, ur, r) =>
+            val u = game.unit(ur)
+            retreat(u, r)
+            log(u, "retreated to", r, "with", Oleaginous, "(Pain became Retreat)")
+            jump(OleaginousPhase)
+
+        case EliminateNoWayAction(self, u) =>
+            if (self == DS && u.goo && DS.all(AvatarSynthesis).any) {
+                val sacrificeOptions = DS.goos.%(o => o.ref != u && o.health == Alive)
+                if (sacrificeOptions.any) {
+                    val options = sacrificeOptions./(sacrificed =>
+                        CosmicRulerSacrificeAction(DS, u, sacrificed)
+                            .as("Eliminate", sacrificed)(CosmicRuler.styled(DS), "save", u, "from elimination")
+                    )
+                    return Ask(DS).list(options).skip(CosmicRulerDeclineNoWayAction(DS, u))
+                }
+            }
+            if (self.tag(Emissary) && u.uclass == Nyarlathotep) {
+                self.log("had nowhere to retreat but", u, "remained as an", Emissary)
+            }
+            else {
+                // Log BEFORE eliminate: see UnholyGroundEliminateAction comment
+                // (~line 1444) for the iGOO `f.units :-= u` rationale.
+                self.log("had nowhere to retreat and eliminated", u)
+                eliminate(u)
+            }
+            self.forces.foreach(_.health = Alive)
+            proceed()
+
+        case CosmicRulerDeclineAction(_) =>
+            jump(EliminatePhase)
+
+        case CosmicRulerDeclineNoWayAction(self, u) =>
+            // Log BEFORE eliminate: see UnholyGroundEliminateAction comment
+            // (~line 1444) for the iGOO `f.units :-= u` rationale.
+            self.log("had nowhere to retreat and eliminated", u)
+            eliminate(u)
+            self.forces.foreach(_.health = Alive)
+            proceed()
+
+        // DEVOUR
+        case DevourPreBattleAction(self) =>
+            Ask(self.opponent).each(self.opponent.forces.vulnerable.sortP)(u => DevourAction(self.opponent, u).as(u.full)(Devour))
+
+        case DevourAction(self, u) =>
+            u.faction.opponent.add(Devour)
+            eliminate(u)
+            log(u, "was devoured by", self.opponent)
+            proceed()
+
+        // ABSORB
+        case AbsorbPreBattleAction(self) =>
+            val shoggoths = self.forces(Shoggoth)
+            val actions = shoggoths./(u => AbsorberAction(self, u).as(u.full)("Absorb with"))
+
+            if (shoggoths./(_.state.sorted).distinct.num == 1)
+                Ask(self).list(actions.take(1))
+            else
+                Ask(self).list(actions).cancel
+
+        case AbsorberAction(self, u) =>
+            Ask(self).each(self.forces.but(u).vulnerable)(t => AbsorbeeAction(self, u, t).as((t.uclass == Shoggoth).??("Another"), t)("Absorb with", u.full)).cancel
+
+        case AbsorbeeAction(self, u, t) =>
+            0.to(t.count(Absorbed)).foreach(_ => u.add(Absorbed))
+            eliminate(t)
+            log(u, "absorbed", t, "and increased its strength by", (3 + t.count(Absorbed) * 3).str)
+            proceed()
+
+        // ABDUCT
+        case AbductPreBattleAction(self) =>
+            val u = self.forces(Nightgaunt).head
+            Ask(self.opponent).each(self.opponent.forces.vulnerable)(t => AbductAction(self.opponent, u, t))
+
+        case AbductAction(self, u, t) =>
+            eliminate(u)
+            eliminate(t)
+            log(t, "was abducted by", u)
+            proceed()
+
+        // INVISIBILITY
+        case InvisibilityPreBattleAction(self) =>
+            val u = self.forces(FlyingPolyp).not(Invised).head
+            Ask(self).each((self.opponent.forces ++ self.forces).vulnerable)(t => InvisibilityAction(self, u, t).as(t.full, (u == t).?("(self)"))(u, "makes invisible")).cancel
+
+        case InvisibilityAction(self, u, t) =>
+            t.add(Hidden)
+            exempt(t)
+
+            u.add(Invised)
+
+            if (u == t)
+                log(u, "hid itself")
+            else
+                log(t, "was hidden by", u)
+
+            proceed()
+
+        // SEEK AND DESTROY
+        case SeekAndDestroyPreBattleAction(self) =>
+            val us = self.all(HuntingHorror).%(_.region != arena)
+            Ask(self).each(us)(u => SeekAndDestroyAction(self, u.uclass, u.region)).cancel
+
+        case SeekAndDestroyAction(self, uc, r) =>
+            val u = self.at(r).one(uc)
+            u.region = arena
+            self.forces :+= u
+            log(u, "flew from", r)
+            proceed()
+
+        // DEMAND SACRIFICE
+        case DemandSacrificePreBattleAction(self) =>
+            Ask(self.opponent)
+                .add(DemandSacrificeKillsArePainsAction(self.opponent).as("Rolled", "Kills".styled("kill"), "become", "Pains".styled("pain"))(DemandSacrifice))
+                .add(DemandSacrificeProvideESAction(self.opponent).as(self, "gains", 1.es)(DemandSacrifice))
+
+        case DemandSacrificeProvideESAction(self) =>
+            self.opponent.takeES(1)
+            self.opponent.add(DemandSacrifice)
+            self.opponent.log("got", 1.es, "from", DemandSacrifice)
+            proceed()
+
+        case DemandSacrificeKillsArePainsAction(self) =>
+            self.add(KillsArePains)
+            self.log("will roll", "Kills".styled("kill"), "as", "Pains".styled("pain"), "due to", DemandSacrifice)
+            proceed()
+
+        // HOWL
+        case HowlPreBattleAction(self) =>
+            self.add(Howl)
+
+            val e = self.opponent
+            val l = e.forces.%(_.canBeMoved)
+
+            Ask(e.real.?(e).|(self)).each(e.forces.%(_.canBeMoved))(u => HowlUnitAction(e, u).as(u)("Retreat unit from", Howl))
+
+        case HowlUnitAction(self, u) =>
+            Ask(self).each(arena.connectedForRetreat)(r => HowlAction(self, u, r).as(r)("Retreat", u.full, "to"))
+
+        case HowlAction(self, u, r) =>
+            self.forces :-= u
+            game.fbSuppressCGForPlacement = true
+            u.region = r
+            game.fbSuppressCGForPlacement = false
+            u.onGate = false
+            log(u, "was howled to", r)
+            proceed()
+
+        // HARBINGER
+        case HarbingerPowerAction(self, u, n) =>
+            self.power += n
+            self.log("got", n.power, "as", Harbinger)
+
+            HarbingerAction(self, u)
+
+        case HarbingerESAction(self, u, e) =>
+            self.takeES(e)
+            self.log("gained", e.es, "as", Harbinger)
+
+            HarbingerAction(self, u)
+
+        case HarbingerAction(self, u) =>
+            u.add(Harbinged)
+
+            if (u.uclass == Nyogtha)
+                u.faction.forces(Nyogtha).but(u).foreach(_.add(Harbinged))
+
+            proceed()
+
+        // NECROPHAGY
+        case NecrophagyAction(self, u, r) =>
+            self.oncePerAction :+= Necrophagy
+
+            u.region = arena
+            exempt(u)
+            sides.foreach(_.rolls :+= Pain)
+            log(u, "came from", "" + r + ",", "causing additonal", Pain, "to both sides")
+
+            proceed()
+
+        // ETERNAL
+        case EternalPayAction(self, u, result) =>
+            self.power -= 1
+            u.health = Spared(Alive)
+            self.log("payed", 1.power, "for", Eternal, "to cancel", result, "on", u)
+            proceed()
+
+        // BERSERKERGANG
+        case BerserkergangAction(self, n, u) =>
+            eliminate(u)
+            log(u, "was eliminated with", Berserkergang)
+            if (n > 1)
+                Ask(self).each(self.forces.vulnerable)(t => BerserkergangAction(self, n - 1, t))
+            else
+                proceed()
+
+         case CannibalismAction(self, r, uc) =>
+             self.log("spawned", uc.styled(self), "in", r, "with", Cannibalism)
+             self.place(uc, r)
+             proceed()
+
+        // CHANNEL POWER
+        case ChannelPowerAction(self, n) =>
+            self.add(ChannelPower)
+            self.power -= 1
+            self.rolls = self.rolls.%(_ != Miss)
+            self.log("rerolled", (n > 0).?("Misses").|("Miss").styled("miss"), "with", ChannelPower)
+            RollBattle(self, "" + ChannelPower, n, x => BattleRollAction(self, x, ChannelPowerPhase))
+
+        // MILLION FAVORED ONES
+        case MillionFavoredOnesAction(self, r, uc, nw) =>
+            self.add(MillionFavoredOnes)
+            val t = self.forces(uc).%(_.region == r).first
+            exempt(t)
+            game.eliminate(t)
+            nw.foreach(n => self.place(n, r))
+            self.log("promoted", t, "in", r, "to", nw./(_.styled(self)).mkString(", "))
+            proceed()
+
+        case MillionFavoredOnesXAction(self, r, u, nw) =>
+            self.add(MillionFavoredOnes)
+            exempt(u)
+            game.eliminate(u)
+            nw.foreach(n => self.place(n, r))
+            self.log("promoted", u, "in", r, "to", nw./(_.styled(self)).mkString(", "))
+            proceed()
+
+        // UNHOLY GROUND
+        case UnholyGroundAction(self, o, cr) =>
+            self.add(UnholyGround)
+            game.cathedrals :-= cr
+            log("Cathedral".styled(self), "in", cr, "was removed with", UnholyGround)
+            Ask(o)
+                .each(o.forces.goos.distinctBy(_.uclass))(u => UnholyGroundEliminateAction(o, self, u).as(u)(UnholyGround, "eliminates in", arena))
+                .bail(Then(BattleDoneAction(self)))
+
+        case UnholyGroundEliminateAction(self, f, u) =>
+            // Round 8 Bug 68: log BEFORE eliminate. For IGOO units (Nyogtha,
+            // Tulzscha, Ygolonac), `IGOOsExpansion.eliminate()` actually REMOVES
+            // the unit from `f.units` (it doesn't just move it to reserve like
+            // normal eliminate). So if we logged after eliminating, the log's
+            // attempt to render the UnitRef back to a unit (`Game.unit(ur)`)
+            // would throw `None.get` from `.only` because the unit is no longer
+            // in `f.units`. Pre-format the log line first, then eliminate.
+            if (u.uclass == Nyogtha && self.all(Nyogtha).num > 1) {
+                log("All", u, "were eliminated with", UnholyGround)
+
+                self.forces(Nyogtha).foreach(eliminate)
+
+                self.all(Nyogtha).foreach(game.eliminate)
+            }
+            else {
+                log(u, "was eliminated with", UnholyGround)
+
+                eliminate(u)
+            }
+
+            proceed()
+
+        // SHRIVELING
+        case ShrivelingPreBattleAction(self) =>
+            Ask(self).each(self.opponent.forces.vulnerable.sortP)(u => ShrivelingAction(self, u).as(u)(Shriveling)).cancel
+
+        case ShrivelingAction(self, u) =>
+            self.add(Shriveling)
+
+            val p = u.cultist.?(self.opponent.recruitCost(u.uclass, arena)).|(self.opponent.summonCost(u.uclass, arena))
+
+            eliminate(u)
+
+            if (self.opponent.real) {
+                self.opponent.power += p
+
+                log(u, "was shriveled and", self.opponent, "got", p.power)
+            }
+            else
+                log(u, "was shriveled")
+
+            proceed()
+
+        // COSMIC UNITY
+        case CosmicUnityPreBattleAction(self) =>
+            Ask(self).each(self.opponent.forces.goos.distinctBy(_.uclass).sortA)(u => CosmicUnityAction(self, u).as(u)(CosmicUnity, "unites")).cancel
+
+        case CosmicUnityAction(self, u) =>
+            self.add(CosmicUnity)
+
+            if (u.uclass == Nyogtha && self.opponent.forces(Nyogtha).num > 1) {
+                self.opponent.forces(Nyogtha).foreach(_.add(Zeroed))
+                self.log("targeted both", Nyogtha.styled(u.faction), "units with", CosmicUnity.styled(self))
+            } else {
+                u.add(Zeroed)
+                self.log("targeted", u, "with", CosmicUnity.styled(self))
+            }
+
+            proceed()
+
+        // Firstborn (FB) Augury in battle: replace n Miss dice with Kills from the augury pool
+        case FBAuguryBattleReplaceAction(self, n) =>
+            val fbSide : Side = if (attacker == FB) attackers else defenders
+            var remaining = n
+            fbSide.rolls = fbSide.rolls.map { r =>
+                if (r == Miss && remaining > 0) { remaining -= 1; Kill }
+                else r
+            }
+            // Skip back to PostRoll re-entry would loop; jump directly to kill assignment
+            jump(AssignDefenderKills)
+
+        // Firstborn (FB) Augury: player declined to use augury in battle
+        case FBAuguryBattleCancelAction(self) =>
+            jump(AssignDefenderKills)
+
+        // Firstborn (FB) Carnage post-battle: FBExpansion handles the Ask/ES logic and returns
+        // UnknownContinue; these cases resume battle flow by calling proceed()
+        case FBCarnagePayPowerAction(self) =>
+            proceed()
+
+        case FBCarnageChooseSpellbookAction(self, _) =>
+            proceed()
+
+        case FBCarnageCancelAction(self) =>
+            proceed()
+
+        // Bug fix Round 4 (Bug 1): Cyclopean Gaze battle-mode dispatchers. The FB expansion
+        // handles the actual chain (FBCyclopeanGazePhaseAction etc.); we just resume battle
+        // flow when the marker FBCyclopeanGazeBattleDoneAction fires at the end of the chain.
+        case FBCyclopeanGazeBattleDoneAction(self) =>
+            proceed()
+
+    }
+}

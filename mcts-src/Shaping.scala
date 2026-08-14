@@ -56,6 +56,77 @@ final class Trajectory(factions : $[Faction]) {
     private val lastGates     = mutable.Map[Faction, Int]()
     private val lastCaptured  = mutable.Map[Faction, Int]()
 
+    // COST-SCALED capture pain + enemy-capture reward + GOO-loss extra (user reward-xlsx
+    // 2026-08-04). Three new cost-weighted counters, all faction-agnostic:
+    //   captureCost      — p:capture. Sum of the POWER REPLACEMENT COST of MY OWN units that
+    //                      newly entered ANY prison since the last look (uncapped, user removed
+    //                      the flat cap and made it scale by unit value — a captured Cthulhu (4)
+    //                      hurts far more than a captured acolyte (1)). Prison ≠ reserve, so this
+    //                      is distinct from unit-loss; a captured unit is alive but locked away.
+    //   captureEnemyCost — z:slot07 b:captureEnemy. Mirror of the above for ENEMY units that
+    //                      newly entered MY prison — reward for imprisoning, scaled by the value
+    //                      of what I locked up.
+    //   gooLostCount     — z:slot01 p:gooLost. Count of MY own GOOs that newly entered the
+    //                      RESERVE (killed/eliminated) since the last look — an EXTRA flat pain
+    //                      ON TOP of the per-cost unit-loss term, because losing an awakened GOO
+    //                      is categorically worse than losing a cheap unit.
+    private val captureCost        = mutable.Map[Faction, Double]().withDefaultValue(0.0)
+    private val captureEnemyCost   = mutable.Map[Faction, Double]().withDefaultValue(0.0)
+    private val gooLostCount       = mutable.Map[Faction, Int]().withDefaultValue(0)
+    private val lastMyPrisonByClass    = mutable.Map[Faction, Map[UnitClass, Int]]()
+    private val lastEnemyPrisonByClass = mutable.Map[Faction, Map[UnitClass, Int]]()
+
+    // CULTIST-UNPROTECTED penalty (z:slot02 p:cultistUnprot, user ruling 2026-08-04). A cultist
+    // sitting in a region with NO same-faction monster/terror is "unprotected". Assessed ONCE
+    // PER TURN (this file's AP proxy) at that turn's first observation, per cultist:
+    //   • Suppressed ENTIRELY for a faction on any turn where every OTHER faction is out of power.
+    //   • AP1/AP2 (turn ≤ 2): penalized ONLY if an enemy monster/terror is in the cultist's region.
+    //   • AP3+ (turn ≥ 3): always penalized; a base "unit" of 1.0, escalating to 1.5 when an enemy
+    //     monster/terror shares the region (so base −0.2 DEW → −0.3 DEW at the 0.20 sheet weight).
+    //   • Consecutive penalized turns for the SAME cultist decay ×0.9 each turn (turn1 unit 1.0 →
+    //     −0.2, turn2 0.9 → −0.18, …). Protected or unpenalized turn resets that cultist's streak.
+    // unprotAccum is the summed doom-equiv-quantity (decay×escalation baked in); the sheet weight
+    // 0.20 (=C18/2) multiplies it in scoreBreakdown, so editing the weight scales the whole term.
+    private val unprotStreak   = mutable.Map[(Faction, UnitRef), Int]().withDefaultValue(0)
+    private val unprotAccum    = mutable.Map[Faction, Double]().withDefaultValue(0.0)
+    private val lastUnprotTurn = mutable.Map[Faction, Int]().withDefaultValue(-1)
+
+    // KILL-ENEMY reward + enemy-GOO bonus (r:killEnemy z:slot03, r:enemyGooKill z:slot06,
+    // user formula 2026-08-04). "Kills are always attributed to whoever did it" — the engine
+    // gives us that: each faction's `battled` set is the regions it fought in this turn. So a
+    // unit that DIES (newly enters its OWNER's reserve) in a region some OTHER faction battled
+    // is that faction's kill. Value per the user's formula: 0.8 × the dead unit's power
+    // replacement cost (80% of the value of summoning that much of your own), summed; then the
+    // action cost is subtracted ONCE per (killer, turn, region) combat that produced a kill
+    // (combat costs 1 power — user's "-1 power" example). enemyGooKill adds a bonus when the
+    // dead unit is a GOO. lastUnitRegion tracks every unit's last-seen region so we know WHERE a
+    // unit died; lastInReserve tracks who was already dead so we only fire on the transition.
+    private val killEnemyValue  = mutable.Map[Faction, Double]().withDefaultValue(0.0)  // Σ 0.8×cost
+    private val killActionCost  = mutable.Map[Faction, Double]().withDefaultValue(0.0)  // Σ 1 per combat-region
+    private val enemyGooKills    = mutable.Map[Faction, Int]().withDefaultValue(0)
+    private val lastUnitRegion   = mutable.Map[UnitRef, Region]()
+    private val lastInReserve     = mutable.Map[UnitRef, Boolean]().withDefaultValue(false)
+    private val killChargedRegion = mutable.Set[(Faction, Int, Region)]()
+
+    // AP-POWER-ORDER reward (r:apPowerOrder z:slot05, user formula 2026-08-04). AP3+ only. Reward
+    // = (2·rank/playerCount − 1)·0.8, where rank is the ORDER a faction ran out of power during
+    // that AP (1 = ran out first = worst; playerCount = ran out last / never = best). We record,
+    // per (faction, turn), the sequence number at which the faction FIRST hit 0 power in that
+    // turn's action phase; factions that never hit 0 rank last. Ranking is computed lazily at
+    // score time (needs all factions' data for a turn). firstZeroSeq stores the order; zeroSeqCtr
+    // is the per-turn running counter.
+    private val firstZeroSeq   = mutable.Map[(Faction, Int), Int]()
+    private val zeroSeqCtr     = mutable.Map[Int, Int]().withDefaultValue(0)
+    private val apTurnsSeen    = mutable.Set[Int]()   // action-phase turns actually observed
+
+    // POWER-BLOCK reward (r:powerBlock z:slot04). USER NOTE 2026-08-14 (xlsx row 22, column I):
+    // "Make sure this applies to blocking other players from getting power too." PROVISIONAL
+    // wiring: credit net power a faction GAINED across the game (a proxy for "gain power during
+    // the AP / deny others"). Small coefficient (0.05 doom-equiv per power, cap 20). We sum
+    // positive power deltas between observations (income), ignoring spends. User to finalize.
+    private val powerGained    = mutable.Map[Faction, Int]().withDefaultValue(0)
+    private val lastPowerObs   = mutable.Map[Faction, Int]()
+
     // Gate-EVENT counters (user directive 2026-07-28). The old `gatesLost` lumped every
     // gate departure together; the user wants the four distinct gate events scored
     // separately, each fired the INSTANT it happens (event-triggered, uncapped by later
@@ -74,10 +145,24 @@ final class Trajectory(factions : $[Faction]) {
     // `contestedLast` tracks which of my gates had an enemy unit present at the last
     // observation, so a defense fires once when the threat clears, not every decision.
     private val gatesTaken       = mutable.Map[Faction, Int]().withDefaultValue(0)
+    // EMPTY-GATE BOOST (user ruling Q2 2026-08-04, dual-movement CONFIRMED). A +0.1 bonus ON TOP
+    // of gateTaken when a faction OCCUPIES a previously-uncontrolled gate region under these
+    // conditions, evaluated at the observation the take is first seen:
+    //   • no ENEMY cultist occupying that gate region, AND no ENEMY GOO in the region → boost;
+    //   • if an ENEMY Monster/Terror is in the region, the boost applies ONLY IF this faction
+    //     ALSO has a Monster/Terror in the region at the same time (the "send a monster to
+    //     protect" dual-move — observable as co-presence at the take);
+    //   • ALL conditions void (no boost, ever) on any turn where every OTHER faction is out of power.
+    private val emptyGateBoost   = mutable.Map[Faction, Int]().withDefaultValue(0)
     private val gatesAbandoned   = mutable.Map[Faction, Int]().withDefaultValue(0)
     private val gatesLostToEnemy = mutable.Map[Faction, Int]().withDefaultValue(0)
     private val gatesDefended    = mutable.Map[Faction, Int]().withDefaultValue(0)
     private val lastGateSet      = mutable.Map[Faction, Set[Region]]()
+    // NEW 2026-08-14 (user reward-xlsx rows 26-27):
+    //   r:buildGate: count gates BUILT when total controlled ≤ 3 (0.2 doom-equiv per build, cap at 3 controlled).
+    //   r:EndAPGates: sum of gates held during EACH doom-phase observation (0.8 doom-equiv per gate-obs, no cap).
+    private val gatesBuilt       = mutable.Map[Faction, Int]().withDefaultValue(0)
+    private val doomPhaseGates   = mutable.Map[Faction, Double]().withDefaultValue(0.0)
     private val contestedLast    = mutable.Map[Faction, Set[Region]]().withDefaultValue(Set.empty)
 
     // Ritual-value credit (user directive 2026-07-28). The brain performs 0.0 rituals/game
@@ -163,6 +248,34 @@ final class Trajectory(factions : $[Faction]) {
             lastGates(f) = gatesNow
             lastCaptured(f) = capNow
 
+            // COST-SCALED capture pain + enemy-capture reward (user reward-xlsx 2026-08-04).
+            // Same event-diff mechanism as unit-loss, but keyed on PRISON regions and weighted
+            // by each unit's power replacement cost (uc.cost) so value scales with what was
+            // taken. Two views:
+            //   MY units in ANY faction's prison  → p:capture pain (cost-weighted, uncapped).
+            //   ENEMY units in MY prison          → z:slot07 b:captureEnemy reward.
+            val allPrisons : Set[Region] = factions.map(_.prison).toList.toSet
+            val myInPrison : Map[UnitClass, Int] =
+                p.units.%(u => allPrisons.contains(u.region)).toList.groupBy(_.uclass).map { case (uc, us) => uc -> us.size }
+            lastMyPrisonByClass.get(f).foreach { prev =>
+                myInPrison.foreach { case (uc, n) =>
+                    val was = prev.getOrElse(uc, 0)
+                    if (n > was) captureCost(f) = captureCost(f) + (n - was) * uc.cost.toDouble
+                }
+            }
+            lastMyPrisonByClass(f) = myInPrison
+            // Enemy units sitting in THIS faction's own prison, per class.
+            val enemyInMyPrison : Map[UnitClass, Int] =
+                factions.filter(_ != f).flatMap(e => g.players(e).units.%(_.region == f.prison).toList)
+                        .groupBy(_.uclass).map { case (uc, us) => uc -> us.size }
+            lastEnemyPrisonByClass.get(f).foreach { prev =>
+                enemyInMyPrison.foreach { case (uc, n) =>
+                    val was = prev.getOrElse(uc, 0)
+                    if (n > was) captureEnemyCost(f) = captureEnemyCost(f) + (n - was) * uc.cost.toDouble
+                }
+            }
+            lastEnemyPrisonByClass(f) = enemyInMyPrison
+
             // Gate-EVENT classification (user directive 2026-07-28). Diff the CONTROLLED
             // region set, not just the count, so each change can be classified by WHERE it
             // happened and WHO holds the region now. `p.gates` is f's controlled-gate
@@ -174,6 +287,35 @@ final class Trajectory(factions : $[Faction]) {
                 // TAKEN: regions I control now but didn't before.
                 val taken = gatesSet.diff(prev)
                 if (taken.nonEmpty) gatesTaken(f) = gatesTaken(f) + taken.size
+                // r:buildGate NEW 2026-08-14 (xlsx row 26): count gates BUILT when total controlled ≤3.
+                // "0.2 for building and controlling a new gate, capped at 3 controlled gates."
+                // Each new gate taken counts IF total controlled gates at time of take is ≤ 3.
+                if (taken.nonEmpty && gatesNow <= 3) {
+                    val builtCount = math.min(taken.size, math.max(0, 3 - (gatesNow - taken.size)))
+                    gatesBuilt(f) = gatesBuilt(f) + builtCount
+                }
+                // EMPTY-GATE BOOST (user Q2 ruling, dual-move confirmed). For each newly-taken
+                // gate: void entirely if every OTHER faction is out of power. Else require no
+                // enemy cultist AND no enemy GOO in the region; if an enemy Monster/Terror is
+                // present, additionally require one of MY Monster/Terror co-present (the protect
+                // dual-move). Count qualifying takes; the +0.1 bonus is applied in scoreBreakdown.
+                if (taken.nonEmpty) {
+                    val anyEnemyPower = factions.exists(e => e != f && g.players(e).power > 0)
+                    if (anyEnemyPower) taken.foreach { r =>
+                        val enemyCultistHere = factions.exists(e => e != f &&
+                            g.players(e).units.exists(u => u.region == r && u.uclass.utype == Cultist))
+                        val enemyGooHere = factions.exists(e => e != f &&
+                            g.players(e).units.exists(u => u.region == r && u.uclass.utype == GOO))
+                        val enemyMonsterHere = factions.exists(e => e != f &&
+                            g.players(e).units.exists(u => u.region == r &&
+                                (u.uclass.utype == Monster || u.uclass.utype == Terror)))
+                        val iHaveMonsterHere = p.units.exists(u => u.region == r &&
+                            (u.uclass.utype == Monster || u.uclass.utype == Terror))
+                        val clean = !enemyCultistHere && !enemyGooHere
+                        val ok = if (enemyMonsterHere) clean && iHaveMonsterHere else clean
+                        if (ok) emptyGateBoost(f) = emptyGateBoost(f) + 1
+                    }
+                }
                 // GONE: regions I controlled before but no longer. Classify each by who
                 // holds it now — another faction controlling it = lost to an aggressor;
                 // nobody controlling it = I abandoned it.
@@ -233,10 +375,104 @@ final class Trajectory(factions : $[Faction]) {
             lastPoolByClass.get(f).foreach { prev =>
                 poolByClass.foreach { case (uc, n) =>
                     val was = prev.getOrElse(uc, 0)
-                    if (n > was) unitLossCost(f) = unitLossCost(f) + (n - was) * uc.cost.toDouble
+                    if (n > was) {
+                        unitLossCost(f) = unitLossCost(f) + (n - was) * uc.cost.toDouble
+                        // z:slot01 p:gooLost (user reward-xlsx 2026-08-04): a GOO newly entering
+                        // reserve = an awakened GOO was killed/eliminated. Extra flat count ON TOP
+                        // of the cost-weighted unit-loss pain above, since losing a GOO is
+                        // categorically worse than losing a cheap piece.
+                        if (uc.utype == GOO) gooLostCount(f) = gooLostCount(f) + (n - was)
+                    }
                 }
             }
             lastPoolByClass(f) = poolByClass
+
+            // KILL-ENEMY attribution (r:killEnemy z:slot03 + r:enemyGooKill z:slot06, user
+            // formula 2026-08-04: "kills are always attributed to whoever did it"). f is the
+            // OWNER whose unit died; we credit the KILLER. A unit dies the instant it newly
+            // enters its owner's RESERVE (p.pool) from the map. WHERE it died = its last on-map
+            // region (lastUnitRegion). WHO killed it = every OTHER faction whose `battled` set
+            // (regions it fought in this turn, engine-maintained) contains that region — in a
+            // 1v1 combat the owner is excluded so only the opponent is credited; a 3-way melee
+            // credits each attacker (accepted approximation). Value = 0.8 × the dead unit's
+            // replacement cost (80% of the value of summoning that much yourself); a GOO also
+            // bumps enemyGooKills. The combat action cost (user's "−1 power") is charged ONCE
+            // per (killer, turn, region) so a single combat that kills three units still costs 1.
+            // Reserve membership (not region==reserve) isolates true kills: captured units go to
+            // a PRISON and submerged units to the Deep — neither is the pool — so neither counts.
+            val nowReserveRefs : Set[UnitRef] = p.pool.map(_.ref).toList.toSet
+            p.units.foreach { u =>
+                val nowRes = nowReserveRefs.contains(u.ref)
+                val wasRes = lastInReserve(u.ref)
+                if (nowRes && !wasRes) {
+                    lastUnitRegion.get(u.ref).filter(_.onMap).foreach { deathR =>
+                        factions.foreach { e =>
+                            if (e != f && g.players(e).battled.has(deathR)) {
+                                killEnemyValue(e) = killEnemyValue(e) + 0.8 * u.uclass.cost.toDouble
+                                if (u.uclass.utype == GOO) enemyGooKills(e) = enemyGooKills(e) + 1
+                                val ck = (e, turn, deathR)
+                                if (!killChargedRegion.contains(ck)) {
+                                    killChargedRegion += ck
+                                    killActionCost(e) = killActionCost(e) + 1.0
+                                }
+                            }
+                        }
+                    }
+                }
+                lastInReserve(u.ref) = nowRes
+                if (u.region.onMap) lastUnitRegion(u.ref) = u.region
+            }
+
+            // POWER tracking for r:powerBlock (income) and r:apPowerOrder (exhaustion order).
+            // powerGained: sum of POSITIVE power deltas between observations = income gained
+            // (gather-power + ability gains); spends (negative deltas) are ignored. AP-power-out
+            // ordering: during the ACTION PHASE only (not gather/doom), record the running order
+            // in which each faction FIRST hits 0 power this turn — 1st to hit 0 = ran out first.
+            lastPowerObs.get(f).foreach(prev => if (p.power > prev) powerGained(f) = powerGained(f) + (p.power - prev))
+            lastPowerObs(f) = p.power
+            if (!g.doomPhase && !g.gatherPowerPhase) {
+                apTurnsSeen += turn
+                if (p.power == 0 && !firstZeroSeq.contains((f, turn))) {
+                    val seq = zeroSeqCtr(turn); zeroSeqCtr(turn) = seq + 1; firstZeroSeq((f, turn)) = seq
+                }
+            }
+
+            // CULTIST-UNPROTECTED penalty (user ruling 2026-08-04). Assess ONCE per turn, at the
+            // first observation of this turn for this faction. See field comment for the full rule.
+            if (lastUnprotTurn(f) != turn) {
+                lastUnprotTurn(f) = turn
+                // Suppressed entirely if every OTHER faction is out of power this turn.
+                val anyEnemyHasPower = factions.exists(e => e != f && g.players(e).power > 0)
+                val myCultists = p.units.%(u => u.region.onMap && u.uclass.utype == Cultist).toList
+                val stillUnprot = mutable.Set[(Faction, UnitRef)]()
+                if (anyEnemyHasPower) {
+                    myCultists.foreach { c =>
+                        val r = c.region
+                        val iProtect = p.units.exists(u => u.region == r &&
+                                        (u.uclass.utype == Monster || u.uclass.utype == Terror))
+                        if (!iProtect) {
+                            val enemyThreat = factions.exists(e => e != f &&
+                                g.players(e).units.exists(u => u.region == r &&
+                                    (u.uclass.utype == Monster || u.uclass.utype == Terror)))
+                            // AP1/AP2: only when an enemy monster/terror is in the region.
+                            // AP3+: always; escalate ×1.5 when an enemy monster/terror is present.
+                            val assess = if (turn <= 2) enemyThreat else true
+                            if (assess) {
+                                val key = (f, c.ref)
+                                val streak = unprotStreak(key) + 1
+                                unprotStreak(key) = streak
+                                val decay  = math.pow(0.9, (streak - 1).toDouble)  // turn1 1.0, turn2 0.9, …
+                                val escal  = if (turn >= 3 && enemyThreat) 1.5 else 1.0
+                                unprotAccum(f) = unprotAccum(f) + decay * escal
+                                stillUnprot += key
+                            }
+                        }
+                    }
+                }
+                // Reset the streak for any of this faction's cultists NOT penalized this turn.
+                unprotStreak.keys.filter(_._1 == f).filterNot(stillUnprot.contains).toList
+                    .foreach(k => unprotStreak(k) = 0)
+            }
 
             // GOO-AWAKEN turn: record the AP (turn) the faction's first own GOO reached the
             // map, so the awaken reward can be AP-scaled. factionGOOs = own-faction GOOs in play.
@@ -265,6 +501,10 @@ final class Trajectory(factions : $[Faction]) {
                 // brain should maximize so it can AFFORD the ritual.
                 val pd = inner(preDoomPow, f)
                 if (!pd.contains(turn)) pd(turn) = p.power
+                // r:EndAPGates NEW 2026-08-14 (xlsx row 27): accumulate gates held during doom phase.
+                // "0.8 for each gate held during the doom phase, no cap."
+                // Sum gates controlled at EACH doom-phase observation (not just first).
+                doomPhaseGates(f) = doomPhaseGates(f) + gatesNow.toDouble
             }
         }
     }
@@ -297,16 +537,60 @@ final class Trajectory(factions : $[Faction]) {
     def goodRitualCount(f : Faction) : Int = goodRituals(f)
 
     def gatesTakenCount(f : Faction)       : Int = gatesTaken(f)
+    /** Count of empty-gate takes that qualified for the +0.1 boost (user Q2 dual-move rule). */
+    def emptyGateBoostCount(f : Faction)   : Int = emptyGateBoost(f)
     def gatesAbandonedCount(f : Faction)   : Int = gatesAbandoned(f)
     def gatesLostToEnemyCount(f : Faction) : Int = gatesLostToEnemy(f)
     def gatesDefendedCount(f : Faction)    : Int = gatesDefended(f)
+    /** NEW 2026-08-14 r:buildGate: count of gates built when total controlled ≤ 3. */
+    def gatesBuiltCount(f : Faction)       : Int = gatesBuilt(f)
+    /** NEW 2026-08-14 r:EndAPGates: sum of gates held during ALL doom-phase observations. */
+    def doomPhaseGatesTotal(f : Faction)   : Double = doomPhaseGates(f)
 
     /** Total replacement-cost of every unit this faction lost (killed/eliminated/sacrificed). */
     def unitLossCostTotal(f : Faction) : Double = unitLossCost(f)
+    /** Total replacement-cost of this faction's OWN units captured to any prison (p:capture). */
+    def captureCostTotal(f : Faction) : Double = captureCost(f)
+    /** Total replacement-cost of ENEMY units this faction captured to its prison (b:captureEnemy). */
+    def captureEnemyCostTotal(f : Faction) : Double = captureEnemyCost(f)
+    /** Count of this faction's own GOOs killed/eliminated (p:gooLost, extra on top of unit-loss). */
+    def gooLostTotal(f : Faction) : Int = gooLostCount(f)
+    /** Decayed/escalated sum of unprotected-cultist turns (p:cultistUnprot quantity). */
+    def cultistUnprotTotal(f : Faction) : Double = unprotAccum(f)
     /** Total Elder Signs this faction EARNED over the game (incl. ones later spent). */
     def esEarnedTotal(f : Faction) : Int = esEarned(f)
     /** Turn (AP proxy) the faction first awakened an own GOO, or -1 if never. */
     def gooAwakenAP(f : Faction) : Int = gooAwakenTurn(f)
+
+    /** Net kill-enemy value for r:killEnemy: Σ 0.8×(dead enemy replacement cost) attributed to
+     *  this faction, MINUS the once-per-combat action cost. Floored at 0 (a faction never scores
+     *  NEGATIVE for killing — a lopsided trade just yields little; the loss side is p:unitLoss). */
+    def killEnemyNet(f : Faction) : Double = math.max(0.0, killEnemyValue(f) - killActionCost(f))
+    /** Count of enemy GOOs this faction killed/eliminated (r:enemyGooKill, additive to killEnemy). */
+    def enemyGooKillCount(f : Faction) : Int = enemyGooKills(f)
+    /** Net positive power income this faction gained over the game (r:powerBlock proxy). */
+    def powerGainedTotal(f : Faction) : Int = powerGained(f)
+
+    // AP-POWER-ORDER reward (r:apPowerOrder z:slot05, user formula 2026-08-04): AP3+ only.
+    // For each action-phase turn ≥3 that we observed, rank the factions by the ORDER they ran
+    // out of power (rank 1 = ran out FIRST = worst; a faction that never hit 0 ranks LAST, tied
+    // at the top). reward per turn = (2·rank/playerCount − 1)·0.8, so with 4 players: last=+0.8,
+    // 3rd=+0.4, 2nd=0, 1st=−0.4. Summed across AP3+ turns, then returned per faction. Computed
+    // lazily here (needs all factions' exhaustion data for the turn). Faction-agnostic.
+    def apPowerOrderTotal(f : Faction) : Double = {
+        val pc = math.max(1, factions.size)
+        apTurnsSeen.filter(_ >= 3).toList.map { t =>
+            // Factions that hit 0 this turn, in order; those that never did rank after them.
+            val zeroed = factions.filter(x => firstZeroSeq.contains((x, t))).sortBy(x => firstZeroSeq((x, t)))
+            val never  = factions.filterNot(x => firstZeroSeq.contains((x, t)))
+            val order  = zeroed.toList ++ never.toList   // index 0 = ran out first
+            val idx    = order.indexOf(f)
+            if (idx < 0) 0.0 else {
+                val rank = idx + 1                        // 1-based; 1 = worst, playerCount = best
+                (2.0 * rank / pc.toDouble - 1.0) * 0.8
+            }
+        }.sum
+    }
 
     // AP-scaled multiplier for the GOO-awaken reward (user directive 2026-07-29): awakening
     // in AP2 is worth the most; AP1 ≈ AP3 (both below AP2); AP4-and-beyond a flat floor.
@@ -341,7 +625,14 @@ final class Trajectory(factions : $[Faction]) {
     // so it is impossible to score 1.0 without actually winning — a faction that "lucks"
     // into a strong losing finish still outscores a well-behaved poor finisher, because
     // that luck may be winning behavior we never hand-coded.
-    private val DoomUnit = 0.01   // value of 1 doom on the [0,1] label scale
+    // HALVED 2026-08-04 (user directive: "CUT LITERALLY EVERY SCORE IN HALF … EXCEPT THE WIN").
+    // Every shaping term is weight × DoomUnit, so halving this one constant (0.01 → 0.005) cuts
+    // EVERY reward AND every pain in half, uniformly, in one stroke — a great LOSS now tops out
+    // around ~0.39 instead of ~0.78, while the WIN label (Outcome.valueShaped = 1.0, set there,
+    // NOT scaled by DoomUnit) is untouched. This replaces the old "big score then kneecap it with
+    // the loss ceiling" mechanism (the ceiling is neutralized to 1.0 in Outcome): the low loss
+    // score is now BUILT IN, not bolted on. Loss/win separation comes from the halved scores.
+    private val DoomUnit = 0.005  // value of 1 doom on the [0,1] label scale (HALVED from 0.01)
 
     /** Named contribution of every shaping component for one faction, on the [0,1] label
      *  scale, expressed in DOOM-EQUIVALENT points (× DoomUnit). Fully rescaled 2026-07-29
@@ -387,18 +678,34 @@ final class Trajectory(factions : $[Faction]) {
         // ── BEHAVIOR (bounded nudges) ───────────────────────────────────────────────
         val ownGoo     = if (p.goos.factionGOOs.nonEmpty) gooAwakenFactor(gooAwakenAP(f)) else 0.0  // [0,1]
         val goodRit    = math.min(2.0, goodRituals(f).toDouble)            // cap 2 rituals
-        val takenN     = math.min(4.0, gatesTaken(f).toDouble)            // cap 4
+        val takenN     = math.min(5.0, gatesTaken(f).toDouble)            // cap 5 (user xlsx 2026-08-04, was 4)
+        val emptyBoostN= math.min(5.0, emptyGateBoost(f).toDouble)        // qualifying empty-gate takes, cap 5 (matches takenN cap)
         val defendedN  = math.min(4.0, gatesDefended(f).toDouble)         // cap 4
         val ap1Gates   = math.min(2.0, eg.getOrElse(1, 0).toDouble)       // cap 2
         val preDoom    = c01(avgPreDoomPow(f) / 10.0)                     // [0,1], target 10 power
-        val onMap      = c01(p.allInPlay.num / 12.0)                      // [0,1], target 12 units
+        // unitsOnMap scaled to the faction's OWN total roster (user xlsx 2026-08-04: "made
+        // scalable to faction"), replacing the flat /12. p.units = full roster (in-play +
+        // reserve + prison); onMap = fraction of that roster physically in play.
+        val rosterTot  = math.max(1, p.units.num)
+        val onMap      = c01(p.allInPlay.num.toDouble / rosterTot.toDouble)  // [0,1], units-in-play / faction total
         val sbUse      = math.min(3.0, sbUses(f).toDouble)               // cap 3
         val powUse     = math.min(3.0, powerUses(f).toDouble)            // cap 3
         // ── PENALTIES (raw, subtract) ───────────────────────────────────────────────
         val lossPts    = unitLossCostTotal(f)                            // sum of replacement costs lost
         val abandonN   = math.min(6.0, gatesAbandoned(f).toDouble)       // cap 6
         val lostN      = math.min(6.0, gatesLostToEnemy(f).toDouble)     // cap 6
-        val capturedN  = math.min(6.0, unitsCaptured(f).toDouble)        // cap 6
+        val captPts    = captureCostTotal(f)                             // cost-weighted, UNCAPPED (user xlsx: cap removed)
+        val captEnemy  = captureEnemyCostTotal(f)                        // enemy cost-weighted capture reward
+        val gooLostN   = gooLostCount(f).toDouble                        // count of own GOOs killed
+        val unprotQ    = cultistUnprotTotal(f)                           // decayed/escalated unprotected-cultist quantity
+        // ── REWARDS from the four formerly-held slots (user formulas 2026-08-04) ────────
+        val killNet    = killEnemyNet(f)                                 // Σ 0.8×dead-enemy-cost − combat action cost, ≥0
+        val gooKillN   = enemyGooKillCount(f).toDouble                   // enemy GOOs killed (additive)
+        val powGainN   = math.min(20.0, powerGainedTotal(f).toDouble)    // total power income, cap 20 (provisional)
+        val apOrderPts = apPowerOrderTotal(f)                            // signed Σ (2·rank/players−1)·0.8 over AP3+
+        // NEW 2026-08-14 (user reward-xlsx rows 26-27):
+        val builtN     = gatesBuilt(f).toDouble                          // gates built when total controlled ≤ 3
+        val doomGatesN = doomPhaseGates(f)                               // sum of gates held during ALL doom-phase observations
 
         // Each entry: label × DoomUnit. The comment states the DOOM-EQUIVALENT weight, what
         // is rewarded, and any condition. Positives sum, penalties subtract; the whole thing
@@ -412,18 +719,41 @@ final class Trajectory(factions : $[Faction]) {
             // ── BEHAVIOR — bounded nudges (steer toward big signals; can't overturn a result) ──
             "ownGOO"       ->  D(2.00 * ownGoo),    // ≤2 doom, ×AP factor (AP2=1.0, AP1=AP3=0.7, AP4+=0.45). Cond: own GOO in play. Enables ES+rituals.
             "b:goodRitual" ->  D(0.50 * goodRit),   // 0.5 doom / ritual (cap 2) done WHILE 2+ gates AND awakened GOO — the convergence shape.
-            "gateTaken"    ->  D(0.33 * takenN),    // 1/3 doom / gate taken (cap 4). The ACT of taking a gate (build/capture).
+            "gateTaken"    ->  D(0.40 * takenN),    // 0.4 doom / gate taken (cap 5). USER-TUNED 2026-08-04 (was 0.33/cap4). The ACT of taking a gate.
+            "b:emptyGate"  ->  D(0.10 * emptyBoostN),// z-slot: +0.1 doom / gate taken while UNCONTESTED (no enemy cultist/GOO; if enemy monster, only w/ my monster co-present — dual-move). Void if all enemies out of power. USER Q2 2026-08-04.
             "gateDefended" ->  D(0.33 * defendedN), // 1/3 doom / gate defended (cap 4). Cond: held a contested gate; threat cleared.
-            "endAP1Gates"  ->  D(0.33 * ap1Gates),  // 1/3 doom / AP1-end gate (cap 2). Rewards early tempo.
+            "endAP1Gates"  ->  D(1.00 * ap1Gates),  // 1 doom / AP1-end gate (cap 2). USER-TUNED 2026-08-04 (was 0.33). Early tempo.
             "preDoomPower" ->  D(1.00 * preDoom),   // ≤1 doom. Avg power entering doom phase /10 — saving to AFFORD the ritual.
-            "unitsOnMap"   ->  D(1.00 * onMap),     // ≤1 doom. Units in play /12. Passive board presence (means to an end).
-            "b:sbUse"      ->  D(0.33 * sbUse),     // 1/3 doom / spellbook use (cap 3). Exploration nudge to TRY faction books.
-            "b:powerUse"   ->  D(0.33 * powUse),    // 1/3 doom / power use (cap 3). Exploration nudge to TRY innate/GOO powers.
+            "unitsOnMap"   ->  D(0.80 * onMap),     // ≤0.8 doom. USER-TUNED 2026-08-04 (was 1.00, /12): units-in-play / faction total roster.
+            "b:sbUse"      ->  D(0.05 * sbUse),     // 0.05 doom / spellbook use (cap 3). USER-TUNED 2026-08-04 (was 0.33). Exploration nudge.
+            "b:powerUse"   ->  D(0.05 * powUse),    // 0.05 doom / power use (cap 3). USER-TUNED 2026-08-04 via reward xlsx (was 0.33). Exploration nudge to TRY innate/GOO powers.
             // ── PENALTIES — the "away from devastating losses" signal (subtract) ────────
             "p:unitLoss"   -> -D(0.10 * lossPts),   // 0.10 doom per replacement-cost pt (1-cost unit=0.1, Shub round-trip 10=1 doom).
-            "p:lostGate"   -> -D(0.50 * lostN),     // 1/2 doom / gate lost to an ENEMY (cap 6). Harshest gate event.
+            "p:lostGate"   -> -D(0.60 * lostN),     // 0.6 doom / gate lost to an ENEMY (cap 6). USER-TUNED 2026-08-04 (was 0.50). Harshest gate event.
             "p:abandon"    -> -D(0.33 * abandonN),  // 1/3 doom / gate abandoned (cap 6). ≥ gateTaken ⇒ churning never nets positive.
-            "p:capture"    -> -D(0.33 * capturedN)  // 1/3 doom / own unit captured to a prison (cap 6).
+            "p:capture"    -> -D(0.40 * captPts),   // 0.4 doom per replacement-cost pt of own units captured. USER-TUNED 2026-08-04 (was 0.33 flat/cap6): now cost-scaled + UNCAPPED.
+            // ── RESERVED REWARD SLOTS (2026-08-02, user directive) ──────────────────────
+            // A dozen pre-declared, ZERO-WEIGHT slots. Adding a new reward term changes the
+            // shaping sum → shifts every training label → forces the warm-started value net to
+            // re-learn its calibration (i.e. it "upsets the brain"). To make future rewards a
+            // controlled, single-coefficient change instead of a restructuring of the vector,
+            // these slots are reserved NOW at 0.0 — byte-identical to today (each contributes
+            // exactly 0, so no current label moves), but a future reward just fills one slot's
+            // multiplier. To activate slot N: replace its `D(0.0 * ...)` with the real term +
+            // doom-equivalent weight, and (if it's a big signal) note the new calibration in the
+            // scoreBreakdown header. Names are neutral so any faction-agnostic signal can claim one.
+            "p:gooLost"      -> -D(0.20 * gooLostN),  // z:slot01. USER-DEFINED 2026-08-04: -0.2 per own GOO killed, EXTRA on top of p:unitLoss.
+            "p:cultistUnprot"-> -D(0.20 * unprotQ),   // z:slot02. USER-DEFINED 2026-08-04: -0.2/turn per unprotected cultist, ×0.9 decay/turn, AP-gated, ×1.5 w/ enemy monster (AP3+), suppressed if all enemies out of power.
+            "r:killEnemy"    ->  D(killNet),          // z:slot03. USER-DEFINED 2026-08-04: Σ 0.8×(dead enemy replacement cost) − 1 per combat (the "0.8×4−1=2.2 doom" formula). Attributed via `battled` region. Floored ≥0.
+            "r:powerBlock"   ->  D(0.05 * powGainN),  // z:slot04. PROVISIONAL (user "still determining"): 0.05 doom per power of income gained, cap 20 income ⇒ ≤1 doom. Flagged for user to finalize.
+            "r:apPowerOrder" ->  D(apOrderPts),       // z:slot05. USER-DEFINED 2026-08-04: Σ over AP3+ of (2·rank/players−1)·0.8 (4p: last=+0.8, 3rd=+0.4, 2nd=0, 1st=−0.4). rank = order power ran out (last-out best). SIGNED.
+            "r:enemyGooKill" ->  D(0.20 * gooKillN),  // z:slot06. USER-DEFINED 2026-08-04: +0.2 per enemy GOO killed, ADDITIVE on top of r:killEnemy (mirrors p:gooLost −0.2). Attribution pairs w/ slot03.
+            "b:captureEnemy" ->  D(0.40 * captEnemy), // z:slot07. USER-DEFINED 2026-08-04: +0.4 per replacement-cost pt of ENEMY units I imprison.
+            "r:buildGate"    ->  D(0.20 * builtN),    // z:slot08. USER-DEFINED 2026-08-14 (xlsx row 26): 0.2 per gate built when total controlled ≤ 3.
+            "r:EndAPGates"   ->  D(0.80 * doomGatesN),// z:slot09. USER-DEFINED 2026-08-14 (xlsx row 27): 0.8 per gate held during doom phase observations, no cap.
+            "z:slot10"     ->  D(0.0),
+            "z:slot11"     ->  D(0.0),
+            "z:slot12"     ->  D(0.0)
         )
     }
 

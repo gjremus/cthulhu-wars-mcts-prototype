@@ -46,7 +46,19 @@ object PolicyRun {
         val hidden   = intArg(a, 2, 64)
         val parallel = a.length > 3 && a(3).toLowerCase.startsWith("par")
         val lr       = if (a.length > 4) a(4).toDouble else 0.02
-        val sims     = intArg(a, 5, 60)
+        // SEARCH DEPTH 2026-08-02 (user directive: "make searches deep enough to see the ending").
+        // `sims` is the MCTS budget per move — the tree has ~sims nodes, so depth ≈ sims / branching.
+        // At 60 the endgame tree can't reach a win 5-15 decisions out, so the search truncates at the
+        // value net and never SEES the close it's about to fumble (the terminal 1.0/loss from
+        // Outcome.value — the CLEAN path, not the shaped label). CW_SIMS overrides the positional arg
+        // so depth is tunable without a recompile; default falls back to the arg (byte-identical when
+        // unset). Faction-agnostic — pure search budget, nothing per-faction.
+        val simsArg  = intArg(a, 5, 60)
+        val sims     = {
+            val e = System.getenv("CW_SIMS")
+            if (e == null || e.trim.isEmpty) simsArg
+            else try math.max(1, e.trim.toInt) catch { case _ : NumberFormatException => simsArg }
+        }
         val perSeat  = intArg(a, 6, 8)
 
         Trainer.parallelPlay = parallel
@@ -348,7 +360,18 @@ object PolicyRun {
         // WEAKER new run cannot overwrite a stronger saved net (that would re-introduce the
         // exact "throw away the good brain" bug this feature fixes). Cold start keeps -1.0
         // so the first iter always sets an initial best.
-        var bestScore  = if (warmStarted) Checkpoint.savedScore.getOrElse(-1.0) else -1.0
+        //
+        // REBASE 2026-08-02: when the REWARD SEMANTICS change (e.g. the stalemate-punishment
+        // fix), the on-disk score was computed under the OLD reward and is NOT comparable to
+        // scores under the new one — a stalemate-heavy game that scored ~1.94 under the old
+        // "draw = 1.0" reward scores far lower now, so the frozen bar could NEVER be beaten and
+        // no new checkpoint would ever save (league frozen, learning stalled). CW_REBASE_BESTBAR
+        // keeps the warm-started WEIGHTS (the learned brain is preserved) but resets the BAR to
+        // -1.0 so the first iter re-establishes an honest best under the current reward. Use it
+        // exactly once after a reward change; leave it unset on ordinary continuation runs.
+        val rebaseBar = sys.env.get("CW_REBASE_BESTBAR").exists(v => v == "1" || v.equalsIgnoreCase("true"))
+        var bestScore  = if (warmStarted && !rebaseBar) Checkpoint.savedScore.getOrElse(-1.0) else -1.0
+        if (rebaseBar) println("best-bar REBASE: CW_REBASE_BESTBAR set -> keeping warm-started weights but resetting the best-bar to -1.0 (reward semantics changed; old score not comparable)\n")
         var bestIter   = 0
         // Last arena win-rate reading, carried forward between arena evals (measured only
         // every `arenaEvery` iters) so the best-checkpoint composite always has a value.
@@ -426,29 +449,48 @@ object PolicyRun {
             // ranked, so we can align the label with the metrics above and spot which reward
             // needs tweaking (e.g. avgEndGates near 0 => gate control still the gap).
             println("   " + avgScorecardLine(batch.flatMap(_.scorecards)))
+            // PER-FACTION breakdown (user directive 2026-08-04): how EACH brain faction builds
+            // its aggregate score from every rewarded/pained activity, one line per seat.
+            println("   scorecard by faction:")
+            perFactionScorecardLines(batch.flatMap(_.scorecards)).foreach(l => println("   " + l))
 
             // 4. TEST vs the bots every `arenaEvery` iterations (and on the last one).
             //    Run this BEFORE the best-checkpoint decision so the arena win-rate can feed
             //    the composite: now that the brain actually beats bots (R16 it34, first ever),
             //    the saved brain MUST be selected partly on WINNING arena games, not only on
             //    finishing self-play games + rituals (which ignored the real target entirely).
+            //    Arena games now FEED BACK into training: examples are collected from arena
+            //    games and trained on just like self-play examples, so the brain learns from
+            //    games against bots, not just weak self-play opponents.
+            var arenaExamplesCollected = 0
             if (it % arenaEvery == 0 || it == iters) {
                 print(f"   arena @ iter $it: ")
-                val (aw, ag) = reportPerSeat(Arena.evaluatePerSeatBrain(
-                    () => new MCTSPolicy(sims = sims, leaf = PolicyValueEval(policy, value)), perSeat))
-                lastArenaWR = if (ag > 0) aw.toDouble / ag else 0.0
+                // Collect per-seat arena results AND training examples
+                val perSeatResults = SelfPlay.fixedSeating.toList.map { seat =>
+                    val (examples, result) = Arena.evaluateWithExamples(value, sims, perSeat, Set(seat))
+                    // Train value net on arena examples immediately
+                    examples.foreach { ex => value.train(ex.features, ex.label, lr) }
+                    arenaExamplesCollected += examples.length
+                    result
+                }
+                val totalWins = perSeatResults.map(_.brainWins).sum
+                val totalGames = perSeatResults.map(_.games).sum
+                lastArenaWR = if (totalGames > 0) totalWins.toDouble / totalGames else 0.0
+                println(f"wins $totalWins%d/${totalGames}%d (${lastArenaWR * 100}%.1f%%) | $arenaExamplesCollected examples trained")
             }
 
-            // BEST-CHECKPOINT: score this iteration by what actually collapsed — games
-            // that FINISH and rituals happening (finishedRate in [0,1] plus rituals/game, the
-            // two symptoms of the good iter-1 shape) — PLUS the arena win-rate term so the
-            // saved/warm-started brain tracks the one that beats the hand-tuned bots. Arena
-            // is only measured every `arenaEvery` iters, so we carry the last reading forward;
-            // ArenaWeight is large enough that a real arena win is a decisive tiebreaker but
-            // can't by itself crown an otherwise-weak brain (1/32 ≈ 0.031 → +0.09 bonus).
-            val finishedRate = spWins.toDouble / gamesPerIter
-            val ritPerGame   = batch.flatMap(_.metrics).map(_.rituals).sum.toDouble / math.max(1, batch.size)
-            val iterScore    = finishedRate + 0.3 * ritPerGame + ArenaWeight * lastArenaWR
+            // BEST-CHECKPOINT: use AVERAGE DOOM as the score. That's the metric that matters.
+            val avgDoom = batch.flatMap(_.metrics).map(_.doom).sum.toDouble / math.max(1, batch.size)
+            val iterScore = avgDoom
+
+            // SAVE EVERY ITERATION (2026-08-08): always save current weights so learning
+            // is never lost if the process dies. Saves to `current.*` files alongside `best.*`.
+            val runTag = sys.env.getOrElse("CW_RUNTAG", "selfplay")
+            (policy, value) match {
+                case (p : PolicyModel, v : MLPModel) => Checkpoint.saveCurrent(p, v, it, iterScore, runTag)
+                case _ =>
+            }
+
             if (iterScore > bestScore) {
                 bestScore = iterScore; bestIter = it
                 bestPolicy = policy.copy; bestValue = value.copy
@@ -458,22 +500,23 @@ object PolicyRun {
                 leaguePool += ((policy.copy, value.copy))
                 if (leaguePool.length > LeagueCap) leaguePool.remove(1)
                 // PERSIST across runs: write the new best to disk so the next run can
-                // warm-start from it instead of relearning from zero. Only overwrites the
-                // on-disk best when THIS run's best beats it (guard below) — set CW_RUNTAG
-                // to label which run produced it.
-                val runTag = sys.env.getOrElse("CW_RUNTAG", "selfplay")
+                // warm-start from it instead of relearning from zero.
                 (bestPolicy, bestValue) match {
                     case (bp : PolicyModel, bv : MLPModel) => Checkpoint.save(bp, bv, it, iterScore, runTag)
                     case _ =>
                 }
-                println(f"   >>> new best checkpoint @ iter $it (finished=${finishedRate}%.2f rit/g=${ritPerGame}%.2f arenaWR=${lastArenaWR}%.3f score=${iterScore}%.2f) | league=${leaguePool.length} | saved to disk")
+                println(f"   >>> new best checkpoint @ iter $it (avgDoom=${avgDoom}%.1f arenaWR=${lastArenaWR}%.3f) | league=${leaguePool.length} | saved to disk")
             }
+
+            // CLEANUP old checkpoints older than 7 days (2026-08-08)
+            Checkpoint.cleanupOldCheckpoints(7)
+
             it += 1
         }
 
         // FINAL: evaluate the BEST checkpoint (not necessarily the last iteration, which
         // may have decayed). This is the net we'd actually keep/deploy.
-        println(f"\n== BEST checkpoint = iter $bestIter (score ${bestScore}%.2f) ==")
+        println(f"\n== BEST checkpoint = iter $bestIter (avgDoom=${bestScore}%.1f) ==")
         print("   arena @ BEST: ")
         reportPerSeat(Arena.evaluatePerSeatBrain(
             () => new MCTSPolicy(sims = sims, leaf = PolicyValueEval(bestPolicy, bestValue)), perSeat))
@@ -509,6 +552,22 @@ object PolicyRun {
 
         val policy = PolicyModel.initial(Features.dim, ActionFeatures.dim, hidden)
         val value  = MLPModel.initial(Features.dim, hidden)
+        // WARM-START from the trained champion so the replay reflects the REAL brain, not a
+        // fresh bootstrap clone (user directive 2026-08-04: best-game-per-faction replays must
+        // show the trained brain). Honors CW_CKPT_DIR; falls back to the bootstrap net if no
+        // compatible checkpoint exists. CW_FRESH forces the cold bootstrap (old behavior).
+        val forceFreshReplay = sys.env.get("CW_FRESH").exists(v => v == "1" || v.equalsIgnoreCase("true"))
+        if (!forceFreshReplay && Checkpoint.exists) {
+            (Checkpoint.loadPolicy(Features.dim, ActionFeatures.dim, hidden), Checkpoint.loadValue(Features.dim, hidden)) match {
+                case (Some(p), Some(v)) =>
+                    policy.adopt(p); value.adopt(v)
+                    println(f"warm-start: LOADED champion checkpoint [${Checkpoint.metaLine}] -> replay reflects the trained brain\n")
+                case _ =>
+                    println("warm-start: on-disk checkpoint INCOMPATIBLE with dims -> using fresh bootstrap net for replay\n")
+            }
+        } else {
+            println("warm-start: no checkpoint (or CW_FRESH) -> replay uses fresh bootstrap net\n")
+        }
         val rng = new scala.util.Random(12345L)
         var e = 0
         while (e < bootEpochs) {
@@ -575,12 +634,29 @@ object PolicyRun {
         println(f"\n>>> BEST brain game: seat=${best.seat.short} won=${best.brainWon} brainDoom=${best.brainDoom} leaderDoom=${best.leaderDoom} decisions=${best.decisions}")
 
         // Write the trace in build-replay.py format: actions, blank line, HTML-wrapped log.
-        val fname = outDir + "/brain-" + best.seat.short.toLowerCase + "-" + label + "-d" + best.brainDoom + ".txt"
-        val body = best.actionLines.mkString("\n") + "\n\n" +
-                   best.logLines.map(l => "<div class='p'>" + l + "</div>").mkString("\n")
-        java.nio.file.Files.write(java.nio.file.Paths.get(fname), body.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+        def writeTrace(c : Cand, lbl : String) : String = {
+            val fn = outDir + "/brain-" + c.seat.short.toLowerCase + "-" + lbl + "-d" + c.brainDoom + ".txt"
+            val bd = c.actionLines.mkString("\n") + "\n\n" +
+                     c.logLines.map(l => "<div class='p'>" + l + "</div>").mkString("\n")
+            java.nio.file.Files.write(java.nio.file.Paths.get(fn), bd.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+            fn
+        }
+        val fname = writeTrace(best, label)
         println(s">>> TRACE SAVED: $fname")
         println(f"    (${best.actionLines.length}%d action lines + ${best.logLines.length}%d log lines)")
+
+        // ALSO write the best game for EACH seat, so every faction gets its own replay
+        // (user directive 2026-08-04: "a replay of each factions best game"). Same ranking
+        // rule applied within each seat's candidates.
+        SelfPlay.fixedSeating.toList.foreach { seat =>
+            val seatCands = cands.filter(_.seat == seat)
+            if (seatCands.nonEmpty) {
+                val b = seatCands.sortBy(c => (if (c.brainWon) 0 else 1, -c.brainDoom, c.leaderDoom - c.brainDoom)).head
+                val lbl = if (b.brainWon) "WIN" else "best"
+                val fn  = writeTrace(b, lbl)
+                println(f">>> SEAT-BEST ${seat.short}%2s: won=${b.brainWon}%-5s brainDoom=${b.brainDoom}%2d -> $fn")
+            }
+        }
 
         // Also dump a compact index of every candidate so the user can pick a different one.
         val idx = cands.zipWithIndex.map { case (c, i) =>
@@ -634,15 +710,37 @@ object PolicyRun {
         // Learner: the current net, the ONLY seat whose decisions we record + train on.
         val learnerBrain = new MCTSPolicy(sims = sims, leaf = PolicyValueEval(policy, value))
         learnerBrain.recorder = scala.collection.mutable.ArrayBuffer[PolicyTarget]()
-        // Opponents: one FROZEN league net per non-learner seat, chosen deterministically by
-        // (gameIdx, seat) so the pool is exercised evenly with no RNG. Fallback to self if the
-        // pool is somehow empty (shouldn't happen — it's always seeded with the bootstrap clone).
-        val pool = if (league.nonEmpty) league else Seq((policy, value))
-        val brainByFaction : Map[Faction, MCTSPolicy] = {
-            val m = scala.collection.mutable.Map[Faction, MCTSPolicy](learnerSeat -> learnerBrain)
+        // Opponents: ALWAYS the BEST frozen brain (last entry in league pool) for all 3 non-learner
+        // seats. This ensures the learner trains ONLY against the strongest known opponent, not
+        // against a mix of weak past-selves. User directive 2026-08-14: 1 learner vs 3 copies of best.
+        val bestFrozen = if (league.nonEmpty) league.last else (policy, value)
+        // PLATEAU LEVER #4 (env-gated, 2026-08-01) — VARIABLE BOT MIX among the opponent seats.
+        // Today every non-learner seat is a frozen LEAGUE net (a past self), so the learner only
+        // ever beats its OWN style and the arena win rate is pinned at ~3%. This lets a variable
+        // number of opponent seats be REAL hand-tuned bots (a genuinely different style) instead,
+        // so the learner must learn play that beats a different opponent too — attacking the arena
+        // gap head-on — WITHOUT going pure all-bots (which would cap the brain at bot skill and lose
+        // the self-play-surpasses-teacher effect + can't generalize to the bot-less expansion
+        // factions). CW_BOT_FRACTION in [0,1] sets the DENSITY of bot seats: 0.0 = pure self-play
+        // (today, champion default), 0.33 ≈ one bot seat, 1.0 = all bots. Each of the 3 opponent
+        // seats is INDEPENDENTLY a bot per a deterministic (gameIdx,seat) pattern (no RNG, matching
+        // the codebase convention), so the bot COUNT per game is genuinely variable (0-3) and
+        // UNKNOWN to the brain (its features never encode opponent identity), while the batch still
+        // covers every mix evenly. Planned variability, not random: reproducible + even coverage.
+        val brainByFaction : Map[Faction, DecisionPolicy] = {
+            val m = scala.collection.mutable.Map[Faction, DecisionPolicy](learnerSeat -> learnerBrain)
             g.setup.toList.filter(_ != learnerSeat).zipWithIndex.foreach { case (f, i) =>
-                val (op, ov) = pool((gameIdx + i) % pool.length)
-                m(f) = new MCTSPolicy(sims = sims, leaf = PolicyValueEval(op, ov))
+                // Deterministic per-seat bot test: strides 7/13 decorrelate the pattern so it is
+                // NOT "always seat 0"; density converges to botFraction over the batch. At 0.0 no
+                // seat passes (identical to today); at 1.0 every seat passes (all bots).
+                val isBot = ((gameIdx * 7 + i * 13) % 100) / 100.0 < botFractionEnv
+                m(f) =
+                    if (isBot) (BotPolicy : DecisionPolicy)
+                    else {
+                        // Always use the best frozen brain for league opponents
+                        val (op, ov) = bestFrozen
+                        new MCTSPolicy(sims = sims, leaf = PolicyValueEval(op, ov))
+                    }
             }
             m.toMap
         }
@@ -773,13 +871,32 @@ object PolicyRun {
         println("decisions per faction: " + actedByFaction.toList.sortBy(_._1).map { case (f, n) => s"$f=$n" }.mkString(" "))
     }
 
+    // PLATEAU LEVER #1 (env-gated, 2026-08-01) — SELF-PLAY DECISION CAP. A self-play game still
+    // running at the cap is ABANDONED as a no-winner stalemate, so a low cap means the brain
+    // rarely sees a real win to learn from (finish rate has run 6-17/20). Raising the cap lets
+    // more games actually finish -> more genuine win labels. Env-gated with default 1600 (today's
+    // selfPlayGame default) so the running champion, which sets no env, is byte-identical; the
+    // sandbox experiment sets CW_DECISION_CAP higher. Floored at 1 against a garbage env.
+    lazy val decisionCapEnv : Int = {
+        val e = System.getenv("CW_DECISION_CAP")
+        if (e == null || e.trim.isEmpty) 1600
+        else try math.max(1, e.trim.toInt) catch { case _ : NumberFormatException => 1600 }
+    }
+
+    // LEVER #4 density (see selfPlayGame). Default 0.0 = pure self-play (champion unchanged).
+    lazy val botFractionEnv : Double = {
+        val e = System.getenv("CW_BOT_FRACTION")
+        if (e == null || e.trim.isEmpty) 0.0
+        else try math.max(0.0, math.min(1.0, e.trim.toDouble)) catch { case _ : NumberFormatException => 0.0 }
+    }
+
     def selfPlayBatch(sims : Int, nGames : Int, policy : PolicyModel, value : ValueNet,
                       league : Seq[(PolicyModel, ValueNet)], parallel : Boolean) : Seq[SelfPlayGame] = {
         // LEAGUE (lever c): rotate the LEARNER seat across the four factions round-robin so the
         // net learns to WIN from every seat vs the league pool (faction-agnostic training), and
         // pass gameIdx so opponent-seat selection walks the pool deterministically.
         val seats = SelfPlay.fixedSeating.toArray
-        def one(i : Int) = selfPlayGame(sims, policy, value, league, seats(i % seats.length), i)
+        def one(i : Int) = selfPlayGame(sims, policy, value, league, seats(i % seats.length), i, decisionCapEnv)
         if (parallel) {
             import scala.collection.parallel.CollectionConverters._
             (0 until nGames).par.map(one).toList
@@ -861,6 +978,31 @@ object PolicyRun {
         val ranked = avg.toList.sortBy(-_._2)
         val parts  = ranked.map { case (k, v) => f"$k=$v%.3f" }
         f"scorecard avg/seat (total=$total%.3f): " + parts.mkString(" ")
+    }
+
+    /** PER-FACTION shaping SCORECARD (user directive 2026-08-04: "I want it BY BRAIN FACTION …
+     *  a clear clean breakdown of how each brain gets to its aggregate score"). Because the
+     *  learner seat ROTATES across an iteration, `cards` holds games tagged by which faction
+     *  was the learner; we bucket by faction and average each named term WITHIN that faction,
+     *  so every seat's aggregate score is shown built up from each rewarded/pained activity —
+     *  positives then penalties, each labeled, ending in that faction's total. Zero-weight
+     *  reserved slots (z:slotNN) are hidden to keep the line readable; every nonzero term shows.
+     *  Returns one line per faction that had at least one game this iteration. */
+    def perFactionScorecardLines(cards : Seq[(Faction, Seq[(String, Double)])]) : Seq[String] = {
+        if (cards.isEmpty) return Seq("scorecard by faction: (none)")
+        cards.groupBy(_._1).toList.sortBy(_._1.short).map { case (fac, facCards) =>
+            val n = facCards.size.toDouble
+            val sums = scala.collection.mutable.LinkedHashMap[String, Double]()
+            facCards.foreach { case (_, terms) => terms.foreach { case (k, v) => sums(k) = sums.getOrElse(k, 0.0) + v } }
+            val avg   = sums.map { case (k, s) => (k, s / n) }
+            val total = avg.values.sum
+            // Show only terms that actually contributed (drop the 12 zero reserved slots and any
+            // term that averaged exactly 0 this iteration), ranked by magnitude of contribution.
+            val shown = avg.toList.filter { case (k, v) => !k.startsWith("z:slot") && math.abs(v) >= 0.0005 }
+                                  .sortBy { case (_, v) => -v }
+            val parts = shown.map { case (k, v) => f"$k=$v%+.3f" }
+            f"  ${fac.short}%2s (n=${facCards.size}%2d) total=$total%.3f: " + parts.mkString(" ")
+        }
     }
 
     /** Print a per-seat arena result block (brain rotates all four seats) and RETURN

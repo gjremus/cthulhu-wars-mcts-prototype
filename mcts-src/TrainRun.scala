@@ -57,10 +57,11 @@ object TrainRun {
             println(f"iter ${it + 1}%3d | buf ${buffer.size}%6d | loss $before%.4f->$after%.4f | selfplay winners: $winStr%-28s | ${elapsed}%.0fs")
 
             if ((it + 1) % evalEvery == 0) {
-                val r = Arena.evaluate(model, sims, evalGames, Set(brainSeat))
+                val (arenaExamples, r) = Arena.evaluateWithExamples(model, sims, evalGames, Set(brainSeat))
+                buffer.add(arenaExamples)
                 val wr = if (r.brainWins + r.botWins > 0) 100.0 * r.brainWins / (r.brainWins + r.botWins) else 0.0
                 println(f"        >>> ARENA vs bots: brain(${brainSeat.short}) wins ${r.brainWins}%d, bots win ${r.botWins}%d, none ${r.noWinner}%d " +
-                        f"(brain win-rate ${wr}%.0f%%) | brain doom avg ${r.brainDoomAvg}%.1f vs leader ${r.leaderDoomAvg}%.1f")
+                        f"(brain win-rate ${wr}%.0f%%) | brain doom avg ${r.brainDoomAvg}%.1f vs leader ${r.leaderDoomAvg}%.1f | ${arenaExamples.length}%d examples added to buffer")
             }
             it += 1
         }

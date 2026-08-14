@@ -51,6 +51,73 @@ object SelfPlay {
     def newGameLogged() : Game =
         new Game(EarthMap4v35, RitualTrack.for4, fixedSeating, true, $(MapEarth35))
 
+    // ─── ENVIRONMENT-CONFIGURABLE GAME FACTORY (Phase 1 part 2, 2026-08-01) ────────
+    //
+    // The encoder can now SEE any environment (EncodingLayout caps); this is the other
+    // half — CONSTRUCTING a non-base-4 game for it to read. The engine already ships the
+    // pieces (EarthMap3/4v35/4v53/5/6, RitualTrack.for3/4/5, factions GC/BG/YS/CC plus
+    // OW/SL/AN/WW/DS/FB/TS), so this factory just SELECTS them from env vars. It DEFAULTS
+    // EXACTLY to base-4 Earth-3.5 GC/BG/YS/CC, so with no env set it builds the identical
+    // game newGame() does — the running champion loop is untouched. To play a different
+    // environment you set env; nothing here forces it.
+    //
+    //   CW_MAP      = earth33 | earth35 (default) | earth53 | earth55 | earth6
+    //   CW_SEATING  = comma-separated faction codes (default "GC,BG,YS,CC"); its length
+    //                 also picks the ritual track (3->for3, 4->for4, 5->for5).
+    //
+    // IMPORTANT — this does NOT relax the clone-safety guard. Base-4 factions are audit-
+    // confirmed clone-safe; TS (TSExpansion) has per-game singleton vars that break MCTS
+    // cloning, so seating TS here is REFUSED (falls back to base-4) until that leak is
+    // fixed. Any faction code that isn't a known clone-safe symbol also falls back, so a
+    // typo can't silently build an unclonable game. The chosen map's region count may
+    // exceed the encoder's CW_MAX_REGIONS cap — that's the caller's responsibility to set
+    // (a warning is printed); the encoder itself is bounds-safe either way.
+
+    private val factionByCode : Map[String, Faction] =
+        Map("GC" -> GC, "BG" -> BG, "YS" -> YS, "CC" -> CC,
+            "OW" -> OW, "SL" -> SL, "AN" -> AN, "WW" -> WW, "DS" -> DS, "FB" -> FB)
+        // NOTE: TS deliberately absent — not clone-safe (see project note). Add when fixed.
+
+    private def boardByToken(tok : String) : (Board, GameOption, Int) = tok.trim.toLowerCase match {
+        case "earth33"          => (EarthMap3,     MapEarth33, 13)
+        case "earth53"          => (EarthMap4v53,  MapEarth53, 17)
+        case "earth55"          => (EarthMap5,     MapEarth55, 21)
+        case "earth35" | "" | _ => (EarthMap4v35,  MapEarth35, 17)   // base-4 default
+    }
+
+    /** Seating parsed from CW_SEATING, restricted to clone-safe factions; falls back to
+     *  base-4 GC/BG/YS/CC if empty, malformed, out of the 3–5 range, or naming a
+     *  non-clone-safe faction (e.g. TS). Returns (seating, ritualTrack). */
+    private def envSeating() : ($[Faction], $[Int]) = {
+        val raw = System.getenv("CW_SEATING")
+        val parsed : Option[List[Faction]] =
+            if (raw == null || raw.trim.isEmpty) None
+            else {
+                val codes = raw.split(",").map(_.trim.toUpperCase).filter(_.nonEmpty).toList
+                val fs = codes.map(c => factionByCode.get(c))
+                if (fs.forall(_.isDefined) && fs.size >= 3 && fs.size <= 5) Some(fs.map(_.get))
+                else { println(s"CW_SEATING='$raw' invalid/not-clone-safe/out-of-range -> base-4 fallback"); None }
+            }
+        val seatList = parsed.getOrElse(List(GC, BG, YS, CC))
+        val track = seatList.size match {
+            case 3 => RitualTrack.for3
+            case 5 => RitualTrack.for5
+            case _ => RitualTrack.for4
+        }
+        (seatList.foldRight($[Faction]())(_ :: _), track)
+    }
+
+    /** Build a game from CW_MAP / CW_SEATING (defaults reproduce base-4 Earth-3.5 exactly).
+     *  `logged` mirrors newGameLogged so replay traces work for any environment. */
+    def envGame(logged : Boolean = false) : Game = {
+        val (board, mapOpt, regions) = boardByToken(Option(System.getenv("CW_MAP")).getOrElse(""))
+        val (seating, track) = envSeating()
+        if (regions > Features.maxRegions)
+            println(s"NOTE: map has $regions regions > CW_MAX_REGIONS=${Features.maxRegions}; raise the cap to encode them all (encoder stays bounds-safe).")
+        val opts = if (logged) $(mapOpt) else $[GameOption]()
+        new Game(board, track, seating, logged, opts)
+    }
+
     /**
      * Play ONE full self-play game with `searcher` in every seat, recording an
      * Example at each genuine decision. Returns (examples, winners, decisionCount).
