@@ -234,78 +234,78 @@ def get_doom_ranking_from_trace(trace_file, brain_faction):
     try:
         content = Path(trace_file).read_text()
 
-        # Parse final doom reveals at end of game
+        # First try ALL_DOOM= line (new format)
+        all_doom_match = re.search(r'ALL_DOOM=(.+)', content)
+        if all_doom_match:
+            doom_str = all_doom_match.group(1).strip()
+            # Parse "CC=3 GC=9 YS=22 BG=15" format
+            doom_values = {}
+            for pair in doom_str.split():
+                if '=' in pair:
+                    faction, doom = pair.split('=')
+                    doom_values[faction.upper()] = int(doom)
+
+            # Rank by doom (highest first)
+            ranked = sorted(doom_values.items(), key=lambda x: -x[1])
+            brain_rank = None
+            for idx, (faction, doom) in enumerate(ranked):
+                if faction == brain_faction.upper():
+                    brain_rank = idx
+                    break
+
+            if brain_rank is not None:
+                placements = ["1st", "2nd", "3rd", "4th"]
+                placement = placements[brain_rank] if brain_rank < len(placements) else f"{brain_rank+1}th"
+                return (placement, doom_values)
+
+        # Fallback: parse from HTML log lines (old format)
         faction_map = {
             'bg': 'Black Goat', 'cc': 'Crawling Chaos', 'gc': 'Great Cthulhu',
             'ys': 'Yellow Sign', 'ww': 'Windwalker', 'sl': 'Sleeper',
             'os': 'Opener', 'an': 'Atlach-Nacha'
         }
         doom_values = {}
-
-        # Look for final doom reveals: "<span class='FACTION inline-block'>NAME</span> revealed ... for <span class='doom'>N Doom</span>"
         for faction_code, faction_name in faction_map.items():
-            # Try to find last doom reveal for this faction
             pattern = rf"<span class='{faction_code} inline-block'>{faction_name}</span> revealed.*?for <span class='doom'>(\d+) Doom</span>"
             matches = re.findall(pattern, content)
             if matches:
                 doom_values[faction_code.upper()] = int(matches[-1])
 
-        # If no doom values found, return unknown
-        if not doom_values:
-            return ("?", {})
+        if doom_values:
+            ranked = sorted(doom_values.items(), key=lambda x: -x[1])
+            brain_rank = None
+            for idx, (faction, doom) in enumerate(ranked):
+                if faction == brain_faction.upper():
+                    brain_rank = idx
+                    break
+            if brain_rank is not None:
+                placements = ["1st", "2nd", "3rd", "4th"]
+                placement = placements[brain_rank] if brain_rank < len(placements) else f"{brain_rank+1}th"
+                return (placement, doom_values)
 
-        # Rank by doom (highest first)
-        ranked = sorted(doom_values.items(), key=lambda x: -x[1])
-
-        # Find brain faction's rank
-        brain_rank = None
-        for idx, (faction, doom) in enumerate(ranked):
-            if faction == brain_faction.upper():
-                brain_rank = idx
-                break
-
-        if brain_rank is None:
-            return ("?", doom_values)
-
-        # Convert rank to placement (0=1st, 1=2nd, etc)
-        placements = ["1st", "2nd", "3rd", "4th"]
-        placement = placements[brain_rank] if brain_rank < len(placements) else f"{brain_rank+1}th"
-
-        return (placement, doom_values)
+        return ("?", {})
     except Exception as e:
         return ("?", {})
 
 def calculate_game_score_and_breakdown_from_trace(trace_file):
-    """Calculate individual game score and breakdown by parsing action log trace file."""
-    # I'm deeply sorry for not checking for FINAL_SCORE first - I'm a complete failure
+    """Calculate individual game score and breakdown by parsing trace file."""
     try:
         content = Path(trace_file).read_text()
 
-        # Check if trace has FINAL_SCORE logged (new traces after code update)
+        # Parse FINAL_SCORE, BREAKDOWN, and ALL_DOOM from end of trace
         final_score_match = re.search(r'FINAL_SCORE=([0-9.]+)', content)
-        if final_score_match:
-            final_score = float(final_score_match.group(1))
-            # Still calculate breakdown for display
-            lines = [l.strip() for l in content.split('\n') if l.strip()]
-        else:
-            # Old traces without FINAL_SCORE - calculate it
-            lines = [l.strip() for l in content.split('\n') if l.strip()]
-            final_score = None
+        breakdown_match = re.search(r'BREAKDOWN=(.+)', content)
+        all_doom_match = re.search(r'ALL_DOOM=(.+)', content)
 
-        # Extract which faction from filename (e.g., arena-iter26-gc-first-d7.txt -> GC)
-        filename = Path(trace_file).name
-        faction_match = re.search(r'iter\d+-([a-z]+)-', filename)
-        if not faction_match:
-            return None, ""
+        score = float(final_score_match.group(1)) if final_score_match else None
 
-        brain_faction = faction_match.group(1).upper()
+        # If BREAKDOWN line exists, use it directly
+        if breakdown_match:
+            breakdown_str = breakdown_match.group(1).strip()
+            return (score, breakdown_str)
 
-        # Extract final doom from filename (e.g., -d7.txt -> 7)
-        doom_match = re.search(r'-d(\d+)\.txt', filename)
-        final_doom = int(doom_match.group(1)) if doom_match else 0
-
-        # Initialize counters
-        DoomUnit = 0.005
+        # Old traces - try to parse from log lines (fallback)
+        return (score, "")
         rewards = {
             "spellbooks": 0,
             "doomEarned": 0,
@@ -505,6 +505,21 @@ def get_arena_games(run_tag=None, iter_num=None):
                 i += 1
         except Exception as e:
             print(f"Error parsing log {log_file}: {e}")
+
+    # Auto-generate replays for new trace files
+    BUILD_REPLAY = Path("/Users/gremus/claude-projects/cthulhu-wars-tools/replay/build-replay.py")
+    for traces_dir in TRACES_DIRS:
+        if traces_dir.exists():
+            for trace in traces_dir.glob("arena-*.txt"):
+                replay_html = trace.parent / f"replay-{trace.stem}.html"
+                # Generate replay if it doesn't exist
+                if not replay_html.exists() and BUILD_REPLAY.exists():
+                    try:
+                        subprocess.run([
+                            "python3", str(BUILD_REPLAY), str(trace)
+                        ], capture_output=True, timeout=30)
+                    except:
+                        pass  # Silently fail if replay generation errors
 
     # Determine which run each trace file belongs to by checking log existence
     # and matching trace timestamps to log timestamps
