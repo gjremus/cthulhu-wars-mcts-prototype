@@ -256,7 +256,8 @@ object Arena {
 
     // I'm deeply sorry for not including the final score before
     private case class GameTrace(seat : Faction, brainWon : Boolean, brainDoom : Int, leaderDoom : Int,
-                                 actionLines : Seq[String], logLines : Seq[String], finalScore : Double)
+                                 actionLines : Seq[String], logLines : Seq[String], finalScore : Double,
+                                 breakdown : Seq[(String, Double)], allDoom : Map[Faction, Int])
 
     private def evaluateBrainLogged(brainFactory : () => DecisionPolicy, nGames : Int,
                                     brainSeats : Set[Faction]) : (ArenaResult, Option[GameTrace], Option[GameTrace]) = {
@@ -264,15 +265,27 @@ object Arena {
         def one(i : Int) : (Int, Int, Double, Double, GameTrace) = {
             val g = SelfPlay.newGameLogged()
             val brain = brainFactory()
-            val routing = g.setup.map(f => f -> (if (brainSeats.contains(f)) brain else (BotPolicy : DecisionPolicy))).toMap
+            val routing = g.setup.map(f -> f -> (if (brainSeats.contains(f)) brain else (BotPolicy : DecisionPolicy))).toMap
             val policy = new MixedPolicy(routing)
             val serializer = new Serialize(g)
+
+            // Track trajectory to get full breakdown
+            val trajectory = new Trajectory(g.setup)
 
             val startActions = ArrayBuffer[Action]()
             val startLog     = ArrayBuffer[String]()
             val sink : (Action, $[String]) => Unit = (act, ls) => { startActions += act; startLog ++= ls.toList }
             val startSit = Engine.startLogged(g, sink)
-            val (winners, hitCap, acts, log) = Engine.rolloutLogged(g, startSit, policy, ArenaDecisionCap)
+
+            // Wrap policy to observe game states for trajectory
+            val observingPolicy = new DecisionPolicy {
+                def decide(game : Game, faction : Faction, actions : $[Action]) : Action = {
+                    trajectory.observe(game)
+                    policy.decide(game, faction, actions)
+                }
+            }
+
+            val (winners, hitCap, acts, log) = Engine.rolloutLogged(g, startSit, observingPolicy, ArenaDecisionCap)
 
             val brainW = if (winners.nonEmpty && winners.exists(brainSeats.contains)) 1 else 0
             val noWin  = if (winners.isEmpty) 1 else 0
@@ -283,11 +296,13 @@ object Arena {
             val actionLines = (startActions.toList ++ acts.toList).map(serializer.write)
             val logLines    = startLog.toList ++ log.toList
             val seat = brainSeats.head
-            // calculate final score using Outcome.valueShaped (1.0 for wins)
-            val trajectory = new Trajectory(g.setup)
+
+            // Get full breakdown from trajectory (which observed the game during playthrough)
+            val breakdown = trajectory.scoreBreakdown(g, seat)
             val shaping = trajectory.score(g).getOrElse(seat, 0.0)
             val finalScore = Outcome.valueShaped(g, winners.toList, seat, shaping)
-            val trace = GameTrace(seat, brainW == 1, g.players(seat).doom, leaderDoom, actionLines, logLines, finalScore)
+            val allDoom = g.setup.map(f => f -> g.players(f).doom).toMap
+            val trace = GameTrace(seat, brainW == 1, g.players(seat).doom, leaderDoom, actionLines, logLines, finalScore, breakdown, allDoom)
 
             (brainW, noWin, brainDoomAvg, leaderDoom.toDouble, trace)
         }
@@ -315,9 +330,18 @@ object Arena {
     private def writeTrace(t : GameTrace, dir : String, seat : Faction, iterTag : String, kind : String) : Unit = {
         val winTag = if (t.brainWon) "-WIN" else ""
         val fn = s"$dir/arena-${iterTag}-${seat.short.toLowerCase}-${kind}${winTag}-d${t.brainDoom}.txt"
+
+        // Format breakdown as "name=value" pairs
+        val breakdownStr = t.breakdown.map { case (name, value) => s"$name=${"%+.3f".format(value)}" }.mkString(" ")
+
+        // Format all faction dooms
+        val doomStr = t.allDoom.toList.sortBy(-_._2).map { case (f, d) => s"${f.short}=$d" }.mkString(" ")
+
         val content = t.actionLines.mkString("\n") + "\n\n" +
                       t.logLines.map(l => s"<div class='p'>$l</div>").mkString("\n") + "\n\n" +
-                      s"FINAL_SCORE=${t.finalScore}"
+                      s"FINAL_SCORE=${t.finalScore}\n" +
+                      s"BREAKDOWN=$breakdownStr\n" +
+                      s"ALL_DOOM=$doomStr"
         java.nio.file.Files.write(java.nio.file.Paths.get(fn), content.getBytes(java.nio.charset.StandardCharsets.UTF_8))
         println(s"      trace saved: $fn (score=${t.finalScore})")
     }

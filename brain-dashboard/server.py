@@ -847,6 +847,10 @@ def get_html():
         tr:hover { background: #1a1a40; }
         .weight-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #0f3460; }
         .weight-name { flex: 1; }
+        .cost-footer { position: fixed; bottom: 0; left: 0; right: 0; background: #0f1419; border-top: 1px solid #e94560; padding: 8px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; z-index: 1000; }
+        .cost-footer .cost-item { margin-right: 20px; color: #888; }
+        .cost-footer .cost-value { color: #4ade80; font-weight: bold; margin-left: 5px; }
+        .cost-footer .cost-total { color: #e94560; font-size: 13px; font-weight: bold; margin-left: 5px; }
         .weight-desc { flex: 2; color: #888; font-size: 13px; }
         .weight-input { width: 80px; text-align: right; }
         .breakdown { font-size: 12px; color: #888; cursor: pointer; }
@@ -1707,6 +1711,15 @@ def get_html():
             initPage();
         }
     </script>
+    <div class="cost-footer">
+        <div style="display: flex;">
+            <div class="cost-item">Input: <span class="cost-value" id="cost-input">$0.00</span></div>
+            <div class="cost-item">Output: <span class="cost-value" id="cost-output">$0.00</span></div>
+            <div class="cost-item">Cache Write: <span class="cost-value" id="cost-cache-write">$0.00</span></div>
+            <div class="cost-item">Cache Read: <span class="cost-value" id="cost-cache-read">$0.00</span></div>
+        </div>
+        <div class="cost-item">TOTAL: <span class="cost-total" id="cost-total">$0.00</span></div>
+    </div>
 </body>
 </html>'''
 
