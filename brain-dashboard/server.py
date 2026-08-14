@@ -199,7 +199,7 @@ def get_saved_checkpoints():
     return checkpoints
 
 def convert_breakdown_to_counts(breakdown_str):
-    """Convert doom-equivalent breakdown string to actual counts with 0-1 values."""
+    """Display breakdown showing 0-1 values (and raw counts for new traces with BREAKDOWN= format)."""
     weight_map = {
         "spellbooks": 8.0, "doomEarned": 1.0, "elderSigns": 1.66, "ritualValue": 1.0,
         "ownGOO": 2.0, "b:goodRitual": 0.5, "gateTaken": 0.4, "b:emptyGate": 0.1,
@@ -218,13 +218,24 @@ def convert_breakdown_to_counts(breakdown_str):
             continue
         name, val_str = part.split('=')
         try:
-            doom_equiv_value = float(val_str)
-            weight = weight_map.get(name, 1.0)
-            # Convert: doom_equiv_value = count × weight × DoomUnit
-            # So: count = doom_equiv_value / (weight × DoomUnit)
-            count = round(doom_equiv_value / (weight * DoomUnit))
-            # Show as "name: count = 0.XXX"
-            result.append(f"{name}: {count} = {doom_equiv_value:.3f}")
+            # Check if this is new format (signed float like +0.240 or -0.100)
+            value = float(val_str)
+
+            # If value is small (< 10), it's probably 0-1 doom-equiv format
+            # If value is large (>= 10), it might be raw count (but unlikely in old traces)
+            # New traces from Arena.scala will have format like "spellbooks=+0.240"
+
+            if abs(value) < 10:  # 0-1 doom-equiv scale
+                # Try to back-calculate raw count for display
+                weight = weight_map.get(name, 1.0)
+                raw_count = round(abs(value) / (weight * DoomUnit))
+                sign = '-' if value < 0 else ''
+
+                # Show "name: count = ±0.XXXX"
+                result.append(f"{name}: {raw_count} = {sign}{abs(value):.4f}")
+            else:
+                # Shouldn't happen but handle it
+                result.append(f"{name}: {value:.4f}")
         except:
             result.append(part)
     return " ".join(result)
