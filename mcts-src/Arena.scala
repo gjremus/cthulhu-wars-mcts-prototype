@@ -184,11 +184,200 @@ object Arena {
         (allExamples, ArenaResult(nGames, brainSeats, brainWins, botWins, noWinner, brainDoomAvg, leaderDoomAvg))
     }
 
+    /** Arena with BOTH examples AND trace saving (2026-08-19 fix).
+     *  Combines evaluateWithExamples with trace-saving logic from evaluateBrainLogged.
+     *  If CW_SAVE_TRACES is set, saves first+best traces per seat. */
+    def evaluateWithExamplesAndTraces(model : ValueNet, sims : Int, nGames : Int,
+                                      brainSeats : Set[Faction], iterTag : String) : ($[Example], ArenaResult) = {
+        // If no trace dir, fall back to regular evaluateWithExamples
+        val traceDirOpt = Option(System.getenv("CW_SAVE_TRACES")).filter(_.trim.nonEmpty)
+        if (traceDirOpt.isEmpty) {
+            return evaluateWithExamples(model, sims, nGames, brainSeats)
+        }
+
+        val traceDir = traceDirOpt.get
+        new java.io.File(traceDir).mkdirs()
+
+        // Play games WITH logging to capture traces
+        def one(i : Int) : ($[Example], Int, Int, Double, Double, GameTrace) = {
+            val g = SelfPlay.newGameLogged()
+            val brain = new MCTSPolicy(sims = sims, leaf = ModelEval(model))
+            val routing = g.setup.map(f => f -> (if (brainSeats.contains(f)) brain else (BotPolicy : DecisionPolicy))).toMap
+            val policy = new MixedPolicy(routing)
+            val serializer = new Serialize(g)
+
+            val examples = scala.collection.mutable.ArrayBuffer[Example]()
+            val trajectory = new Trajectory(g.setup)
+            var decisions = 0
+            val exIdx = scala.collection.mutable.ArrayBuffer[Int]()
+
+            val startActions = scala.collection.mutable.ArrayBuffer[Action]()
+            val startLog     = scala.collection.mutable.ArrayBuffer[String]()
+            val sink : (Action, $[String]) => Unit = (act, ls) => { startActions += act; startLog ++= ls.toList }
+
+            val recording = new DecisionPolicy {
+                def decide(game : Game, faction : Faction, actions : $[Action]) : Action = {
+                    if (brainSeats.contains(faction)) {
+                        trajectory.observe(game)
+                        val ex = new Example(Features.of(game, faction), faction)
+                        ex.potential = Outcome.statePotential(game, faction)
+                        examples += ex
+                        exIdx += decisions
+                    }
+                    decisions += 1
+                    policy.decide(game, faction, actions)
+                }
+            }
+
+            val s0 = Engine.startLogged(g, sink)
+            val (winners, hitCap, acts, log) = Engine.rolloutLogged(g, s0, recording, ArenaDecisionCap)
+
+            // Label examples
+            val shaping = trajectory.score(g)
+            val total = math.max(1, decisions)
+            val exArr = examples.toArray
+            var i = 0
+            while (i < exArr.length) {
+                val e = exArr(i)
+                val terminal = Outcome.valueShaped(g, winners, e.faction, shaping.getOrElse(e.faction, 0.0))
+                e.label =
+                    if (e.potential < 0.0) terminal
+                    else Outcome.progressBlended(e.potential, terminal, exIdx(i).toDouble / total)
+                i += 1
+            }
+
+            // Build trace
+            val seat = brainSeats.head  // Assume single seat for now
+            val brainWon = winners.nonEmpty && winners.contains(seat)
+            val brainDoom = g.players(seat).doom
+            val leaderDoom = g.setup.map(f => g.players(f).doom).max
+            val finalScore = Outcome.valueShaped(g, winners.toList, seat, shaping.getOrElse(seat, 0.0))
+            val breakdown = trajectory.scoreBreakdown(g, seat)
+            val allDoom = g.setup.map(f => f -> g.players(f).doom).toMap
+
+            val actionLines = (startActions.toList ++ acts.toList).map(serializer.write)
+            val logLines = startLog.toList ++ log.toList
+
+            val trace = GameTrace(seat, brainWon, brainDoom, leaderDoom, actionLines, logLines, finalScore, breakdown, allDoom)
+
+            val brainW = if (brainWon) 1 else 0
+            val noWin  = if (winners.isEmpty) 1 else 0
+            val bd = brainSeats.toList.map(f => g.players(f).doom.toDouble)
+            (examples.toList, brainW, noWin, if (bd.nonEmpty) bd.sum / bd.size else 0.0, leaderDoom.toDouble, trace)
+        }
+
+        // Sequential execution to collect traces
+        val results = (0 until nGames).map(one).toList
+
+        // Save first and best traces
+        if (results.nonEmpty) {
+            val allTraces = results.map(_._6)
+            val firstTrace = allTraces.head
+            val bestTrace = allTraces.sortBy(t => (if (t.brainWon) 0 else 1, -t.brainDoom, t.leaderDoom - t.brainDoom)).head
+            val seat = brainSeats.head
+
+            writeTrace(firstTrace, traceDir, seat, iterTag, "first")
+            if (firstTrace != bestTrace) {
+                writeTrace(bestTrace, traceDir, seat, iterTag, "best")
+            }
+        }
+
+        val allExamples = results.flatMap(_._1).toList
+        val brainWins = results.map(_._2).sum
+        val noWinner  = results.map(_._3).sum
+        val decided   = nGames - noWinner
+        val botWins   = decided - brainWins
+        val counted   = results.size
+        val brainDoomAvg  = if (counted > 0) results.map(_._4).sum / counted else 0.0
+        val leaderDoomAvg = if (counted > 0) results.map(_._5).sum / counted else 0.0
+        (allExamples, ArenaResult(nGames, brainSeats, brainWins, botWins, noWinner, brainDoomAvg, leaderDoomAvg))
+    }
+
     /** Per-seat arena: test the brain in EACH seat in turn (1 brain vs 3 bots), so we
      *  see whether it learned broad competence or only shines in the seat the bots
      *  find easy. `gamesPerSeat` games per faction. Returns (seat -> its ArenaResult). */
     def evaluatePerSeat(model : ValueNet, sims : Int, gamesPerSeat : Int) : Map[Faction, ArenaResult] =
         SelfPlay.fixedSeating.toList.map(f => f -> evaluate(model, sims, gamesPerSeat, Set(f))).toMap
+
+    // ---- HEAD-TO-HEAD CHAMPION EVALUATION (2026-08-19) ----------------------------
+    // USER DIRECTIVE: "IF THE BRAIN WINS MORE THAN HALF OF ITS GAMES AGAINST THE
+    // 'CHAMPION' - THEN THAT'S THE NEW CHAMPION." This plays current vs champion in
+    // mixed games (each gets half the seats) and returns win counts + average 0-1 scores.
+
+    case class ChampionChallengeResult(
+        gamesPlayed: Int,
+        currentWins: Int,
+        championWins: Int,
+        draws: Int,
+        currentAvgScore: Double,  // average 0-1 FINAL_SCORE
+        championAvgScore: Double
+    )
+
+    def evaluateVsChampion(current: ValueNet, champion: ValueNet, sims: Int,
+                          nGames: Int): ChampionChallengeResult = {
+        val seating = SelfPlay.fixedSeating.toList
+        require(seating.size == 4, "Champion challenge requires 4-player games")
+
+        // Split seats: first 2 get current, last 2 get champion
+        val currentSeats = seating.take(2).toSet
+        val championSeats = seating.drop(2).toSet
+
+        var currentWins = 0
+        var championWins = 0
+        var draws = 0
+        var currentScores = List.empty[Double]
+        var championScores = List.empty[Double]
+
+        for (gIdx <- 0 until nGames) {
+            val g = SelfPlay.newGame()
+            val currentBrain = new MCTSPolicy(sims = sims, leaf = ModelEval(current))
+            val championBrain = new MCTSPolicy(sims = sims, leaf = ModelEval(champion))
+            val routing = seating.map { f =>
+                f -> (if (currentSeats.contains(f)) currentBrain else championBrain)
+            }.toMap
+            val policy = new MixedPolicy(routing)
+
+            // Track trajectory during play
+            val trajectory = new Trajectory(g.setup)
+            val recording = new DecisionPolicy {
+                def decide(game : Game, faction : Faction, actions : $[Action]) : Action = {
+                    trajectory.observe(game)
+                    policy.decide(game, faction, actions)
+                }
+            }
+
+            // Run the game
+            val s0 = Engine.start(g)
+            val (winners, _) = Engine.rolloutCapped(g, s0, recording, 20000, throwOnCap = false)
+            val shaping = trajectory.score(g)
+
+            // Count wins
+            if (winners.isEmpty) {
+                draws += 1
+            } else {
+                val currentWon = winners.exists(currentSeats.contains)
+                val championWon = winners.exists(championSeats.contains)
+                if (currentWon && !championWon) currentWins += 1
+                else if (championWon && !currentWon) championWins += 1
+                else draws += 1  // Both won or neither
+            }
+
+            // Collect 0-1 scores using valueShaped
+            currentSeats.foreach { f =>
+                val score = Outcome.valueShaped(g, winners, f, shaping.getOrElse(f, 0.0))
+                currentScores = score :: currentScores
+            }
+            championSeats.foreach { f =>
+                val score = Outcome.valueShaped(g, winners, f, shaping.getOrElse(f, 0.0))
+                championScores = score :: championScores
+            }
+        }
+
+        val currentAvg = if (currentScores.nonEmpty) currentScores.sum / currentScores.size else 0.0
+        val championAvg = if (championScores.nonEmpty) championScores.sum / championScores.size else 0.0
+
+        ChampionChallengeResult(nGames, currentWins, championWins, draws, currentAvg, championAvg)
+    }
 
     // ---- generic brain arena (policy/PUCT/greedy) ----------------------------------
     // The value-net arena above is fixed to ModelEval; these accept ANY DecisionPolicy

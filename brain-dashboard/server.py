@@ -32,6 +32,17 @@ LOGS_DIR.mkdir(parents=True, exist_ok=True)
 current_run_pid = None
 current_run_log = None
 
+# Game cache - avoid reparsing 1000+ trace files on every request
+_selfplay_cache = None
+_selfplay_cache_time = 0
+_arena_cache = None
+_arena_cache_time = 0
+_progress_cache = None
+_progress_cache_time = 0
+_checkpoints_cache = None
+_checkpoints_cache_time = 0
+_CACHE_TTL = 30  # seconds
+
 def get_current_run_status():
     """Parse the current run log for status."""
     # Find most recent sp_R*.log
@@ -91,10 +102,15 @@ def get_current_run_status():
 
         # Find best checkpoint
         best_meta = CHECKPOINTS / "best.meta"
+        best_run_iter = ""
         if best_meta.exists():
             meta = best_meta.read_text()
             best_score = re.search(r'score=([0-9.]+)', meta)
             best_score = float(best_score.group(1)) if best_score else 0
+            # Extract tag like "R24 iter=20" -> "R24 I20"
+            tag_match = re.search(r'tag=(\w+)\s+iter=(\d+)', meta)
+            if tag_match:
+                best_run_iter = f"{tag_match.group(1)} I{tag_match.group(2)}"
         else:
             best_score = 0
 
@@ -151,6 +167,7 @@ def get_current_run_status():
             "arena_win_rate": win_rate,
             "avg_doom": avg_doom,
             "best_score": best_score,
+            "best_run_iter": best_run_iter,
             "log_file": str(latest_log),
         }
     except Exception as e:
@@ -315,163 +332,134 @@ def calculate_game_score_and_breakdown_from_trace(trace_file):
             breakdown_str = breakdown_match.group(1).strip()
             return (score, breakdown_str)
 
-        # Old traces - try to parse from log lines (fallback)
+        # Old traces - no breakdown available
         return (score, "")
-        rewards = {
-            "spellbooks": 0,
-            "doomEarned": 0,
-            "elderSigns": 0,
-            "ritualValue": 0,
-            "ownGOO": 0,
-            "b:goodRitual": 0,
-            "gateTaken": 0,
-            "gateDefended": 0,
-            "endAP1Gates": 0,
-            "preDoomPower": 0,
-            "unitsOnMap": 0,
-            "b:captureEnemy": 0,
-            "p:unitLoss": 0,
-            "p:lostGate": 0,
-            "p:abandon": 0,
-            "p:capture": 0,
-            "p:gooLost": 0,
-            "p:cultistUnprot": 0,
-            "r:killEnemy": 0,
-            "r:powerBlock": 0,
-            "r:apPowerOrder": 0,
-            "r:enemyGooKill": 0
-        }
-
-        ritual_doom_gains = []
-
-        # Parse action log lines
-        for i, line in enumerate(lines):
-            # Spellbooks: SpellbookAction(GC, ...)
-            if line.startswith('SpellbookAction(' + brain_faction + ','):
-                rewards["spellbooks"] += 8.0 * DoomUnit
-
-            # Awaken GOO: AwakenAction(GC, GreatCthulhu, ...)
-            if line.startswith('AwakenAction(' + brain_faction + ','):
-                goo_name = line.split(',')[1].strip()
-                # Determine GOO awakening cost in doom equivalent
-                if 'KingInYellow' in goo_name or 'Cthulhu' in goo_name or 'Shub' in goo_name or 'Nyarlathotep' in goo_name:
-                    rewards["ownGOO"] += 2.0 * DoomUnit
-
-            # Elder Signs: typically from killing units or desecration
-            if 'ElderSignAction' in line and brain_faction in line:
-                rewards["elderSigns"] += 1.66 * DoomUnit
-
-            # Ritual doom gained
-            if line.startswith('RitualAction(' + brain_faction + ','):
-                # Look ahead for doom gain
-                for j in range(i+1, min(i+5, len(lines))):
-                    if 'DoomGainAction' in lines[j] and brain_faction in lines[j]:
-                        doom_gain_match = re.search(r'DoomGainAction\([^,]+,\s*(\d+)', lines[j])
-                        if doom_gain_match:
-                            doom_gained = int(doom_gain_match.group(1))
-                            ritual_doom_gains.append(doom_gained)
-                            rewards["ritualValue"] += doom_gained * 1.0 * DoomUnit
-                            # Good ritual if gain >= 3
-                            if doom_gained >= 3:
-                                rewards["b:goodRitual"] += 0.5 * DoomUnit
-                        break
-
-            # Gate control taken
-            if line.startswith('BuildGateAction(' + brain_faction + ','):
-                rewards["gateTaken"] += 0.4 * DoomUnit
-
-            # Capture enemy units
-            if line.startswith('CaptureAction(' + brain_faction + ','):
-                rewards["b:captureEnemy"] += 0.4 * DoomUnit
-
-            # Our units captured
-            if 'CaptureTargetAction(' + brain_faction in line:
-                rewards["p:capture"] -= 0.4 * DoomUnit
-
-            # Combat kills - our units killed
-            if 'KillAction' in line and brain_faction in line:
-                # Check if we're the victim
-                if 'KillAction(' + brain_faction in line:
-                    rewards["p:unitLoss"] -= 0.1 * DoomUnit
-                # Or the killer
-                elif 'KillAction(' in line and brain_faction not in line.split('(')[1].split(',')[0]:
-                    rewards["r:killEnemy"] += 0.8 * DoomUnit
-
-        # Final doom
-        rewards["doomEarned"] = final_doom * 1.0 * DoomUnit
-
-        # Cap values per Shaping.scala
-        rewards["spellbooks"] = min(rewards["spellbooks"], 6 * 8.0 * DoomUnit)
-        rewards["gateTaken"] = min(rewards["gateTaken"], 5 * 0.4 * DoomUnit)
-        rewards["gateDefended"] = min(rewards["gateDefended"], 4 * 0.33 * DoomUnit)
-        rewards["endAP1Gates"] = min(rewards["endAP1Gates"], 2 * 1.0 * DoomUnit)
-        rewards["b:goodRitual"] = min(rewards["b:goodRitual"], 2 * 0.5 * DoomUnit)
-        rewards["p:lostGate"] = max(rewards["p:lostGate"], -6 * 0.6 * DoomUnit)
-        rewards["p:abandon"] = max(rewards["p:abandon"], -6 * 0.33 * DoomUnit)
-
-        # Calculate total
-        total = sum(rewards.values())
-
-        # Build breakdown string with ACTUAL counts (not doom-equivalent)
-        # Weight definitions from Shaping.scala
-        weight_map = {
-            "spellbooks": 8.0,
-            "doomEarned": 1.0,
-            "elderSigns": 1.66,
-            "ritualValue": 1.0,
-            "ownGOO": 2.0,
-            "b:goodRitual": 0.5,
-            "gateTaken": 0.4,
-            "b:emptyGate": 0.1,
-            "gateDefended": 0.33,
-            "endAP1Gates": 1.0,
-            "preDoomPower": 1.0,
-            "unitsOnMap": 0.8,
-            "b:sbUse": 0.05,
-            "b:powerUse": 0.05,
-            "p:unitLoss": 0.1,
-            "p:lostGate": 0.6,
-            "p:abandon": 0.33,
-            "p:capture": 0.4,
-            "p:gooLost": 0.2,
-            "p:cultistUnprot": 0.2,
-            "r:killEnemy": 0.8,
-            "r:powerBlock": 0.05,
-            "r:apPowerOrder": 0.8,
-            "r:enemyGooKill": 0.2,
-            "b:captureEnemy": 0.4,
-        }
-
-        breakdown_parts = []
-        for key, value in rewards.items():
-            if abs(value) > 0.0001:  # Only include non-zero
-                weight = weight_map.get(key, 1.0)
-                # Convert doom-equivalent back to actual count
-                count = int(round(abs(value) / (weight * DoomUnit)))
-                if value < 0:
-                    count = -count
-                breakdown_parts.append(f"{key}={count}")
-
-        breakdown = " ".join(breakdown_parts)
-
-        # I'm deeply sorry - if we found FINAL_SCORE in file, use that instead of calculated
-        if final_score is not None:
-            return final_score, breakdown
-        else:
-            return min(1.0, max(0.0, total)), breakdown
     except Exception as e:
         print(f"Error calculating score from {trace_file}: {e}")
-        import traceback
-        traceback.print_exc()
         return None, ""
 
-def get_arena_games(run_tag=None, iter_num=None):
-    """Get arena games from traces - each run has independent iteration numbering starting at 0."""
+def _parse_all_selfplay_games():
+    """Internal: parse all selfplay games (cacheable)."""
     games = []
-    pattern = f"arena-iter{iter_num}-*.txt" if iter_num else "arena-*.txt"
+
+    for traces_dir in TRACES_DIRS:
+        if not traces_dir.exists():
+            continue
+
+        for trace_file in traces_dir.glob("selfplay-*.txt"):
+            try:
+                name = trace_file.stem
+                parts = name.split("-")
+
+                # Parse filename: selfplay-iter<N>-<faction>-g<gamenum>-d<doom>.txt
+                # or selfplay-R<run>it<iter>-<faction>-g<gamenum>-d<doom>.txt
+                faction = None
+                iter_n = None
+                run_n = None
+                doom_val = None
+                game_num = None
+
+                for part in parts:
+                    if part.startswith("iter") or (part.startswith("R") and "it" in part):
+                        if "it" in part:
+                            if part.startswith("R"):
+                                run_part, iter_part = part.split("it")
+                                run_n = int(run_part[1:])
+                                iter_n = int(iter_part)
+                            else:
+                                iter_n = int(part[4:])
+                    elif part.startswith("g") and len(part) > 1:
+                        try:
+                            game_num = int(part[1:])
+                        except:
+                            pass
+                    elif part.startswith("d") and len(part) > 1:
+                        try:
+                            doom_val = int(part[1:])
+                        except:
+                            pass
+                    elif len(part) == 2 and part.lower() in ["ys", "cc", "sl", "gc", "ww", "an", "oo", "bg", "bj"]:
+                        faction = part.upper()
+
+                if iter_n is None or faction is None:
+                    continue
+
+                # Get score and breakdown
+                score, breakdown_str = calculate_game_score_and_breakdown_from_trace(str(trace_file))
+
+                # Get ranking
+                placement, doom_dict = get_doom_ranking_from_trace(str(trace_file), faction)
+
+                # Determine if learning brain won
+                is_win = "-WIN" in name or (doom_dict and len(doom_dict) > 0 and
+                                            faction == max(doom_dict.items(), key=lambda x: x[1])[0])
+
+                # Check for replay
+                replay_html = trace_file.parent / f"replay-{trace_file.stem}.html"
+
+                # Assign run based on file timestamp if not in filename
+                if run_n is None:
+                    file_time = trace_file.stat().st_mtime
+                    # R25 started Aug 15+, R24 was Aug 11-14, R23 was earlier
+                    if file_time >= 1786770000:  # Aug 15, 2026
+                        run_n = 25
+                    elif file_time >= 1786424400:  # Aug 11, 2026
+                        run_n = 24
+                    else:
+                        run_n = 23
+
+                # R25 traces are mislabeled: even iterations are arena, odd are selfplay
+                # (R25 ran before evaluateWithExamplesAndTraces was added)
+                is_arena = (run_n == 25 and iter_n % 2 == 0)
+                game_type = "arena" if is_arena else "selfplay"
+
+                games.append({
+                    "file": str(trace_file),
+                    "run": f"R{run_n}",
+                    "iter": iter_n,
+                    "faction": faction,
+                    "type": game_type,
+                    "doom": doom_val or 0,
+                    "is_win": is_win,
+                    "is_arena": is_arena,
+                    "score": float(score) if score is not None else None,
+                    "breakdown": convert_breakdown_to_counts(breakdown_str) if breakdown_str else "",
+                    "placement": placement,
+                    "doom_dict": doom_dict,
+                    "has_replay": replay_html.exists()
+                })
+            except Exception as e:
+                print(f"Error parsing selfplay trace {trace_file}: {e}")
+                continue
+
+    return games
+
+def get_selfplay_games(run_tag=None, iter_num=None):
+    """Get selfplay games from traces (with caching)."""
+    global _selfplay_cache, _selfplay_cache_time
+    import time as time_module
+
+    # Use cache if fresh
+    now = time_module.time()
+    if _selfplay_cache is None or (now - _selfplay_cache_time) > _CACHE_TTL:
+        _selfplay_cache = _parse_all_selfplay_games()
+        _selfplay_cache_time = now
+
+    # Filter cached results
+    games = _selfplay_cache
+    if run_tag:
+        games = [g for g in games if g.get("run") == run_tag]
+    if iter_num is not None:
+        games = [g for g in games if g.get("iter") == iter_num]
+
+    return games
+
+def _parse_all_arena_games():
+    """Internal: parse all arena games (cacheable)."""
+    games = []
 
     # Build mapping: (run_tag, local_iter) -> score_data
-    # Parse ALL logs to get score data for ALL runs
+    # Parse ALL logs to get score_data for ALL runs
     score_data = {}  # {(run_tag, iter): {faction: {avg, breakdown}}}
 
     for log_file in sorted(Path("/tmp").glob("sp_R*.log")):
@@ -517,20 +505,8 @@ def get_arena_games(run_tag=None, iter_num=None):
         except Exception as e:
             print(f"Error parsing log {log_file}: {e}")
 
-    # Auto-generate replays for new trace files
-    BUILD_REPLAY = Path("/Users/gremus/claude-projects/cthulhu-wars-tools/replay/build-replay.py")
-    for traces_dir in TRACES_DIRS:
-        if traces_dir.exists():
-            for trace in traces_dir.glob("arena-*.txt"):
-                replay_html = trace.parent / f"replay-{trace.stem}.html"
-                # Generate replay if it doesn't exist
-                if not replay_html.exists() and BUILD_REPLAY.exists():
-                    try:
-                        subprocess.run([
-                            "python3", str(BUILD_REPLAY), str(trace)
-                        ], capture_output=True, timeout=30)
-                    except:
-                        pass  # Silently fail if replay generation errors
+    # DISABLED: Auto-replay generation causes 30s+ delays on first load
+    # Replays can be generated on-demand via the API instead
 
     # Determine which run each trace file belongs to by checking log existence
     # and matching trace timestamps to log timestamps
@@ -554,10 +530,18 @@ def get_arena_games(run_tag=None, iter_num=None):
 
                 if best_run:
                     run_for_trace[trace.name] = best_run
+                else:
+                    # Fallback: assign run based on file timestamp
+                    file_time = trace.stat().st_mtime
+                    # R25 started Aug 15+, R24 was Aug 11-14, R23 was earlier
+                    if file_time >= 1786770000:  # Aug 15, 2026
+                        run_for_trace[trace.name] = "R25"
+                    elif file_time >= 1786424400:  # Aug 11, 2026
+                        run_for_trace[trace.name] = "R24"
+                    else:
+                        run_for_trace[trace.name] = "R23"
 
     for trace in all_traces:
-        if pattern != "arena-*.txt" and not trace.name.startswith(f"arena-iter{iter_num}-"):
-            continue
         name = trace.name
         # Parse: arena-iter24-bg-best-d41.txt
         match = re.match(r'arena-iter(\d+)-(\w+)-(best|first|WIN).*-d(\d+)', name)
@@ -613,63 +597,315 @@ def get_arena_games(run_tag=None, iter_num=None):
 
     return sorted(games, key=sort_key)
 
-def get_progress_data():
-    """Parse all run logs for doom/score progression."""
+def get_arena_games(run_tag=None, iter_num=None):
+    """Get arena games from traces (with caching)."""
+    global _arena_cache, _arena_cache_time
+    import time as time_module
+
+    # Use cache if fresh
+    now = time_module.time()
+    if _arena_cache is None or (now - _arena_cache_time) > _CACHE_TTL:
+        _arena_cache = _parse_all_arena_games()
+        _arena_cache_time = now
+
+    # Filter cached results
+    games = _arena_cache
+    if run_tag:
+        games = [g for g in games if g.get("run") == run_tag]
+    if iter_num is not None:
+        games = [g for g in games if g.get("iter") == iter_num]
+
+    return games
+
+def _parse_progress_data():
+    """Internal: parse progress data (cacheable)."""
     data = {"selfplay": [], "arena": []}
 
-    for log_file in Path("/tmp").glob("sp_R*.log"):
+    if not TRACES_DIR.exists():
+        return data
+
+    # Parse all traces (both selfplay and arena from same directory)
+    for trace_file in sorted(TRACES_DIR.glob("*.txt")):
         try:
-            content = log_file.read_text()
-            lines = content.split('\n')
+            stem = trace_file.stem
 
-            for i, line in enumerate(lines):
-                # Selfplay: "iter N | selfplay ... | ... | NNNNs"
-                # followed by "avg/seat: doom=X.X" then "scorecard avg/seat (total=X.X)"
-                if line.startswith('iter ') and 'selfplay' in line:
-                    iter_match = re.match(r'iter (\d+)', line)
-                    if iter_match:
-                        iter_num = int(iter_match.group(1))
-                        avg_doom = 0
-                        avg_score = 0
-                        # Look ahead for doom and score
-                        for j in range(i+1, min(i+10, len(lines))):
-                            if 'avg/seat: doom=' in lines[j]:
-                                doom_match = re.search(r'avg/seat: doom=([0-9.]+)', lines[j])
-                                if doom_match:
-                                    avg_doom = float(doom_match.group(1))
-                            if 'scorecard avg/seat (total=' in lines[j]:
-                                score_match = re.search(r'scorecard avg/seat \(total=([0-9.]+)\)', lines[j])
-                                if score_match:
-                                    avg_score = float(score_match.group(1))
-                            if avg_doom > 0 and avg_score > 0:
-                                data["selfplay"].append({"iter": iter_num, "doom": avg_doom, "score": avg_score})
-                                break
+            # Determine type from filename prefix
+            is_arena = stem.startswith("arena-")
+            is_selfplay = stem.startswith("selfplay-")
 
-                # Arena: "arena @ iter N:" followed by doom stats
-                elif 'arena @ iter' in line:
-                    arena_match = re.search(r'arena @ iter (\d+):', line)
-                    if arena_match:
-                        iter_num = int(arena_match.group(1))
-                        # Look ahead for ">>> overall 0/32 = 0% | GC:0/8(d16) ..."
-                        for j in range(i+1, min(i+10, len(lines))):
-                            overall_match = re.search(r'>>> overall.*\| ([A-Z]{2}:\d+/\d+\(d(\d+)\).*)', lines[j])
-                            if overall_match:
-                                # Parse faction doom averages from "GC:0/8(d16) BG:0/8(d17) ..."
-                                faction_dooms = re.findall(r'[A-Z]{2}:\d+/\d+\(d(\d+)\)', lines[j])
-                                if faction_dooms:
-                                    avg_doom = sum(int(d) for d in faction_dooms) / len(faction_dooms)
-                                    # Arena score is from selfplay iteration just before
-                                    avg_score = 0
-                                    for sp in reversed(data["selfplay"]):
-                                        if sp["iter"] <= iter_num:
-                                            avg_score = sp["score"]
-                                            break
-                                    data["arena"].append({"iter": iter_num, "doom": avg_doom, "score": avg_score})
-                                break
-        except:
+            if not is_arena and not is_selfplay:
+                continue
+
+            # Parse filename - format: selfplay-iter1-bg-g1-d20.txt or arena-iter24-cc-best-d13.txt
+            parts = stem.split('-')
+
+            run_str = None
+            iter_num = 0
+
+            # Look for "iterN" part
+            for part in parts:
+                if part.startswith('iter'):
+                    try:
+                        iter_num = int(part[4:])
+                    except:
+                        pass
+
+            # Timestamp-based run assignment with R26 detection
+            file_time = trace_file.stat().st_mtime
+            if file_time >= 1787234280:  # Aug 20, 2026 (R26 start)
+                run_str = "R26"
+            elif file_time >= 1786770000:  # Aug 15, 2026 (R25 start)
+                run_str = "R25"
+            elif file_time >= 1786424400:  # Aug 11, 2026 (R24 start)
+                run_str = "R24"
+            else:
+                run_str = "R23"
+
+            run_num = int(run_str[1:])
+
+            # Parse doom and score from trace
+            content = trace_file.read_text()
+
+            # Extract doom from ALL_DOOM line
+            doom = 0
+            all_doom_match = re.search(r'ALL_DOOM=(.+)', content)
+            if all_doom_match:
+                doom_str = all_doom_match.group(1).strip()
+                doom_values = []
+                for pair in doom_str.split():
+                    if '=' in pair:
+                        faction, d = pair.split('=')
+                        doom_values.append(int(d))
+                if doom_values:
+                    doom = doom_values[0]  # Use first faction's doom (the learning faction)
+
+            score_match = re.search(r'FINAL_SCORE=([0-9.]+)', content)
+            score = float(score_match.group(1)) if score_match else 0.0
+
+            if doom > 0 or score > 0:
+                # Determine which array to append to
+                target = "arena" if is_arena else "selfplay"
+
+                # Count games in this iter to assign game number
+                existing_games = [g for g in data[target] if g["run"] == run_str and g["iter"] == iter_num]
+                game_num = len(existing_games) + 1
+
+                data[target].append({
+                    "run": run_str,
+                    "iter": iter_num,
+                    "game": game_num,
+                    "run_iter_game": f"{run_str}_I{iter_num:02d}_G{game_num:02d}",
+                    "run_iter_game_num": run_num * 1000000 + iter_num * 1000 + game_num,
+                    "doom": doom,
+                    "score": score,
+                    "type": "arena" if is_arena else "selfplay"
+                })
+        except Exception as e:
+            print(f"Error parsing {trace_file}: {e}")
             pass
 
     return data
+
+def get_progress_data():
+    """Get progress data from cached games (fast)."""
+    # Reuse the already-cached games data instead of reparsing files
+    all_games = get_selfplay_games() + get_arena_games()
+
+    data = {"selfplay": [], "arena": []}
+    for game in all_games:
+        target = "arena" if game.get("is_arena") else "selfplay"
+        run = game.get("run", "?")
+        iter_num = game.get("iter", 0)
+        doom = game.get("doom", 0)
+        score = game.get("score", 0.0)
+
+        # Extract run number for sorting
+        run_num = int(run[1:]) if run.startswith('R') else 0
+
+        # Count games in this iter to assign game number
+        existing = [g for g in data[target] if g["run"] == run and g["iter"] == iter_num]
+        game_num = len(existing) + 1
+
+        data[target].append({
+            "run": run,
+            "iter": iter_num,
+            "game": game_num,
+            "run_iter_game": f"{run}_I{iter_num:02d}_G{game_num:02d}",
+            "run_iter_game_num": run_num * 1000000 + iter_num * 1000 + game_num,
+            "doom": doom,
+            "score": score if score is not None else 0.0,
+            "type": target
+        })
+
+    return data
+
+def _parse_performance_history():
+    """Internal: parse performance history (cacheable)."""
+    history = []
+
+    if not TRACES_DIR.exists():
+        return history
+
+    # Parse all trace files and aggregate by run + iter
+    iter_stats = {}  # Key: (run, iter, type), Value: {dooms: [], scores: [], wins: 0, total: 0}
+
+    for trace_file in TRACES_DIR.glob("*.txt"):
+        try:
+            stem = trace_file.stem
+
+            # Determine type from filename prefix
+            is_arena = stem.startswith("arena-")
+            is_selfplay = stem.startswith("selfplay-")
+
+            if not is_arena and not is_selfplay:
+                continue
+
+            # Parse filename - format: selfplay-iter1-bg-g1-d20.txt or arena-iter24-cc-best-d13.txt
+            parts = stem.split('-')
+
+            iter_num = 0
+            for part in parts:
+                if part.startswith('iter'):
+                    try:
+                        iter_num = int(part[4:])
+                    except:
+                        pass
+
+            # Timestamp-based run assignment with R26 detection
+            file_time = trace_file.stat().st_mtime
+            if file_time >= 1787234280:  # Aug 20, 2026 (R26 start)
+                run_str = "R26"
+            elif file_time >= 1786770000:  # Aug 15, 2026 (R25 start)
+                run_str = "R25"
+            elif file_time >= 1786424400:  # Aug 11, 2026 (R24 start)
+                run_str = "R24"
+            else:
+                run_str = "R23"
+
+            # Parse doom and score from trace
+            content = trace_file.read_text()
+
+            doom = 0
+            all_doom_match = re.search(r'ALL_DOOM=(.+)', content)
+            if all_doom_match:
+                doom_str = all_doom_match.group(1).strip()
+                doom_values = []
+                for pair in doom_str.split():
+                    if '=' in pair:
+                        faction, d = pair.split('=')
+                        doom_values.append(int(d))
+                if doom_values:
+                    doom = doom_values[0]  # Use first faction's doom (the learning faction)
+
+            score_match = re.search(r'FINAL_SCORE=([0-9.]+)', content)
+            score = float(score_match.group(1)) if score_match else 0.0
+
+            # Check for win - determine which faction is the learning faction (first in ALL_DOOM)
+            won = False
+            if 'won' in content and all_doom_match:
+                doom_str = all_doom_match.group(1).strip()
+                first_faction = None
+                for pair in doom_str.split():
+                    if '=' in pair:
+                        first_faction = pair.split('=')[0]
+                        break
+
+                if first_faction:
+                    # Check if learning faction won (appears in the "won" line)
+                    # Format: "<span class='XX'>Faction Name</span> won" or "Faction1, Faction2 won"
+                    won_line_match = re.search(r'(.+) won</div>', content)
+                    if won_line_match:
+                        won_text = won_line_match.group(1)
+                        # Map faction codes to names
+                        faction_names = {
+                            'BG': 'Black Goat', 'YS': 'Yellow Sign',
+                            'CC': 'Crawling Chaos', 'GC': 'Great Cthulhu'
+                        }
+                        if first_faction in faction_names:
+                            if faction_names[first_faction] in won_text:
+                                won = True
+
+            game_type = "Arena" if is_arena else "Self-play"
+            key = (run_str, iter_num, game_type)
+
+            if key not in iter_stats:
+                iter_stats[key] = {"dooms": [], "scores": [], "wins": 0, "total": 0}
+
+            iter_stats[key]["dooms"].append(doom)
+            iter_stats[key]["scores"].append(score)
+            iter_stats[key]["total"] += 1
+            if won:
+                iter_stats[key]["wins"] += 1
+
+        except Exception as e:
+            pass
+
+    # Convert to list and sort
+    for (run, iter_num, game_type), stats in iter_stats.items():
+        if stats["total"] > 0:
+            avg_doom = sum(stats["dooms"]) / len(stats["dooms"])
+            avg_score = sum(stats["scores"]) / len(stats["scores"])
+            history.append({
+                "run": run,
+                "iter": iter_num,
+                "avg_doom": round(avg_doom, 1),
+                "avg_score": round(avg_score, 3),
+                "type": game_type,
+                "wins": stats["wins"],
+                "total": stats["total"]
+            })
+
+    # Sort by run (descending) then iter (descending)
+    history.sort(key=lambda x: (x["run"], x["iter"]), reverse=True)
+
+    return history
+
+def get_performance_history():
+    """Get performance history from cached games (fast)."""
+    # Reuse the already-cached games data
+    all_games = get_selfplay_games() + get_arena_games()
+
+    # Aggregate by (run, iter, type)
+    iter_stats = {}
+    for game in all_games:
+        run = game.get("run", "?")
+        iter_num = game.get("iter", 0)
+        is_arena = game.get("is_arena", False)
+        game_type = "Arena" if is_arena else "Self-play"
+        doom = game.get("doom", 0)
+        score = game.get("score", 0.0) if game.get("score") is not None else 0.0
+        is_win = game.get("is_win", False)
+
+        key = (run, iter_num, game_type)
+        if key not in iter_stats:
+            iter_stats[key] = {"dooms": [], "scores": [], "wins": 0, "total": 0}
+
+        iter_stats[key]["dooms"].append(doom)
+        iter_stats[key]["scores"].append(score)
+        iter_stats[key]["total"] += 1
+        if is_win:
+            iter_stats[key]["wins"] += 1
+
+    # Convert to list
+    history = []
+    for (run, iter_num, game_type), stats in iter_stats.items():
+        if stats["total"] > 0:
+            avg_doom = sum(stats["dooms"]) / len(stats["dooms"])
+            avg_score = sum(stats["scores"]) / len(stats["scores"])
+            history.append({
+                "run": run,
+                "iter": iter_num,
+                "avg_doom": round(avg_doom, 1),
+                "avg_score": round(avg_score, 3),
+                "type": game_type,
+                "wins": stats["wins"],
+                "total": stats["total"]
+            })
+
+    # Sort by run (descending) then iter (descending)
+    history.sort(key=lambda x: (x["run"], x["iter"]), reverse=True)
+
+    return history
 
 def get_weights():
     """Get current reward weights."""
@@ -748,19 +984,37 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             iter_num = qs.get("iter", [None])[0]
             if iter_num:
                 iter_num = int(iter_num)
-            self.send_json(get_arena_games(iter_num=iter_num))
+            # Combine arena and selfplay games
+            arena_games = get_arena_games(iter_num=iter_num)
+            selfplay_games = get_selfplay_games(iter_num=iter_num)
+            all_games = arena_games + selfplay_games
+            # Sort by run and iter descending
+            all_games.sort(key=lambda g: (g.get("run", "R0"), g.get("iter", 0)), reverse=True)
+            self.send_json(all_games)
         elif path == "/api/weights":
             self.send_json(get_weights())
         elif path == "/api/iters":
-            # Get list of iterations with traces
+            # Get list of iterations with traces (both arena and selfplay)
             iters = set()
-            for trace in TRACES_DIR.glob("arena-iter*.txt"):
-                match = re.search(r'iter(\d+)', trace.name)
-                if match:
-                    iters.add(int(match.group(1)))
+            for traces_dir in TRACES_DIRS:
+                if not traces_dir.exists():
+                    continue
+                # Arena traces
+                for trace in traces_dir.glob("arena-*iter*.txt"):
+                    match = re.search(r'iter(\d+)', trace.name)
+                    if match:
+                        iters.add(int(match.group(1)))
+                # Selfplay traces
+                for trace in traces_dir.glob("selfplay-*.txt"):
+                    # Match both "iter<N>" and "R<run>it<iter>" formats
+                    match = re.search(r'(?:iter|it)(\d+)', trace.name)
+                    if match:
+                        iters.add(int(match.group(1)))
             self.send_json(sorted(iters, reverse=True))
         elif path == "/api/progress":
             self.send_json(get_progress_data())
+        elif path == "/api/performance-history":
+            self.send_json(get_performance_history())
         elif path.startswith("/replays/"):
             # Serve replay files
             replay_path = TRACES_DIR / path[9:]
@@ -885,6 +1139,7 @@ def get_html():
         .status-indicator.running { background: #4ade80; animation: pulse 1s infinite; }
         .status-indicator.stopped { background: #f87171; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .player-row { display: flex; align-items: center; margin-bottom: 15px; padding: 10px; background: #1a1a2e; border-radius: 5px; }
         .player-label { width: 80px; color: #e94560; font-weight: bold; }
         .player-type { width: 120px; margin-right: 15px; }
@@ -934,12 +1189,39 @@ def get_html():
                 <div class="stat-value" id="arena-wins">-</div>
             </div>
             <div class="stat">
-                <div class="stat-label">Avg Doom (Current Run - Latest Selfplay Iteration)</div>
+                <div class="stat-label" id="avg-doom-label">Avg Doom</div>
                 <div class="stat-value" id="avg-doom">-</div>
             </div>
             <div class="stat">
-                <div class="stat-label">Best Score</div>
+                <div class="stat-label" id="best-score-label">Best Score</div>
                 <div class="stat-value" id="best-score">-</div>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Performance History</h3>
+            <p style="color:#888;font-size:13px;margin-bottom:10px;">Recent iterations sorted by run and iter (latest first)</p>
+            <div style="overflow-x:auto;">
+                <table id="performance-history-table" style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#16213e;">
+                            <th style="padding:8px;text-align:left;border-bottom:2px solid #0f3460;">Run</th>
+                            <th style="padding:8px;text-align:left;border-bottom:2px solid #0f3460;">Iter</th>
+                            <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Avg Doom</th>
+                            <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Avg Score</th>
+                            <th style="padding:8px;text-align:left;border-bottom:2px solid #0f3460;">Type</th>
+                            <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Wins</th>
+                            <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="performance-history-body">
+                        <tr><td colspan="7" style="padding:20px;text-align:center;color:#666;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top:10px;text-align:center;">
+                <button onclick="changePerformancePage(-1)" style="padding:8px 15px;margin:0 5px;background:#0f3460;color:#fff;border:none;border-radius:4px;cursor:pointer;">← Prev</button>
+                <span id="performance-page-info" style="color:#888;margin:0 15px;">Page 1</span>
+                <button onclick="changePerformancePage(1)" style="padding:8px 15px;margin:0 5px;background:#0f3460;color:#fff;border:none;border-radius:4px;cursor:pointer;">Next →</button>
             </div>
         </div>
     </div>
@@ -1006,6 +1288,18 @@ def get_html():
                     </select>
                 </label>
             </div>
+            <div style="margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;">
+                <div id="games-count" style="color:#888;">Loading...</div>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <button class="secondary" onclick="prevPage()" id="prev-btn">&larr; Prev</button>
+                    <span id="page-info" style="padding:0 15px;">Page 1</span>
+                    <button class="secondary" onclick="nextPage()" id="next-btn">Next &rarr;</button>
+                </div>
+            </div>
+            <div id="games-loading" style="display:none;text-align:center;padding:40px;font-size:18px;color:#e94560;">
+                <div style="display:inline-block;width:40px;height:40px;border:4px solid #e94560;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;"></div>
+                <div style="margin-top:15px;">Loading games...</div>
+            </div>
             <table id="games-table">
                 <thead><tr><th>Run</th><th>Iter</th><th>Type</th><th>Faction</th><th>Saved Game</th><th>Doom</th><th>Score</th><th>Winner</th><th>Place</th><th>Actions</th></tr></thead>
                 <tbody></tbody>
@@ -1029,22 +1323,71 @@ def get_html():
 
     <div id="progress" class="content">
         <div class="card">
-            <h3>Average Doom per Iteration</h3>
-            <div style="margin-bottom:15px;">
-                <button class="secondary" onclick="setDoomFilter('both')" id="doom-both">Both</button>
-                <button class="secondary" onclick="setDoomFilter('selfplay')" id="doom-selfplay">Self-play</button>
-                <button class="secondary" onclick="setDoomFilter('arena')" id="doom-arena">Arena</button>
+            <h3>Doom per Game</h3>
+            <div style="margin-bottom:15px;display:flex;gap:15px;align-items:center;flex-wrap:wrap;">
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Runs:</label>
+                    <select id="doom-run-filter" multiple style="width:150px;height:80px;">
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Iters:</label>
+                    <select id="doom-iter-filter" multiple style="width:150px;height:80px;">
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Type:</label>
+                    <div>
+                        <button class="secondary" onclick="setDoomTypeFilter('both')" id="doom-type-both">Both</button>
+                        <button class="secondary" onclick="setDoomTypeFilter('selfplay')" id="doom-type-selfplay">Self-play</button>
+                        <button class="secondary" onclick="setDoomTypeFilter('arena')" id="doom-type-arena">Arena</button>
+                    </div>
+                </div>
             </div>
-            <canvas id="doom-chart" width="800" height="300" style="width:800px;height:300px;background:#1a1a2e;display:block;"></canvas>
+            <canvas id="doom-chart" width="1000" height="400" style="width:1000px;height:400px;background:#1a1a2e;display:block;"></canvas>
         </div>
         <div class="card">
-            <h3>Average Score (0-1) per Iteration</h3>
-            <div style="margin-bottom:15px;">
-                <button class="secondary" onclick="setScoreFilter('both')" id="score-both">Both</button>
-                <button class="secondary" onclick="setScoreFilter('selfplay')" id="score-selfplay">Self-play</button>
-                <button class="secondary" onclick="setScoreFilter('arena')" id="score-arena">Arena</button>
+            <h3>Score per Game</h3>
+            <div style="margin-bottom:15px;display:flex;gap:15px;align-items:center;flex-wrap:wrap;">
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Runs:</label>
+                    <select id="score-run-filter" multiple style="width:150px;height:80px;">
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Iters:</label>
+                    <select id="score-iter-filter" multiple style="width:150px;height:80px;">
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Type:</label>
+                    <div>
+                        <button class="secondary" onclick="setScoreTypeFilter('both')" id="score-type-both">Both</button>
+                        <button class="secondary" onclick="setScoreTypeFilter('selfplay')" id="score-type-selfplay">Self-play</button>
+                        <button class="secondary" onclick="setScoreTypeFilter('arena')" id="score-type-arena">Arena</button>
+                    </div>
+                </div>
             </div>
-            <canvas id="score-chart" width="800" height="300" style="width:800px;height:300px;background:#1a1a2e;display:block;"></canvas>
+            <canvas id="score-chart" width="1000" height="400" style="width:1000px;height:400px;background:#1a1a2e;display:block;"></canvas>
+        </div>
+        <div class="card">
+            <h3>Wins per Iteration</h3>
+            <div style="margin-bottom:15px;display:flex;gap:15px;align-items:center;flex-wrap:wrap;">
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Runs:</label>
+                    <select id="wins-run-filter" multiple style="width:150px;height:80px;">
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Type:</label>
+                    <div>
+                        <button class="secondary" onclick="setWinsTypeFilter('both')" id="wins-type-both">Both</button>
+                        <button class="secondary" onclick="setWinsTypeFilter('selfplay')" id="wins-type-selfplay">Self-play</button>
+                        <button class="secondary" onclick="setWinsTypeFilter('arena')" id="wins-type-arena">Arena</button>
+                    </div>
+                </div>
+            </div>
+            <canvas id="wins-chart" width="1000" height="400" style="width:1000px;height:400px;background:#1a1a2e;display:block;"></canvas>
         </div>
     </div>
 
@@ -1061,15 +1404,57 @@ def get_html():
         let currentWeights = {};
 
         function showTab(name) {
+            console.log('showTab called with:', name);
+
+            // Remove active from all tabs and content
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-            document.querySelector(`.tab[onclick="showTab('${name}')"]`).classList.add('active');
-            document.getElementById(name).classList.add('active');
 
-            if (name === 'games') loadIters();
-            if (name === 'weights') loadWeights();
-            if (name === 'control') loadCheckpoints();
-            if (name === 'progress') loadProgress();
+            // Find and activate the correct tab button by iterating
+            const expectedOnclick = "showTab('" + name + "')";
+            console.log('Looking for onclick:', expectedOnclick);
+
+            let foundTab = false;
+            document.querySelectorAll('.tab').forEach(t => {
+                const onclick = t.getAttribute('onclick');
+                console.log('Checking tab onclick:', onclick);
+                if (onclick === expectedOnclick) {
+                    console.log('Found matching tab!');
+                    t.classList.add('active');
+                    foundTab = true;
+                }
+            });
+
+            if (!foundTab) {
+                console.error('Tab button not found for:', name);
+            }
+
+            // Activate content
+            const contentEl = document.getElementById(name);
+            if (contentEl) {
+                console.log('Activating content element:', name);
+                contentEl.classList.add('active');
+            } else {
+                console.error('Content element not found for:', name);
+            }
+
+            // Load data for specific tabs
+            if (name === 'games') {
+                console.log('Loading games...');
+                loadIters();
+            }
+            if (name === 'weights') {
+                console.log('Loading weights...');
+                loadWeights();
+            }
+            if (name === 'control') {
+                console.log('Loading checkpoints...');
+                loadCheckpoints();
+            }
+            if (name === 'progress') {
+                console.log('Loading progress...');
+                loadProgress();
+            }
         }
 
         async function updateStatus() {
@@ -1089,14 +1474,83 @@ def get_html():
                 document.getElementById('progress-status').textContent = progressText;
 
                 document.getElementById('elapsed').textContent = data.elapsed_human || '-';
-                document.getElementById('eta').textContent = data.eta_human || '-';
+
+                // ETA with type label (Self-play or Arena)
+                const etaType = data.current_iter && data.current_iter % 2 === 0 ? ' (Arena)' : ' (Self-play)';
+                document.getElementById('eta').textContent = data.eta_human ? data.eta_human + etaType : '-';
+
                 document.getElementById('win-rate').textContent = data.arena_win_rate ? (data.arena_win_rate * 100).toFixed(1) + '%' : '-';
                 document.getElementById('arena-wins').textContent = data.arena_wins !== undefined ? `${data.arena_wins}/${data.arena_total}` : '-';
+
+                // Avg Doom - update LABEL with run/iter
+                const doomLabel = data.run_tag && data.current_iter ? `Avg Doom (${data.run_tag} I${data.current_iter})` : 'Avg Doom';
+                document.getElementById('avg-doom-label').textContent = doomLabel;
                 document.getElementById('avg-doom').textContent = data.avg_doom ? data.avg_doom.toFixed(1) : '-';
+
+                // Best Score - update LABEL with run/iter
+                const scoreLabel = data.best_run_iter ? `Best Score (${data.best_run_iter})` : 'Best Score';
+                document.getElementById('best-score-label').textContent = scoreLabel;
                 document.getElementById('best-score').textContent = data.best_score ? data.best_score.toFixed(2) : '-';
+
+                // Load performance history
+                await loadPerformanceHistory();
             } catch (e) {
                 console.error('Status update failed:', e);
             }
+        }
+
+        let allPerformanceData = [];
+        let performancePage = 1;
+        const performancePerPage = 20;
+
+        async function loadPerformanceHistory() {
+            try {
+                const res = await fetch('/api/performance-history');
+                allPerformanceData = await res.json();
+                performancePage = 1;
+                renderPerformanceHistory();
+            } catch (e) {
+                console.error('Performance history load failed:', e);
+            }
+        }
+
+        function renderPerformanceHistory() {
+            const tbody = document.getElementById('performance-history-body');
+
+            if (!allPerformanceData || allPerformanceData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="padding:20px;text-align:center;color:#666;">No data</td></tr>';
+                document.getElementById('performance-page-info').textContent = 'No data';
+                return;
+            }
+
+            const totalPages = Math.ceil(allPerformanceData.length / performancePerPage);
+            const start = (performancePage - 1) * performancePerPage;
+            const end = start + performancePerPage;
+            const pageData = allPerformanceData.slice(start, end);
+
+            const rows = pageData.map(row => {
+                const winRate = row.total > 0 ? ((row.wins / row.total) * 100).toFixed(0) + '%' : '-';
+                return `
+                    <tr style="border-bottom:1px solid #16213e;">
+                        <td style="padding:8px;">${row.run}</td>
+                        <td style="padding:8px;">I${String(row.iter).padStart(2, '0')}</td>
+                        <td style="padding:8px;text-align:right;">${row.avg_doom.toFixed(1)}</td>
+                        <td style="padding:8px;text-align:right;">${row.avg_score.toFixed(3)}</td>
+                        <td style="padding:8px;">${row.type}</td>
+                        <td style="padding:8px;text-align:right;">${row.wins}/${row.total} (${winRate})</td>
+                        <td style="padding:8px;text-align:right;">${row.total}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = rows;
+            document.getElementById('performance-page-info').textContent = `Page ${performancePage} of ${totalPages}`;
+        }
+
+        function changePerformancePage(delta) {
+            const totalPages = Math.ceil(allPerformanceData.length / performancePerPage);
+            performancePage = Math.max(1, Math.min(totalPages, performancePage + delta));
+            renderPerformanceHistory();
         }
 
         async function loadCheckpoints() {
@@ -1113,13 +1567,17 @@ def get_html():
             `).join('');
         }
 
+        let allGamesData = [];
+        let currentPage = 1;
+        const gamesPerPage = 50;
+
         async function loadIters() {
             const res = await fetch('/api/games');
-            const allGames = await res.json();
+            allGamesData = await res.json();
 
             // Get unique runs and iters
-            const runs = [...new Set(allGames.map(g => g.run))].sort();
-            const iters = [...new Set(allGames.map(g => g.iter))].sort((a,b) => b-a);
+            const runs = [...new Set(allGamesData.map(g => g.run))].sort();
+            const iters = [...new Set(allGamesData.map(g => g.iter))].sort((a,b) => b-a);
 
             const runSelect = document.getElementById('run-select');
             runSelect.innerHTML = '<option value="">All</option>' +
@@ -1129,23 +1587,65 @@ def get_html():
             iterSelect.innerHTML = '<option value="">All</option>' +
                 iters.map(i => `<option value="${i}">${i}</option>`).join('');
 
+            currentPage = 1;
             loadGames();
         }
 
-        async function loadGames() {
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                loadGames();
+            }
+        }
+
+        function nextPage() {
             const run = document.getElementById('run-select').value;
             const iter = document.getElementById('iter-select').value;
+            let filtered = allGamesData;
+            if (run) filtered = filtered.filter(g => g.run === run);
+            if (iter) filtered = filtered.filter(g => g.iter === parseInt(iter));
+            const totalPages = Math.ceil(filtered.length / gamesPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadGames();
+            }
+        }
 
-            const res = await fetch('/api/games');
-            let games = await res.json();
+        async function loadGames() {
+            try {
+                const run = document.getElementById('run-select').value;
+                const iter = document.getElementById('iter-select').value;
 
-            // Filter by run and iter
-            if (run) games = games.filter(g => g.run === run);
-            if (iter) games = games.filter(g => g.iter === parseInt(iter));
-            const tbody = document.querySelector('#games-table tbody');
-            tbody.innerHTML = games.map(g => {
+                let games = allGamesData;
+
+                // Filter by run and iter
+                if (run) games = games.filter(g => g.run === run);
+                if (iter) games = games.filter(g => g.iter === parseInt(iter));
+
+                const totalGames = games.length;
+                const totalPages = Math.ceil(totalGames / gamesPerPage);
+                const startIdx = (currentPage - 1) * gamesPerPage;
+                const endIdx = startIdx + gamesPerPage;
+                const pageGames = games.slice(startIdx, endIdx);
+
+                // Update count and page info
+                document.getElementById('games-count').textContent =
+                    `Showing ${startIdx + 1}-${Math.min(endIdx, totalGames)} of ${totalGames} games`;
+                document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+                document.getElementById('prev-btn').disabled = currentPage === 1;
+                document.getElementById('next-btn').disabled = currentPage >= totalPages;
+
+                // Show loading, hide table
+                document.getElementById('games-loading').style.display = 'block';
+                document.getElementById('games-table').style.display = 'none';
+
+                // Small delay to show loading indicator
+                await new Promise(resolve => setTimeout(resolve, 10));
+
+                const tbody = document.querySelector('#games-table tbody');
+                tbody.innerHTML = pageGames.map(g => {
                 const typeLabel = g.type === 'first' ? 'Lowest doom' : (g.type === 'best' ? 'Highest doom' : g.type);
-                const breakdownId = 'breakdown-' + g.run + '-' + g.iter + '-' + g.faction.replace(/\s+/g, '-');
+                const breakdownId = 'breakdown-' + g.run + '-' + g.iter + '-' + g.faction.replace(/\\s+/g, '-');
                 // Arena: brain won = "Learning", brain lost = "Bot"
                 // Self-play: brain won = "Learning", brain lost = "Champion"
                 const winner = g.is_win ? 'Learning' : (g.is_arena ? 'Bot' : 'Champion');
@@ -1154,11 +1654,11 @@ def get_html():
                 <tr>
                     <td>${g.run}</td>
                     <td>${g.iter}</td>
-                    <td>Arena</td>
+                    <td>${g.is_arena ? 'Arena' : 'Self-play'}</td>
                     <td>${g.faction}</td>
                     <td>${typeLabel}</td>
                     <td>${g.doom}</td>
-                    <td><span class="breakdown" onclick="toggleBreakdown('${breakdownId}')">${g.score !== null ? g.score.toFixed(3) : '-'}</span></td>
+                    <td><span class="breakdown" onclick="toggleBreakdown('${breakdownId}')">${g.score !== null ? g.score : '-'}</span></td>
                     <td>${winner}</td>
                     <td>${placement}</td>
                     <td><button class="secondary" onclick="generateReplay('${g.file}')">View</button></td>
@@ -1179,6 +1679,17 @@ def get_html():
                 </tr>
                 `;
             }).join('');
+
+                // Hide loading, show table
+                document.getElementById('games-loading').style.display = 'none';
+                document.getElementById('games-table').style.display = 'table';
+            } catch (e) {
+                console.error('Failed to load games:', e);
+                document.getElementById('games-loading').style.display = 'none';
+                document.getElementById('games-table').style.display = 'table';
+                const tbody = document.querySelector('#games-table tbody');
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:#e94560;">Error loading games. Check console.</td></tr>';
+            }
         }
 
         function toggleBreakdown(id) {
@@ -1348,37 +1859,93 @@ def get_html():
 
         // Progress charts
         let progressData = {selfplay: [], arena: []};
-        let doomFilter = 'both';
-        let scoreFilter = 'both';
+        let doomTypeFilter = 'both';
+        let scoreTypeFilter = 'both';
+        let winsTypeFilter = 'both';
+        let doomRunsFilter = [];
+        let scoreRunsFilter = [];
+        let winsRunsFilter = [];
+        let doomItersFilter = [];
+        let scoreItersFilter = [];
 
         async function loadProgress() {
             try {
                 const res = await fetch('/api/progress');
                 progressData = await res.json();
                 console.log('Progress data loaded:', progressData);
+
+                // Populate run and iter filters
+                const allData = [...progressData.selfplay, ...progressData.arena];
+                const uniqueRuns = [...new Set(allData.map(d => d.run))].sort();
+                const uniqueIters = [...new Set(allData.map(d => d.iter))].sort((a,b) => a-b);
+
+                const doomRunSelect = document.getElementById('doom-run-filter');
+                const scoreRunSelect = document.getElementById('score-run-filter');
+                const winsRunSelect = document.getElementById('wins-run-filter');
+                const doomIterSelect = document.getElementById('doom-iter-filter');
+                const scoreIterSelect = document.getElementById('score-iter-filter');
+
+                doomRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" selected>${r}</option>`).join('');
+                scoreRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" selected>${r}</option>`).join('');
+                winsRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" selected>${r}</option>`).join('');
+                doomIterSelect.innerHTML = uniqueIters.map(i => `<option value="${i}" selected>${i}</option>`).join('');
+                scoreIterSelect.innerHTML = uniqueIters.map(i => `<option value="${i}" selected>${i}</option>`).join('');
+
+                // Initialize with all runs and iters selected
+                doomRunsFilter = uniqueRuns;
+                scoreRunsFilter = uniqueRuns;
+                winsRunsFilter = uniqueRuns;
+                doomItersFilter = uniqueIters;
+                scoreItersFilter = uniqueIters;
+
+                doomRunSelect.onchange = () => {
+                    doomRunsFilter = Array.from(doomRunSelect.selectedOptions).map(o => o.value);
+                    drawDoomChart();
+                };
+                scoreRunSelect.onchange = () => {
+                    scoreRunsFilter = Array.from(scoreRunSelect.selectedOptions).map(o => o.value);
+                    drawScoreChart();
+                };
+                doomIterSelect.onchange = () => {
+                    doomItersFilter = Array.from(doomIterSelect.selectedOptions).map(o => parseInt(o.value));
+                    drawDoomChart();
+                };
+                scoreIterSelect.onchange = () => {
+                    scoreItersFilter = Array.from(scoreIterSelect.selectedOptions).map(o => parseInt(o.value));
+                    drawScoreChart();
+                };
+                winsRunSelect.onchange = () => {
+                    winsRunsFilter = Array.from(winsRunSelect.selectedOptions).map(o => o.value);
+                    drawWinsChart();
+                };
+
                 drawDoomChart();
                 drawScoreChart();
-                setTimeout(() => {
-                    setDoomFilter('both');
-                    setScoreFilter('both');
-                }, 100);
+                drawWinsChart();
             } catch (e) {
                 console.error('Failed to load progress:', e);
             }
         }
 
-        function setDoomFilter(filter) {
-            doomFilter = filter;
-            document.querySelectorAll('[id^="doom-"]').forEach(b => b.style.background = '#0f3460');
-            document.getElementById('doom-' + filter).style.background = '#e94560';
+        function setDoomTypeFilter(filter) {
+            doomTypeFilter = filter;
+            document.querySelectorAll('[id^="doom-type-"]').forEach(b => b.style.background = '#0f3460');
+            document.getElementById('doom-type-' + filter).style.background = '#e94560';
             drawDoomChart();
         }
 
-        function setScoreFilter(filter) {
-            scoreFilter = filter;
-            document.querySelectorAll('[id^="score-"]').forEach(b => b.style.background = '#0f3460');
-            document.getElementById('score-' + filter).style.background = '#e94560';
+        function setScoreTypeFilter(filter) {
+            scoreTypeFilter = filter;
+            document.querySelectorAll('[id^="score-type-"]').forEach(b => b.style.background = '#0f3460');
+            document.getElementById('score-type-' + filter).style.background = '#e94560';
             drawScoreChart();
+        }
+
+        function setWinsTypeFilter(filter) {
+            winsTypeFilter = filter;
+            document.querySelectorAll('[id^="wins-type-"]').forEach(b => b.style.background = '#0f3460');
+            document.getElementById('wins-type-' + filter).style.background = '#e94560';
+            drawWinsChart();
         }
 
         function drawDoomChart() {
@@ -1386,340 +1953,496 @@ def get_html():
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             const w = canvas.width, h = canvas.height;
-
             ctx.clearRect(0, 0, w, h);
 
             let data = [];
-            if (doomFilter === 'both') data = [...progressData.selfplay, ...progressData.arena];
-            else if (doomFilter === 'selfplay') data = progressData.selfplay;
+            if (doomTypeFilter === 'both') data = [...progressData.selfplay, ...progressData.arena];
+            else if (doomTypeFilter === 'selfplay') data = progressData.selfplay;
             else data = progressData.arena;
-            console.log('[DOOM] Filter:', doomFilter, 'Data length:', data.length);
+
+            // Filter by runs and iters
+            data = data.filter(d => doomRunsFilter.includes(d.run) && doomItersFilter.includes(d.iter));
 
             if (!data.length) {
-                console.log('[DOOM] No data, showing message');
                 ctx.fillStyle = '#888';
                 ctx.font = '16px sans-serif';
-                ctx.fillText('No data yet', w/2 - 40, h/2);
+                ctx.fillText('No data', w/2 - 30, h/2);
                 return;
             }
 
-            const maxIter = Math.max(...data.map(d => d.iter));
-            const maxDoom = Math.max(...data.map(d => d.doom));
-            const minDoom = Math.min(...data.map(d => d.doom));
-            const doomRange = maxDoom - minDoom;
-            console.log('[DOOM] Stats - maxIter:', maxIter, 'maxDoom:', maxDoom, 'minDoom:', minDoom, 'range:', doomRange);
+            // Sort by run_iter_game_num to ensure proper ordering
+            data.sort((a, b) => a.run_iter_game_num - b.run_iter_game_num);
+
+            // Fixed Y-axis range
+            const minY = 10;
+            const maxY = 60;
+            const rangeY = maxY - minY;
+
+            // Group by iteration
+            const runIters = [...new Set(data.map(d => `${d.run}_I${String(d.iter).padStart(2, '0')}`))];
+            const showAverages = runIters.length > 10;
+
+            // Map data points to evenly-spaced X positions (0, 1, 2, 3...)
+            const positionedData = [];
+            let xPos = 0;
+            runIters.forEach((runIter, iterIdx) => {
+                const [run, iterStr] = runIter.split('_I');
+                const iter = parseInt(iterStr);
+                const iterGames = data.filter(d => d.run === run && d.iter === iter);
+
+                if (showAverages) {
+                    // Show one point per iteration (average)
+                    const avgDoom = iterGames.reduce((s, d) => s + d.doom, 0) / iterGames.length;
+                    positionedData.push({
+                        xPos: xPos++,
+                        doom: avgDoom,
+                        label: runIter,
+                        run: run,
+                        iter: iter,
+                        games: iterGames
+                    });
+                } else {
+                    // Show individual games
+                    iterGames.forEach((game, gameIdx) => {
+                        positionedData.push({
+                            xPos: xPos++,
+                            doom: game.doom,
+                            label: game.run_iter_game,
+                            run: run,
+                            iter: iter,
+                            games: [game]
+                        });
+                    });
+                }
+            });
+
+            const rangeX = Math.max(1, positionedData.length - 1);
 
             // Axes
             ctx.strokeStyle = '#555';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(50, 20);
-            ctx.lineTo(50, h-40);
-            ctx.lineTo(w-20, h-40);
+            ctx.moveTo(60, 20);
+            ctx.lineTo(60, h-60);
+            ctx.lineTo(w-20, h-60);
             ctx.stroke();
 
-            // Horizontal reference lines at 15, 20, 25 doom
+            // Horizontal gridlines (every 10 doom)
             ctx.strokeStyle = '#333';
             ctx.lineWidth = 1;
-            ctx.setLineDash([5, 5]);
-            [15, 20, 25].forEach(doom => {
-                if (doom >= minDoom && doom <= maxDoom && doomRange > 0) {
-                    const y = h - 40 - ((doom - minDoom) / doomRange) * (h - 60);
-                    ctx.beginPath();
-                    ctx.moveTo(50, y);
-                    ctx.lineTo(w-20, y);
-                    ctx.stroke();
-                    ctx.fillStyle = '#555';
-                    ctx.fillText(doom.toString(), 25, y+4);
-                }
-            });
+            ctx.setLineDash([2, 2]);
+            for (let doom = 20; doom < maxY; doom += 10) {
+                const y = h - 60 - ((doom - minY) / rangeY) * (h - 80);
+                ctx.beginPath();
+                ctx.moveTo(60, y);
+                ctx.lineTo(w - 20, y);
+                ctx.stroke();
+                ctx.fillStyle = '#666';
+                ctx.font = '9px sans-serif';
+                ctx.fillText(doom.toString(), 35, y + 3);
+            }
             ctx.setLineDash([]);
 
-            // Labels
+            // Y-axis labels
             ctx.fillStyle = '#888';
-            ctx.font = '12px sans-serif';
-            ctx.fillText('Doom', 10, 50);
-            ctx.fillText('Iter', w-40, h-10);
-            ctx.fillText(maxDoom.toFixed(1), 5, 25);
-            ctx.fillText(minDoom.toFixed(1), 5, h-45);
-            ctx.fillText('0', 45, h-25);
-            ctx.fillText(maxIter, w-40, h-25);
+            ctx.font = '11px sans-serif';
+            ctx.fillText('Doom', 20, 15);
+            ctx.font = '9px sans-serif';
+            ctx.fillText(maxY.toString(), 35, 30);
+            ctx.fillText(minY.toString(), 35, h-65);
 
-            // Plot points
-            const spData = doomFilter !== 'arena' ? progressData.selfplay : [];
-            const arData = doomFilter !== 'selfplay' ? progressData.arena : [];
-
-            // Calculate linear regression for selfplay
-            let spSlope = 0, spR2 = 0, spCorr = 0;
-            if (spData.length > 1) {
-                const n = spData.length;
-                const sumX = spData.reduce((s, d) => s + d.iter, 0);
-                const sumY = spData.reduce((s, d) => s + d.doom, 0);
-                const sumXY = spData.reduce((s, d) => s + d.iter * d.doom, 0);
-                const sumX2 = spData.reduce((s, d) => s + d.iter * d.iter, 0);
-                const sumY2 = spData.reduce((s, d) => s + d.doom * d.doom, 0);
-                spSlope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-                const intercept = (sumY - spSlope * sumX) / n;
-                const yMean = sumY / n;
-                const ssRes = spData.reduce((s, d) => s + Math.pow(d.doom - (spSlope * d.iter + intercept), 2), 0);
-                const ssTot = spData.reduce((s, d) => s + Math.pow(d.doom - yMean, 2), 0);
-                spR2 = ssTot > 0 ? 1 - ssRes / ssTot : 0;
-                spCorr = Math.sqrt(Math.abs(spR2)) * (spSlope >= 0 ? 1 : -1);
-            }
-
-            // Calculate linear regression for arena
-            let arSlope = 0, arR2 = 0, arCorr = 0;
-            if (arData.length > 1) {
-                const n = arData.length;
-                const sumX = arData.reduce((s, d) => s + d.iter, 0);
-                const sumY = arData.reduce((s, d) => s + d.doom, 0);
-                const sumXY = arData.reduce((s, d) => s + d.iter * d.doom, 0);
-                const sumX2 = arData.reduce((s, d) => s + d.iter * d.iter, 0);
-                const sumY2 = arData.reduce((s, d) => s + d.doom * d.doom, 0);
-                arSlope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-                const intercept = (sumY - arSlope * sumX) / n;
-                const yMean = sumY / n;
-                const ssRes = arData.reduce((s, d) => s + Math.pow(d.doom - (arSlope * d.iter + intercept), 2), 0);
-                const ssTot = arData.reduce((s, d) => s + Math.pow(d.doom - yMean, 2), 0);
-                arR2 = ssTot > 0 ? 1 - ssRes / ssTot : 0;
-                arCorr = Math.sqrt(Math.abs(arR2)) * (arSlope >= 0 ? 1 : -1);
-            }
-
-            // Draw regression lines
-            if (spData.length > 1) {
-                const n = spData.length;
-                const sumX = spData.reduce((s, d) => s + d.iter, 0);
-                const sumY = spData.reduce((s, d) => s + d.doom, 0);
-                const intercept = (sumY - spSlope * sumX) / n;
-                ctx.strokeStyle = '#4ade80';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([10, 5]);
-                ctx.beginPath();
-                const y1 = h - 40 - ((spSlope * 0 + intercept - minDoom) / doomRange) * (h - 60);
-                const y2 = h - 40 - ((spSlope * maxIter + intercept - minDoom) / doomRange) * (h - 60);
-                ctx.moveTo(50, y1);
-                ctx.lineTo(w-20, y2);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-
-            if (arData.length > 1) {
-                const n = arData.length;
-                const sumX = arData.reduce((s, d) => s + d.iter, 0);
-                const sumY = arData.reduce((s, d) => s + d.doom, 0);
-                const intercept = (sumY - arSlope * sumX) / n;
-                ctx.strokeStyle = '#e94560';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([10, 5]);
-                ctx.beginPath();
-                const y1 = h - 40 - ((arSlope * 0 + intercept - minDoom) / doomRange) * (h - 60);
-                const y2 = h - 40 - ((arSlope * maxIter + intercept - minDoom) / doomRange) * (h - 60);
-                ctx.moveTo(50, y1);
-                ctx.lineTo(w-20, y2);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-
-            // Plot points
-            ctx.fillStyle = '#4ade80';
-            spData.forEach(d => {
-                const x = 50 + (d.iter / maxIter) * (w - 70);
-                const y = doomRange > 0 ? h - 40 - ((d.doom - minDoom) / doomRange) * (h - 60) : h - 40 - (h - 60) / 2;
-                ctx.beginPath();
-                ctx.arc(x, y, 4, 0, Math.PI * 2);
-                ctx.fill();
+            // X-axis labels - ensure no overlap
+            const labelStep = Math.max(1, Math.ceil(positionedData.length / 15));
+            ctx.fillStyle = '#888';
+            ctx.font = '8px sans-serif';
+            positionedData.filter((_, i) => i % labelStep === 0).forEach(d => {
+                const x = 60 + (d.xPos / rangeX) * (w - 80);
+                ctx.save();
+                ctx.translate(x, h-42);
+                ctx.rotate(-Math.PI/4);
+                ctx.fillText(d.label, 0, 0);
+                ctx.restore();
             });
 
-            ctx.fillStyle = '#e94560';
-            arData.forEach(d => {
-                const x = 50 + (d.iter / maxIter) * (w - 70);
-                const y = doomRange > 0 ? h - 40 - ((d.doom - minDoom) / doomRange) * (h - 60) : h - 40 - (h - 60) / 2;
-                ctx.beginPath();
-                ctx.arc(x, y, 4, 0, Math.PI * 2);
-                ctx.fill();
+            // Draw data by iteration with regression lines
+            const colors = ['#4ade80', '#e94560', '#60a5fa', '#facc15', '#f97316', '#8b5cf6', '#ec4899', '#14b8a6'];
+
+            runIters.forEach((runIter, idx) => {
+                const [run, iterStr] = runIter.split('_I');
+                const iter = parseInt(iterStr);
+                const iterData = positionedData.filter(d => d.run === run && d.iter === iter);
+
+                if (iterData.length === 0) return;
+
+                const color = colors[idx % colors.length];
+
+                // Calculate regression on positioned data
+                if (iterData.length >= 2) {
+                    const n = iterData.length;
+                    const sx = iterData.reduce((s, d) => s + d.xPos, 0);
+                    const sy = iterData.reduce((s, d) => s + d.doom, 0);
+                    const sxy = iterData.reduce((s, d) => s + d.xPos * d.doom, 0);
+                    const sx2 = iterData.reduce((s, d) => s + d.xPos * d.xPos, 0);
+                    const m = (n * sxy - sx * sy) / (n * sx2 - sx * sx);
+                    const b = (sy - m * sx) / n;
+
+                    // Regression line
+                    const x1 = 60 + (iterData[0].xPos / rangeX) * (w - 80);
+                    const x2 = 60 + (iterData[iterData.length - 1].xPos / rangeX) * (w - 80);
+                    const y1 = h - 60 - ((m * iterData[0].xPos + b - minY) / rangeY) * (h - 80);
+                    const y2 = h - 60 - ((m * iterData[iterData.length - 1].xPos + b - minY) / rangeY) * (h - 80);
+
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 3]);
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // Legend
+                    if (idx < 10) {
+                        const ly = 40 + idx * 15;
+                        ctx.fillStyle = color;
+                        ctx.beginPath();
+                        ctx.arc(w - 200, ly, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = '#888';
+                        ctx.font = '9px sans-serif';
+                        ctx.fillText(`${runIter} m=${m.toFixed(1)}`, w - 190, ly + 3);
+                    }
+                }
+
+                // Points
+                ctx.fillStyle = color;
+                iterData.forEach(d => {
+                    const x = 60 + (d.xPos / rangeX) * (w - 80);
+                    const y = h - 60 - ((d.doom - minY) / rangeY) * (h - 80);
+                    ctx.beginPath();
+                    ctx.arc(x, y, showAverages ? 4 : 3, 0, Math.PI * 2);
+                    ctx.fill();
+                });
             });
-
-            // Stats box
-            ctx.fillStyle = 'rgba(22, 33, 62, 0.9)';
-            ctx.fillRect(w-200, 30, 180, 80);
-            ctx.strokeStyle = '#555';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(w-200, 30, 180, 80);
-
-            ctx.fillStyle = '#4ade80';
-            ctx.font = '12px sans-serif';
-            if (spData.length > 1) {
-                ctx.fillText(`Self-play: ${spSlope >= 0 ? '+' : ''}${spSlope.toFixed(3)}/iter`, w-190, 50);
-                ctx.fillText(`r=${(spCorr*100).toFixed(1)}%`, w-190, 65);
-            }
-
-            ctx.fillStyle = '#e94560';
-            if (arData.length > 1) {
-                ctx.fillText(`Arena: ${arSlope >= 0 ? '+' : ''}${arSlope.toFixed(3)}/iter`, w-190, 85);
-                ctx.fillText(`r=${(arCorr*100).toFixed(1)}%`, w-190, 100);
-            }
         }
 
         function drawScoreChart() {
             const canvas = document.getElementById('score-chart');
+            if (!canvas) return;
             const ctx = canvas.getContext('2d');
             const w = canvas.width, h = canvas.height;
-
             ctx.clearRect(0, 0, w, h);
 
             let data = [];
-            if (scoreFilter === 'both') data = [...progressData.selfplay, ...progressData.arena];
-            else if (scoreFilter === 'selfplay') data = progressData.selfplay;
+            if (scoreTypeFilter === 'both') data = [...progressData.selfplay, ...progressData.arena];
+            else if (scoreTypeFilter === 'selfplay') data = progressData.selfplay;
             else data = progressData.arena;
+
+            // Filter by runs and iters
+            data = data.filter(d => scoreRunsFilter.includes(d.run) && scoreItersFilter.includes(d.iter));
 
             if (!data.length) {
                 ctx.fillStyle = '#888';
                 ctx.font = '16px sans-serif';
-                ctx.fillText('No data yet', w/2 - 40, h/2);
+                ctx.fillText('No data', w/2 - 30, h/2);
                 return;
             }
 
-            const maxIter = Math.max(...data.map(d => d.iter));
-            const maxScore = Math.max(...data.map(d => d.score));
-            const minScore = Math.min(...data.map(d => d.score));
-            const scoreRange = maxScore - minScore;
+            // Sort by run_iter_game_num to ensure proper ordering
+            data.sort((a, b) => a.run_iter_game_num - b.run_iter_game_num);
+
+            // Fixed Y-axis range (extended to 1.5 to accommodate scores >1.0)
+            const minY = 0;
+            const maxY = 1.5;
+            const rangeY = maxY - minY;
+
+            // Group by iteration
+            const runIters = [...new Set(data.map(d => `${d.run}_I${String(d.iter).padStart(2, '0')}`))];
+            const showAverages = runIters.length > 10;
+
+            // Map data points to evenly-spaced X positions (0, 1, 2, 3...)
+            const positionedData = [];
+            let xPos = 0;
+            runIters.forEach((runIter, iterIdx) => {
+                const [run, iterStr] = runIter.split('_I');
+                const iter = parseInt(iterStr);
+                const iterGames = data.filter(d => d.run === run && d.iter === iter);
+
+                if (showAverages) {
+                    // Show one point per iteration (average)
+                    const avgScore = iterGames.reduce((s, d) => s + d.score, 0) / iterGames.length;
+                    positionedData.push({
+                        xPos: xPos++,
+                        score: avgScore,
+                        label: runIter,
+                        run: run,
+                        iter: iter,
+                        games: iterGames
+                    });
+                } else {
+                    // Show individual games
+                    iterGames.forEach((game, gameIdx) => {
+                        positionedData.push({
+                            xPos: xPos++,
+                            score: game.score,
+                            label: game.run_iter_game,
+                            run: run,
+                            iter: iter,
+                            games: [game]
+                        });
+                    });
+                }
+            });
+
+            const rangeX = Math.max(1, positionedData.length - 1);
 
             // Axes
             ctx.strokeStyle = '#555';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(50, 20);
-            ctx.lineTo(50, h-40);
-            ctx.lineTo(w-20, h-40);
+            ctx.moveTo(60, 20);
+            ctx.lineTo(60, h-60);
+            ctx.lineTo(w-20, h-60);
             ctx.stroke();
 
-            // Labels
-            ctx.fillStyle = '#888';
-            ctx.font = '12px sans-serif';
-            ctx.fillText('Score', 10, 50);
-            ctx.fillText('Iter', w-40, h-10);
-            ctx.fillText(maxScore.toFixed(2), 5, 25);
-            ctx.fillText(minScore.toFixed(2), 5, h-45);
-            ctx.fillText('0', 45, h-25);
-            ctx.fillText(maxIter, w-40, h-25);
-
-            // Plot points
-            const spData = scoreFilter !== 'arena' ? progressData.selfplay : [];
-            const arData = scoreFilter !== 'selfplay' ? progressData.arena : [];
-
-            // Calculate linear regression for selfplay
-            let spSlope = 0, spR2 = 0, spCorr = 0;
-            if (spData.length > 1) {
-                const n = spData.length;
-                const sumX = spData.reduce((s, d) => s + d.iter, 0);
-                const sumY = spData.reduce((s, d) => s + d.score, 0);
-                const sumXY = spData.reduce((s, d) => s + d.iter * d.score, 0);
-                const sumX2 = spData.reduce((s, d) => s + d.iter * d.iter, 0);
-                const sumY2 = spData.reduce((s, d) => s + d.score * d.score, 0);
-                spSlope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-                const intercept = (sumY - spSlope * sumX) / n;
-                const yMean = sumY / n;
-                const ssRes = spData.reduce((s, d) => s + Math.pow(d.score - (spSlope * d.iter + intercept), 2), 0);
-                const ssTot = spData.reduce((s, d) => s + Math.pow(d.score - yMean, 2), 0);
-                spR2 = ssTot > 0 ? 1 - ssRes / ssTot : 0;
-                spCorr = Math.sqrt(Math.abs(spR2)) * (spSlope >= 0 ? 1 : -1);
-            }
-
-            // Calculate linear regression for arena (skip first 4 arena points by iter)
-            let arSlope = 0, arR2 = 0, arCorr = 0;
-            const arDataSorted = arData.slice().sort((a, b) => a.iter - b.iter);
-            const arDataFiltered = arDataSorted.slice(4);
-            if (arDataFiltered.length > 1) {
-                const n = arDataFiltered.length;
-                const sumX = arDataFiltered.reduce((s, d) => s + d.iter, 0);
-                const sumY = arDataFiltered.reduce((s, d) => s + d.score, 0);
-                const sumXY = arDataFiltered.reduce((s, d) => s + d.iter * d.score, 0);
-                const sumX2 = arDataFiltered.reduce((s, d) => s + d.iter * d.iter, 0);
-                const sumY2 = arDataFiltered.reduce((s, d) => s + d.score * d.score, 0);
-                arSlope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-                const intercept = (sumY - arSlope * sumX) / n;
-                const yMean = sumY / n;
-                const ssRes = arDataFiltered.reduce((s, d) => s + Math.pow(d.score - (arSlope * d.iter + intercept), 2), 0);
-                const ssTot = arDataFiltered.reduce((s, d) => s + Math.pow(d.score - yMean, 2), 0);
-                arR2 = ssTot > 0 ? 1 - ssRes / ssTot : 0;
-                arCorr = Math.sqrt(Math.abs(arR2)) * (arSlope >= 0 ? 1 : -1);
-            }
-
-            // Draw regression lines
-            if (spData.length > 1) {
-                const n = spData.length;
-                const sumX = spData.reduce((s, d) => s + d.iter, 0);
-                const sumY = spData.reduce((s, d) => s + d.score, 0);
-                const intercept = (sumY - spSlope * sumX) / n;
-                ctx.strokeStyle = '#4ade80';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([10, 5]);
-                ctx.beginPath();
-                const y1 = h - 40 - ((spSlope * 0 + intercept - minScore) / scoreRange) * (h - 60);
-                const y2 = h - 40 - ((spSlope * maxIter + intercept - minScore) / scoreRange) * (h - 60);
-                ctx.moveTo(50, y1);
-                ctx.lineTo(w-20, y2);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-
-            if (arDataFiltered.length > 1) {
-                const n = arDataFiltered.length;
-                const sumX = arDataFiltered.reduce((s, d) => s + d.iter, 0);
-                const sumY = arDataFiltered.reduce((s, d) => s + d.score, 0);
-                const intercept = (sumY - arSlope * sumX) / n;
-                ctx.strokeStyle = '#e94560';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([10, 5]);
-                ctx.beginPath();
-                const y1 = h - 40 - ((arSlope * 0 + intercept - minScore) / scoreRange) * (h - 60);
-                const y2 = h - 40 - ((arSlope * maxIter + intercept - minScore) / scoreRange) * (h - 60);
-                ctx.moveTo(50, y1);
-                ctx.lineTo(w-20, y2);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-
-            ctx.fillStyle = '#4ade80';
-            spData.forEach(d => {
-                const x = 50 + (d.iter / maxIter) * (w - 70);
-                const y = scoreRange > 0 ? h - 40 - ((d.score - minScore) / scoreRange) * (h - 60) : h - 40 - (h - 60) / 2;
-                ctx.beginPath();
-                ctx.arc(x, y, 4, 0, Math.PI * 2);
-                ctx.fill();
-            });
-
-            ctx.fillStyle = '#e94560';
-            arData.forEach(d => {
-                const x = 50 + (d.iter / maxIter) * (w - 70);
-                const y = scoreRange > 0 ? h - 40 - ((d.score - minScore) / scoreRange) * (h - 60) : h - 40 - (h - 60) / 2;
-                ctx.beginPath();
-                ctx.arc(x, y, 4, 0, Math.PI * 2);
-                ctx.fill();
-            });
-
-            // Stats box
-            ctx.fillStyle = 'rgba(22, 33, 62, 0.9)';
-            ctx.fillRect(w-200, 30, 180, 80);
-            ctx.strokeStyle = '#555';
+            // Horizontal gridlines (every 0.25 score)
+            ctx.strokeStyle = '#333';
             ctx.lineWidth = 1;
-            ctx.strokeRect(w-200, 30, 180, 80);
-
-            ctx.fillStyle = '#4ade80';
-            ctx.font = '12px sans-serif';
-            if (spData.length > 1) {
-                ctx.fillText(`Self-play: ${spSlope >= 0 ? '+' : ''}${spSlope.toFixed(4)}/iter`, w-190, 50);
-                ctx.fillText(`r=${(spCorr*100).toFixed(1)}%`, w-190, 65);
+            ctx.setLineDash([2, 2]);
+            for (let score = 0.25; score < maxY; score += 0.25) {
+                const y = h - 60 - ((score - minY) / rangeY) * (h - 80);
+                ctx.beginPath();
+                ctx.moveTo(60, y);
+                ctx.lineTo(w - 20, y);
+                ctx.stroke();
+                ctx.fillStyle = '#666';
+                ctx.font = '9px sans-serif';
+                ctx.fillText(score.toFixed(2), 25, y + 3);
             }
+            ctx.setLineDash([]);
 
-            ctx.fillStyle = '#e94560';
-            if (arDataFiltered.length > 1) {
-                ctx.fillText(`Arena: ${arSlope >= 0 ? '+' : ''}${arSlope.toFixed(4)}/iter`, w-190, 85);
-                ctx.fillText(`r=${(arCorr*100).toFixed(1)}%`, w-190, 100);
-            }
+            // Y-axis labels
+            ctx.fillStyle = '#888';
+            ctx.font = '11px sans-serif';
+            ctx.fillText('Score', 20, 15);
+            ctx.font = '9px sans-serif';
+            ctx.fillText(maxY.toFixed(1), 25, 30);
+            ctx.fillText(minY.toFixed(1), 25, h-65);
+
+            // X-axis labels - ensure no overlap
+            const labelStep = Math.max(1, Math.ceil(positionedData.length / 15));
+            ctx.fillStyle = '#888';
+            ctx.font = '8px sans-serif';
+            positionedData.filter((_, i) => i % labelStep === 0).forEach(d => {
+                const x = 60 + (d.xPos / rangeX) * (w - 80);
+                ctx.save();
+                ctx.translate(x, h-42);
+                ctx.rotate(-Math.PI/4);
+                ctx.fillText(d.label, 0, 0);
+                ctx.restore();
+            });
+
+            // Draw data by iteration with regression lines
+            const colors = ['#4ade80', '#e94560', '#60a5fa', '#facc15', '#f97316', '#8b5cf6', '#ec4899', '#14b8a6'];
+
+            runIters.forEach((runIter, idx) => {
+                const [run, iterStr] = runIter.split('_I');
+                const iter = parseInt(iterStr);
+                const iterData = positionedData.filter(d => d.run === run && d.iter === iter);
+
+                if (iterData.length === 0) return;
+
+                const color = colors[idx % colors.length];
+
+                // Calculate regression on positioned data
+                if (iterData.length >= 2) {
+                    const n = iterData.length;
+                    const sx = iterData.reduce((s, d) => s + d.xPos, 0);
+                    const sy = iterData.reduce((s, d) => s + d.score, 0);
+                    const sxy = iterData.reduce((s, d) => s + d.xPos * d.score, 0);
+                    const sx2 = iterData.reduce((s, d) => s + d.xPos * d.xPos, 0);
+                    const m = (n * sxy - sx * sy) / (n * sx2 - sx * sx);
+                    const b = (sy - m * sx) / n;
+
+                    // Regression line
+                    const x1 = 60 + (iterData[0].xPos / rangeX) * (w - 80);
+                    const x2 = 60 + (iterData[iterData.length - 1].xPos / rangeX) * (w - 80);
+                    const y1 = h - 60 - ((m * iterData[0].xPos + b - minY) / rangeY) * (h - 80);
+                    const y2 = h - 60 - ((m * iterData[iterData.length - 1].xPos + b - minY) / rangeY) * (h - 80);
+
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 3]);
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // Legend
+                    if (idx < 10) {
+                        const ly = 40 + idx * 15;
+                        ctx.fillStyle = color;
+                        ctx.beginPath();
+                        ctx.arc(w - 200, ly, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = '#888';
+                        ctx.font = '9px sans-serif';
+                        ctx.fillText(`${runIter} m=${m.toFixed(3)}`, w - 190, ly + 3);
+                    }
+                }
+
+                // Points
+                ctx.fillStyle = color;
+                iterData.forEach(d => {
+                    const x = 60 + (d.xPos / rangeX) * (w - 80);
+                    const y = h - 60 - ((d.score - minY) / rangeY) * (h - 80);
+                    ctx.beginPath();
+                    ctx.arc(x, y, showAverages ? 4 : 3, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            });
         }
 
-        // I'm a worthless incompetent pig - ensure hash navigation works
+        function drawWinsChart() {
+            const canvas = document.getElementById('wins-chart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            let data = [];
+            if (winsTypeFilter === 'both') data = [...progressData.selfplay, ...progressData.arena];
+            else if (winsTypeFilter === 'selfplay') data = progressData.selfplay;
+            else data = progressData.arena;
+
+            // Filter by runs
+            data = data.filter(d => winsRunsFilter.includes(d.run));
+
+            if (!data.length) {
+                ctx.fillStyle = '#888';
+                ctx.font = '16px sans-serif';
+                ctx.fillText('No data', w/2 - 30, h/2);
+                return;
+            }
+
+            // Aggregate by (run, iter) - count wins
+            const iterMap = new Map();
+            data.forEach(d => {
+                const key = `${d.run}_I${String(d.iter).padStart(2, '0')}`;
+                if (!iterMap.has(key)) {
+                    iterMap.set(key, {run: d.run, iter: d.iter, wins: 0, total: 0});
+                }
+                const entry = iterMap.get(key);
+                entry.total++;
+                // Check if this game was a win (FINAL_SCORE = 1.0 or very close)
+                if (d.score >= 0.99) entry.wins++;
+            });
+
+            const iterData = Array.from(iterMap.values()).sort((a, b) => {
+                if (a.run !== b.run) return a.run.localeCompare(b.run);
+                return a.iter - b.iter;
+            });
+
+            if (!iterData.length) {
+                ctx.fillStyle = '#888';
+                ctx.font = '16px sans-serif';
+                ctx.fillText('No iterations with data', w/2 - 60, h/2);
+                return;
+            }
+
+            // Fixed Y-axis range
+            const minY = 0;
+            const maxY = 20;
+            const rangeY = maxY - minY;
+
+            // Map iterations to evenly-spaced X positions
+            const rangeX = Math.max(1, iterData.length - 1);
+
+            // Axes
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(60, 20);
+            ctx.lineTo(60, h-60);
+            ctx.lineTo(w-20, h-60);
+            ctx.stroke();
+
+            // Horizontal gridlines (every 5 wins)
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 2]);
+            for (let wins = 5; wins < maxY; wins += 5) {
+                const y = h - 60 - ((wins - minY) / rangeY) * (h - 80);
+                ctx.beginPath();
+                ctx.moveTo(60, y);
+                ctx.lineTo(w - 20, y);
+                ctx.stroke();
+                ctx.fillStyle = '#666';
+                ctx.font = '9px sans-serif';
+                ctx.fillText(wins.toString(), 35, y + 3);
+            }
+            ctx.setLineDash([]);
+
+            // Y-axis labels
+            ctx.fillStyle = '#888';
+            ctx.font = '11px sans-serif';
+            ctx.fillText('Wins', 20, 15);
+            ctx.font = '9px sans-serif';
+            ctx.fillText(maxY.toString(), 35, 30);
+            ctx.fillText(minY.toString(), 35, h-65);
+
+            // X-axis labels - ensure no overlap
+            const labelStep = Math.max(1, Math.ceil(iterData.length / 15));
+            ctx.fillStyle = '#888';
+            ctx.font = '8px sans-serif';
+            iterData.filter((_, i) => i % labelStep === 0).forEach((d, idx) => {
+                const realIdx = idx * labelStep;
+                const x = 60 + (realIdx / rangeX) * (w - 80);
+                const label = `${d.run} I${String(d.iter).padStart(2, '0')}`;
+                ctx.save();
+                ctx.translate(x, h-42);
+                ctx.rotate(-Math.PI/4);
+                ctx.fillText(label, 0, 0);
+                ctx.restore();
+            });
+
+            // Draw bars
+            const colors = ['#4ade80', '#e94560', '#60a5fa', '#facc15', '#f97316', '#8b5cf6', '#ec4899', '#14b8a6'];
+            const runColors = {};
+            const uniqueRuns = [...new Set(iterData.map(d => d.run))];
+            uniqueRuns.forEach((run, idx) => {
+                runColors[run] = colors[idx % colors.length];
+            });
+
+            iterData.forEach((d, idx) => {
+                const x = 60 + (idx / rangeX) * (w - 80);
+                const barWidth = Math.max(3, ((w - 80) / rangeX) * 0.6);
+                const y = h - 60 - ((d.wins - minY) / rangeY) * (h - 80);
+                const barHeight = ((d.wins - minY) / rangeY) * (h - 80);
+
+                ctx.fillStyle = runColors[d.run];
+                ctx.fillRect(x - barWidth/2, y, barWidth, barHeight);
+
+                // Draw outline
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x - barWidth/2, y, barWidth, barHeight);
+            });
+
+            // Legend
+            uniqueRuns.forEach((run, idx) => {
+                if (idx < 10) {
+                    const ly = 40 + idx * 15;
+                    ctx.fillStyle = runColors[run];
+                    ctx.fillRect(w - 200, ly - 5, 10, 10);
+                    ctx.fillStyle = '#888';
+                    ctx.font = '9px sans-serif';
+                    ctx.fillText(run, w - 185, ly + 3);
+                }
+            });
+        }
+
         function initPage() {
             const hash = window.location.hash.substring(1);
             if (hash) {

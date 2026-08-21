@@ -100,14 +100,16 @@ object Outcome {
      *  stop truce-farming, and it generalizes to bot-less factions (no faction is named). */
     def valueShaped(game : Game, winners : $[Faction], me : Faction, shaping : Double) : Double = {
         if (winners.contains(me)) return 1.0
-        val capped = NonWinnerCeiling * math.max(0.0, math.min(1.0, shaping))
 
-        // PLACEMENT BONUS (user directive 2026-08-14): +0.1 per place above last, added AFTER
-        // the ceiling (so it can exceed 0.5). Rewards beating opponents even without winning.
-        // 3rd place (1 above last) = +0.1, 2nd = +0.2, 1st still 1.0 (handled above).
+        // PLACEMENT BONUS FIX (2026-08-19): Lower ceiling to 0.7 to make room for placement
+        // bonus while keeping total ≤1.0. Max placement bonus is +0.3 (1st place in 5-player),
+        // so 0.7 + 0.3 = 1.0 exactly. This preserves the placement feature while maintaining
+        // the critical [0,1] constraint required for neural network training.
+        val cappedWithRoom = 0.7 * NonWinnerCeiling * math.max(0.0, math.min(1.0, shaping))
+
         val placementBonus = if (winners.isEmpty) {
             // Stalemate: no placement ranking possible, no bonus
-            StalematePenalty * capped
+            StalematePenalty * cappedWithRoom
         } else {
             // Calculate placement by doom ranking
             val allFactions = game.setup.toList
@@ -115,7 +117,7 @@ object Outcome {
             val myRank = doomRanking.indexOf(me)
             val placesAboveLast = allFactions.size - 1 - myRank  // 0 for last, 1 for 3rd (4p), etc
             val bonus = placesAboveLast * 0.1
-            capped + bonus
+            cappedWithRoom + bonus  // Now guaranteed ≤1.0
         }
         placementBonus
     }

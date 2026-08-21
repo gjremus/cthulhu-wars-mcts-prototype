@@ -468,9 +468,10 @@ object PolicyRun {
             var arenaExamplesCollected = 0
             if (it % arenaEvery == 0 || it == iters) {
                 print(f"   arena @ iter $it: ")
-                // Collect per-seat arena results AND training examples
+                // Collect per-seat arena results, training examples, AND save traces (2026-08-19 fix)
+                val iterTag = f"iter$it%02d"
                 val perSeatResults = SelfPlay.fixedSeating.toList.map { seat =>
-                    val (examples, result) = Arena.evaluateWithExamples(value, sims, perSeat, Set(seat))
+                    val (examples, result) = Arena.evaluateWithExamplesAndTraces(value, sims, perSeat, Set(seat), iterTag)
                     // Train value net on arena examples immediately
                     examples.foreach { ex => value.train(ex.features, ex.label, lr) }
                     arenaExamplesCollected += examples.length
@@ -479,23 +480,34 @@ object PolicyRun {
                 val totalWins = perSeatResults.map(_.brainWins).sum
                 val totalGames = perSeatResults.map(_.games).sum
                 lastArenaWR = if (totalGames > 0) totalWins.toDouble / totalGames else 0.0
-                println(f"wins $totalWins%d/${totalGames}%d (${lastArenaWR * 100}%.1f%%) | $arenaExamplesCollected examples trained")
+                println(f"wins $totalWins%d/${totalGames}%d (${lastArenaWR * 100}%.1f%%) | $arenaExamplesCollected examples trained | traces saved")
             }
 
-            // BEST-CHECKPOINT: use AVERAGE DOOM as the score. That's the metric that matters.
+            // CHAMPION CHALLENGE (2026-08-19): USER DIRECTIVE - "IF THE BRAIN WINS MORE THAN
+            // HALF OF ITS GAMES AGAINST THE 'CHAMPION' - THEN THAT'S THE NEW CHAMPION."
+            // Play current vs champion, promote if >50% win rate OR higher 0-1 score.
             val avgDoom = batch.flatMap(_.metrics).map(_.doom).sum.toDouble / math.max(1, batch.size)
-            val iterScore = avgDoom
+            val avgScore01 = batch.flatMap(_.examples).map(_.label).sum / math.max(1, batch.flatMap(_.examples).size)
 
             // SAVE EVERY ITERATION (2026-08-08): always save current weights so learning
             // is never lost if the process dies. Saves to `current.*` files alongside `best.*`.
             val runTag = sys.env.getOrElse("CW_RUNTAG", "selfplay")
             (policy, value) match {
-                case (p : PolicyModel, v : MLPModel) => Checkpoint.saveCurrent(p, v, it, iterScore, runTag)
+                case (p : PolicyModel, v : MLPModel) => Checkpoint.saveCurrent(p, v, it, avgDoom, runTag)
                 case _ =>
             }
 
-            if (iterScore > bestScore) {
-                bestScore = iterScore; bestIter = it
+            // Challenge the champion with 20 games (10 more than arena's 2/seat)
+            print(f"   champion challenge @ iter $it: ")
+            val challenge = Arena.evaluateVsChampion(value, bestValue, sims, 20)
+            val winRate = challenge.currentWins.toDouble / challenge.gamesPlayed
+            val scoreGain = challenge.currentAvgScore - challenge.championAvgScore
+            println(f"${challenge.currentWins}W-${challenge.championWins}L-${challenge.draws}D (${winRate*100}%.1f%% WR) | score: ${challenge.currentAvgScore}%.4f vs ${challenge.championAvgScore}%.4f (${if (scoreGain >= 0) "+" else ""}${scoreGain}%.4f)")
+
+            // PROMOTE if >50% win rate OR higher 0-1 score
+            val shouldPromote = winRate > 0.50 || challenge.currentAvgScore > challenge.championAvgScore
+            if (shouldPromote) {
+                bestScore = avgDoom; bestIter = it
                 bestPolicy = policy.copy; bestValue = value.copy
                 // LEAGUE (lever c): admit this new best as a frozen opponent (a stronger past
                 // self). Keep the seed (index 0, the bot-style clone) always, and age out the
@@ -505,10 +517,11 @@ object PolicyRun {
                 // PERSIST across runs: write the new best to disk so the next run can
                 // warm-start from it instead of relearning from zero.
                 (bestPolicy, bestValue) match {
-                    case (bp : PolicyModel, bv : MLPModel) => Checkpoint.save(bp, bv, it, iterScore, runTag)
+                    case (bp : PolicyModel, bv : MLPModel) => Checkpoint.save(bp, bv, it, avgDoom, runTag)
                     case _ =>
                 }
-                println(f"   >>> new best checkpoint @ iter $it (avgDoom=${avgDoom}%.1f arenaWR=${lastArenaWR}%.3f) | league=${leaguePool.length} | saved to disk")
+                val reason = if (winRate > 0.50) f"WR=${winRate*100}%.1f%%" else f"score+${scoreGain}%.4f"
+                println(f"   >>> NEW CHAMPION @ iter $it ($reason) | doom=${avgDoom}%.1f arena=${lastArenaWR}%.3f | league=${leaguePool.length} | saved")
             }
 
             // CLEANUP old checkpoints older than 7 days (2026-08-08)
