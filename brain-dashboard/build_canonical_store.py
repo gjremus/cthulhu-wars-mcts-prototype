@@ -34,27 +34,62 @@ def parse_trace_file(trace_file):
                     pass
 
         # Assign run based on file modification timestamp
+        # CUTOFF 2026-08-22: R24-R26 are "old" (pre-fix), Run1+ are "new"
         file_time = trace_file.stat().st_mtime
-        if file_time >= 1787234280:  # Aug 20, 2026 08:58 (R26 start)
+
+        # Check for new runs (Run1, Run2, etc.) by looking for CW_RUNTAG in filename
+        # New runs use naming: arena-Run1-iter##-... or selfplay-Run1-iter##-...
+        if "Run" in stem and any(f"Run{i}" in stem for i in range(1, 100)):
+            # Extract run number from filename
+            for i in range(1, 100):
+                if f"Run{i}" in stem:
+                    run = f"Run{i}"
+                    era = "new"
+                    break
+        elif file_time >= 1787234280:  # Aug 20, 2026 08:58 (R26 start)
             run = "R26"
+            era = "old"
         elif file_time >= 1786770000:  # Aug 15, 2026 (R25 start)
             run = "R25"
+            era = "old"
         elif file_time >= 1786424400:  # Aug 11, 2026 (R24 start)
             run = "R24"
+            era = "old"
         else:
             run = "R23"
+            era = "old"
+
+        # For ARENA games: parse brain's faction from filename
+        # arena-iter##-{faction}-{best|first}-d#.txt
+        brain_faction = None
+        if is_arena:
+            parts = stem.split('-')
+            for i, part in enumerate(parts):
+                if part in ['bg', 'cc', 'gc', 'ys']:
+                    brain_faction = part.upper()
+                    break
 
         # Parse doom from ALL_DOOM= line
         doom = 0
         all_doom_match = re.search(r'ALL_DOOM=(.+)', content)
         if all_doom_match:
             doom_str = all_doom_match.group(1).strip()
-            # First doom value is brain's doom
-            for pair in doom_str.split():
-                if '=' in pair:
-                    faction, d = pair.split('=')
-                    doom = int(d)
-                    break  # First one is brain
+
+            # For ARENA: find brain's faction doom
+            if is_arena and brain_faction:
+                for pair in doom_str.split():
+                    if '=' in pair:
+                        faction, d = pair.split('=')
+                        if faction == brain_faction:
+                            doom = int(d)
+                            break
+            else:
+                # For SELFPLAY: first doom value is brain's doom
+                for pair in doom_str.split():
+                    if '=' in pair:
+                        faction, d = pair.split('=')
+                        doom = int(d)
+                        break
 
         # Parse score from FINAL_SCORE= line
         score = 0.0
@@ -64,25 +99,28 @@ def parse_trace_file(trace_file):
 
         # Check if brain won
         won = False
-        if all_doom_match:
-            doom_str = all_doom_match.group(1).strip()
-            first_faction = None
-            for pair in doom_str.split():
-                if '=' in pair:
-                    first_faction = pair.split('=')[0]
-                    break
+        won_line_match = re.search(r'(.+) won</div>', content)
+        if won_line_match:
+            won_text = won_line_match.group(1)
+            faction_names = {
+                'BG': 'Black Goat', 'YS': 'Yellow Sign',
+                'CC': 'Crawling Chaos', 'GC': 'Great Cthulhu'
+            }
 
-            if first_faction:
-                won_line_match = re.search(r'(.+) won</div>', content)
-                if won_line_match:
-                    won_text = won_line_match.group(1)
-                    faction_names = {
-                        'BG': 'Black Goat', 'YS': 'Yellow Sign',
-                        'CC': 'Crawling Chaos', 'GC': 'Great Cthulhu'
-                    }
-                    if first_faction in faction_names:
-                        if faction_names[first_faction] in won_text:
-                            won = True
+            # For ARENA: check if brain's faction won
+            if is_arena and brain_faction and brain_faction in faction_names:
+                if faction_names[brain_faction] in won_text:
+                    won = True
+            # For SELFPLAY: check if first faction won
+            elif all_doom_match:
+                doom_str = all_doom_match.group(1).strip()
+                for pair in doom_str.split():
+                    if '=' in pair:
+                        first_faction = pair.split('=')[0]
+                        if first_faction in faction_names:
+                            if faction_names[first_faction] in won_text:
+                                won = True
+                        break
 
         # R25 special case: traces mislabeled, need to correct arena/selfplay
         # R25 even iterations = arena, odd = selfplay (pre-naming convention)
@@ -96,6 +134,7 @@ def parse_trace_file(trace_file):
             "filename": stem,
             "filepath": str(trace_file),
             "run": run,
+            "era": era,
             "iter": iter_num,
             "type": game_type,
             "doom": doom,

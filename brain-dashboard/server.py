@@ -71,8 +71,11 @@ def load_canonical_store():
         print(f"ERROR loading canonical store: {e}")
         return {"games": [], "total_games": 0}
 
-def get_games_from_canonical_store(run=None, iter_num=None, game_type=None):
-    """Get games from canonical store, optionally filtered."""
+def get_games_from_canonical_store(run=None, iter_num=None, game_type=None, era=None):
+    """Get games from canonical store, optionally filtered.
+
+    era: 'old' (R24-R26), 'new' (Run1+), 'both' (all), or None (all)
+    """
     store = load_canonical_store()
     games = store.get("games", [])
 
@@ -82,6 +85,8 @@ def get_games_from_canonical_store(run=None, iter_num=None, game_type=None):
         games = [g for g in games if g["iter"] == iter_num]
     if game_type:
         games = [g for g in games if g["type"] == game_type]
+    if era and era != "both":
+        games = [g for g in games if g.get("era", "old") == era]
 
     return games
 
@@ -1023,9 +1028,10 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             iter_num = qs.get("iter", [None])[0]
             if iter_num:
                 iter_num = int(iter_num)
+            era = qs.get("era", ["both"])[0]  # 'old', 'new', or 'both'
 
             # Load from canonical store
-            games = get_games_from_canonical_store(iter_num=iter_num)
+            games = get_games_from_canonical_store(iter_num=iter_num, era=era)
 
             # Convert to frontend format
             formatted_games = []

@@ -141,12 +141,10 @@ object Outcome {
     // to one that hasn't. This under-valued the ritual investment PER STATE, so the value net gave
     // no positional credit for ritualing — the same gap that made "skip" beat "ritual" in shaping,
     // now fixed at the state-potential layer too. Weights rebalanced to still sum to 1.0.
-    private val PotDoom   = 0.32  // doom / 30 (the doom-lead hard condition)
-    private val PotSB     = 0.33  // spellbooks / 6 (the 6-spellbook hard condition)
-    private val PotGates  = 0.13  // controlled gates, cap 2 (the doom-generation base)
-    private val PotGOO    = 0.09  // own GOO awakened (enables Elder Signs + big rituals)
-    private val PotRitual = 0.09  // rituals performed, cap 3 (the doom ENGINE — new lever a)
-    private val PotPower  = 0.04  // power on hand, cap 10 (bankroll to act/ritual)
+    //
+    // WEIGHTS NOW LOADED FROM JSON (2026-08-22): WeightsConfig.loadFromFile() pulls from
+    // brain-dashboard/weights.json at the START of each iteration, so dashboard UI edits
+    // take effect immediately without recompiling.
 
     /** Position-quality potential Φ(s) in [0,1] for `me`, read purely from the live game.
      *  Used to give EACH recorded state its own value target (see PolicyRun.selfPlayGame),
@@ -160,7 +158,8 @@ object Outcome {
         val gooN   = if (p.goos.factionGOOs.nonEmpty) 1.0 else 0.0
         val ritN   = math.min(1.0, game.ritualHistory.count(_ == me).toDouble / 3.0)
         val powN   = math.min(1.0, p.power.toDouble / 10.0)
-        val v = PotDoom * doomN + PotSB * sbN + PotGates * gatesN + PotGOO * gooN + PotRitual * ritN + PotPower * powN
+        val v = WeightsConfig.potDoom * doomN + WeightsConfig.potSB * sbN + WeightsConfig.potGates * gatesN +
+                WeightsConfig.potGOO * gooN + WeightsConfig.potRitual * ritN + WeightsConfig.potPower * powN
         math.max(0.0, math.min(1.0, v))
     }
 
