@@ -26,6 +26,7 @@ REPLAY_TOOL = Path("/Users/gremus/Claude-Projects/cthulhu-wars-tools/Replay/buil
 IMAGE_DIR = MCTS_ROOT / "engine-copy/solo/webp/images"
 PERF_CACHE_FILE = MCTS_ROOT / "brain-dashboard" / "performance_cache.json"
 PROGRESS_CACHE_FILE = MCTS_ROOT / "brain-dashboard" / "progress_cache.json"
+CANONICAL_STORE_FILE = MCTS_ROOT / "brain-dashboard" / "canonical_games.json"
 
 # Ensure dirs exist
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
@@ -34,7 +35,12 @@ LOGS_DIR.mkdir(parents=True, exist_ok=True)
 current_run_pid = None
 current_run_log = None
 
-# Game cache - avoid reparsing 1000+ trace files on every request
+# Canonical store cache - single source of truth for all game data
+_canonical_store = None
+_canonical_store_time = 0
+_CACHE_TTL = 30  # seconds
+
+# Legacy caches (deprecated, use canonical store)
 _selfplay_cache = None
 _selfplay_cache_time = 0
 _arena_cache = None
@@ -43,7 +49,41 @@ _progress_cache = None
 _progress_cache_time = 0
 _checkpoints_cache = None
 _checkpoints_cache_time = 0
-_CACHE_TTL = 30  # seconds
+
+def load_canonical_store():
+    """Load canonical game store - single source of truth for all dashboard data."""
+    global _canonical_store, _canonical_store_time
+
+    now = time.time()
+    if _canonical_store and (now - _canonical_store_time) < _CACHE_TTL:
+        return _canonical_store
+
+    if not CANONICAL_STORE_FILE.exists():
+        print(f"⚠ Canonical store not found: {CANONICAL_STORE_FILE}")
+        return {"games": [], "total_games": 0}
+
+    try:
+        store = json.loads(CANONICAL_STORE_FILE.read_text())
+        _canonical_store = store
+        _canonical_store_time = now
+        return store
+    except Exception as e:
+        print(f"ERROR loading canonical store: {e}")
+        return {"games": [], "total_games": 0}
+
+def get_games_from_canonical_store(run=None, iter_num=None, game_type=None):
+    """Get games from canonical store, optionally filtered."""
+    store = load_canonical_store()
+    games = store.get("games", [])
+
+    if run:
+        games = [g for g in games if g["run"] == run]
+    if iter_num is not None:
+        games = [g for g in games if g["iter"] == iter_num]
+    if game_type:
+        games = [g for g in games if g["type"] == game_type]
+
+    return games
 
 def get_current_run_status():
     """Parse the current run log for status."""
@@ -710,30 +750,22 @@ def _parse_progress_data():
     return data
 
 def get_progress_data():
-    """Get progress data from pre-computed cache file (instant)."""
-    if PROGRESS_CACHE_FILE.exists():
-        try:
-            return json.loads(PROGRESS_CACHE_FILE.read_text())
-        except:
-            pass
-
-    # Fallback: compute from cached games (slow)
-    all_games = get_selfplay_games() + get_arena_games()
+    """Get progress data from canonical store."""
+    games = get_games_from_canonical_store()
 
     data = {"selfplay": [], "arena": []}
-    for game in all_games:
-        target = "arena" if game.get("is_arena") else "selfplay"
-        run = game.get("run", "?")
-        iter_num = game.get("iter", 0)
-        doom = game.get("doom", 0)
-        score = game.get("score", 0.0)
+    for game in games:
+        target = game["type"]
+        run = game["run"]
+        iter_num = game["iter"]
+        doom = game["doom"]
+        score = game["score"]
 
         # Extract run number for sorting
         run_num = int(run[1:]) if run.startswith('R') else 0
 
-        # Count games in this iter to assign game number
-        existing = [g for g in data[target] if g["run"] == run and g["iter"] == iter_num]
-        game_num = len(existing) + 1
+        # Game number is already in canonical store
+        game_num = game.get("game_num", 1)
 
         data[target].append({
             "run": run,
@@ -870,26 +902,18 @@ def _parse_performance_history():
     return history
 
 def get_performance_history():
-    """Get performance history from pre-computed cache file (instant)."""
-    if PERF_CACHE_FILE.exists():
-        try:
-            return json.loads(PERF_CACHE_FILE.read_text())
-        except:
-            pass
-
-    # Fallback: compute from cached games (slow)
-    all_games = get_selfplay_games() + get_arena_games()
+    """Get performance history from canonical store."""
+    games = get_games_from_canonical_store()
 
     # Aggregate by (run, iter, type)
     iter_stats = {}
-    for game in all_games:
-        run = game.get("run", "?")
-        iter_num = game.get("iter", 0)
-        is_arena = game.get("is_arena", False)
-        game_type = "Arena" if is_arena else "Self-play"
-        doom = game.get("doom", 0)
-        score = game.get("score", 0.0) if game.get("score") is not None else 0.0
-        is_win = game.get("is_win", False)
+    for game in games:
+        run = game["run"]
+        iter_num = game["iter"]
+        game_type = "Arena" if game["type"] == "arena" else "Self-play"
+        doom = game["doom"]
+        score = game["score"]
+        is_win = game["won"]
 
         key = (run, iter_num, game_type)
         if key not in iter_stats:
@@ -999,13 +1023,28 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             iter_num = qs.get("iter", [None])[0]
             if iter_num:
                 iter_num = int(iter_num)
-            # Combine arena and selfplay games
-            arena_games = get_arena_games(iter_num=iter_num)
-            selfplay_games = get_selfplay_games(iter_num=iter_num)
-            all_games = arena_games + selfplay_games
+
+            # Load from canonical store
+            games = get_games_from_canonical_store(iter_num=iter_num)
+
+            # Convert to frontend format
+            formatted_games = []
+            for g in games:
+                formatted_games.append({
+                    "filename": g["filename"],
+                    "run": g["run"],
+                    "iter": g["iter"],
+                    "is_arena": g["type"] == "arena",
+                    "doom": g["doom"],
+                    "score": g["score"],
+                    "won": g["won"],
+                    "timestamp": g["timestamp"],
+                    "game_num": g.get("game_num", 0)
+                })
+
             # Sort by run and iter descending
-            all_games.sort(key=lambda g: (g.get("run", "R0"), g.get("iter", 0)), reverse=True)
-            self.send_json(all_games)
+            formatted_games.sort(key=lambda g: (g["run"], g["iter"]), reverse=True)
+            self.send_json(formatted_games)
         elif path == "/api/weights":
             self.send_json(get_weights())
         elif path == "/api/iters":

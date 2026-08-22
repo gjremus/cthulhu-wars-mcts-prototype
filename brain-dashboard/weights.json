@@ -3,7 +3,7 @@
   "doomEarned": 1,
   "elderSigns": 1.66,
   "ritualValue": 1,
-  "ownGOO": 2,
+  "ownGOO": 3,
   "b:goodRitual": 0.5,
   "gateTaken": 0.4,
   "gateDefended": 0.33,
@@ -15,10 +15,11 @@
   "p:lostGate": -0.6,
   "p:abandon": -0.33,
   "p:capture": -0.4,
-  "p:gooLost": -0.2,
+  "p:gooLost": -3,
   "p:cultistUnprot": -0.2,
   "r:killEnemy": 0.8,
   "r:powerBlock": 0.05,
   "r:apPowerOrder": 0.8,
-  "r:enemyGooKill": 2
+  "r:enemyGooKill": 2,
+  "placementBonus": 0.1
 }

@@ -1,0 +1,749 @@
+[
+  {
+    "run": "R26",
+    "iter": 24,
+    "avg_doom": 31.2,
+    "avg_score": 0.671,
+    "type": "Self-play",
+    "wins": 4,
+    "total": 10
+  },
+  {
+    "run": "R26",
+    "iter": 23,
+    "avg_doom": 38.5,
+    "avg_score": 0.58,
+    "type": "Self-play",
+    "wins": 17,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 22,
+    "avg_doom": 38.0,
+    "avg_score": 0.6,
+    "type": "Self-play",
+    "wins": 18,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 22,
+    "avg_doom": 43.9,
+    "avg_score": 0.064,
+    "type": "Arena",
+    "wins": 7,
+    "total": 8
+  },
+  {
+    "run": "R26",
+    "iter": 21,
+    "avg_doom": 39.2,
+    "avg_score": 0.516,
+    "type": "Self-play",
+    "wins": 16,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 20,
+    "avg_doom": 31.5,
+    "avg_score": 0.652,
+    "type": "Self-play",
+    "wins": 16,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 20,
+    "avg_doom": 36.7,
+    "avg_score": 0.046,
+    "type": "Arena",
+    "wins": 6,
+    "total": 7
+  },
+  {
+    "run": "R26",
+    "iter": 19,
+    "avg_doom": 36.5,
+    "avg_score": 0.586,
+    "type": "Self-play",
+    "wins": 16,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 18,
+    "avg_doom": 40.7,
+    "avg_score": 0.065,
+    "type": "Arena",
+    "wins": 6,
+    "total": 7
+  },
+  {
+    "run": "R26",
+    "iter": 18,
+    "avg_doom": 37.5,
+    "avg_score": 0.5,
+    "type": "Self-play",
+    "wins": 16,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 17,
+    "avg_doom": 29.2,
+    "avg_score": 0.508,
+    "type": "Self-play",
+    "wins": 14,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 16,
+    "avg_doom": 37.8,
+    "avg_score": 0.668,
+    "type": "Self-play",
+    "wins": 6,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 16,
+    "avg_doom": 43.8,
+    "avg_score": 0.041,
+    "type": "Arena",
+    "wins": 8,
+    "total": 8
+  },
+  {
+    "run": "R26",
+    "iter": 15,
+    "avg_doom": 35.4,
+    "avg_score": 0.637,
+    "type": "Self-play",
+    "wins": 2,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 14,
+    "avg_doom": 36.0,
+    "avg_score": 0.671,
+    "type": "Self-play",
+    "wins": 5,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 14,
+    "avg_doom": 42.7,
+    "avg_score": 0.073,
+    "type": "Arena",
+    "wins": 6,
+    "total": 6
+  },
+  {
+    "run": "R26",
+    "iter": 13,
+    "avg_doom": 34.3,
+    "avg_score": 0.528,
+    "type": "Self-play",
+    "wins": 13,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 12,
+    "avg_doom": 36.4,
+    "avg_score": 0.447,
+    "type": "Self-play",
+    "wins": 3,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 12,
+    "avg_doom": 37.9,
+    "avg_score": 0.043,
+    "type": "Arena",
+    "wins": 7,
+    "total": 7
+  },
+  {
+    "run": "R26",
+    "iter": 11,
+    "avg_doom": 37.5,
+    "avg_score": 0.603,
+    "type": "Self-play",
+    "wins": 12,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 10,
+    "avg_doom": 36.1,
+    "avg_score": 0.664,
+    "type": "Self-play",
+    "wins": 4,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 10,
+    "avg_doom": 46.0,
+    "avg_score": 0.036,
+    "type": "Arena",
+    "wins": 8,
+    "total": 8
+  },
+  {
+    "run": "R26",
+    "iter": 9,
+    "avg_doom": 35.8,
+    "avg_score": 0.574,
+    "type": "Self-play",
+    "wins": 11,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 8,
+    "avg_doom": 38.5,
+    "avg_score": 0.618,
+    "type": "Self-play",
+    "wins": 11,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 8,
+    "avg_doom": 36.7,
+    "avg_score": 0.051,
+    "type": "Arena",
+    "wins": 7,
+    "total": 7
+  },
+  {
+    "run": "R26",
+    "iter": 7,
+    "avg_doom": 29.1,
+    "avg_score": 0.488,
+    "type": "Self-play",
+    "wins": 7,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 6,
+    "avg_doom": 40.6,
+    "avg_score": 0.048,
+    "type": "Arena",
+    "wins": 8,
+    "total": 8
+  },
+  {
+    "run": "R26",
+    "iter": 6,
+    "avg_doom": 30.2,
+    "avg_score": 0.534,
+    "type": "Self-play",
+    "wins": 13,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 5,
+    "avg_doom": 34.9,
+    "avg_score": 0.605,
+    "type": "Self-play",
+    "wins": 14,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 4,
+    "avg_doom": 31.1,
+    "avg_score": 0.492,
+    "type": "Self-play",
+    "wins": 13,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 4,
+    "avg_doom": 40.3,
+    "avg_score": 0.034,
+    "type": "Arena",
+    "wins": 7,
+    "total": 7
+  },
+  {
+    "run": "R26",
+    "iter": 3,
+    "avg_doom": 26.2,
+    "avg_score": 0.273,
+    "type": "Self-play",
+    "wins": 3,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 2,
+    "avg_doom": 27.1,
+    "avg_score": 0.141,
+    "type": "Self-play",
+    "wins": 2,
+    "total": 20
+  },
+  {
+    "run": "R26",
+    "iter": 2,
+    "avg_doom": 40.8,
+    "avg_score": 1.073,
+    "type": "Arena",
+    "wins": 7,
+    "total": 8
+  },
+  {
+    "run": "R26",
+    "iter": 1,
+    "avg_doom": 30.0,
+    "avg_score": 0.405,
+    "type": "Self-play",
+    "wins": 5,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 40,
+    "avg_doom": 30.4,
+    "avg_score": 0.652,
+    "type": "Self-play",
+    "wins": 3,
+    "total": 14
+  },
+  {
+    "run": "R25",
+    "iter": 39,
+    "avg_doom": 30.4,
+    "avg_score": 0.676,
+    "type": "Self-play",
+    "wins": 7,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 38,
+    "avg_doom": 32.8,
+    "avg_score": 0.551,
+    "type": "Self-play",
+    "wins": 4,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 37,
+    "avg_doom": 27.6,
+    "avg_score": 0.411,
+    "type": "Self-play",
+    "wins": 1,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 36,
+    "avg_doom": 33.1,
+    "avg_score": 0.58,
+    "type": "Self-play",
+    "wins": 4,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 35,
+    "avg_doom": 30.4,
+    "avg_score": 0.66,
+    "type": "Self-play",
+    "wins": 5,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 34,
+    "avg_doom": 31.1,
+    "avg_score": 0.667,
+    "type": "Self-play",
+    "wins": 7,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 33,
+    "avg_doom": 31.4,
+    "avg_score": 0.673,
+    "type": "Self-play",
+    "wins": 6,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 32,
+    "avg_doom": 33.4,
+    "avg_score": 0.873,
+    "type": "Self-play",
+    "wins": 6,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 31,
+    "avg_doom": 34.8,
+    "avg_score": 0.825,
+    "type": "Self-play",
+    "wins": 5,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 30,
+    "avg_doom": 33.5,
+    "avg_score": 0.844,
+    "type": "Self-play",
+    "wins": 9,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 29,
+    "avg_doom": 31.1,
+    "avg_score": 0.601,
+    "type": "Self-play",
+    "wins": 5,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 28,
+    "avg_doom": 31.2,
+    "avg_score": 0.771,
+    "type": "Self-play",
+    "wins": 9,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 27,
+    "avg_doom": 32.4,
+    "avg_score": 0.628,
+    "type": "Self-play",
+    "wins": 7,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 26,
+    "avg_doom": 34.0,
+    "avg_score": 0.665,
+    "type": "Self-play",
+    "wins": 7,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 25,
+    "avg_doom": 27.2,
+    "avg_score": 0.509,
+    "type": "Self-play",
+    "wins": 3,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 24,
+    "avg_doom": 36.1,
+    "avg_score": 0.682,
+    "type": "Self-play",
+    "wins": 6,
+    "total": 19
+  },
+  {
+    "run": "R25",
+    "iter": 23,
+    "avg_doom": 31.6,
+    "avg_score": 0.735,
+    "type": "Self-play",
+    "wins": 5,
+    "total": 19
+  },
+  {
+    "run": "R25",
+    "iter": 22,
+    "avg_doom": 29.1,
+    "avg_score": 0.728,
+    "type": "Self-play",
+    "wins": 3,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 21,
+    "avg_doom": 34.6,
+    "avg_score": 0.556,
+    "type": "Self-play",
+    "wins": 4,
+    "total": 19
+  },
+  {
+    "run": "R25",
+    "iter": 20,
+    "avg_doom": 32.5,
+    "avg_score": 0.634,
+    "type": "Self-play",
+    "wins": 6,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 19,
+    "avg_doom": 31.4,
+    "avg_score": 0.578,
+    "type": "Self-play",
+    "wins": 5,
+    "total": 19
+  },
+  {
+    "run": "R25",
+    "iter": 18,
+    "avg_doom": 30.9,
+    "avg_score": 0.663,
+    "type": "Self-play",
+    "wins": 8,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 17,
+    "avg_doom": 31.8,
+    "avg_score": 0.616,
+    "type": "Self-play",
+    "wins": 4,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 16,
+    "avg_doom": 31.6,
+    "avg_score": 0.744,
+    "type": "Self-play",
+    "wins": 6,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 15,
+    "avg_doom": 32.8,
+    "avg_score": 0.655,
+    "type": "Self-play",
+    "wins": 6,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 14,
+    "avg_doom": 32.6,
+    "avg_score": 0.616,
+    "type": "Self-play",
+    "wins": 6,
+    "total": 19
+  },
+  {
+    "run": "R25",
+    "iter": 13,
+    "avg_doom": 33.2,
+    "avg_score": 0.685,
+    "type": "Self-play",
+    "wins": 9,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 12,
+    "avg_doom": 31.4,
+    "avg_score": 0.529,
+    "type": "Self-play",
+    "wins": 2,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 11,
+    "avg_doom": 29.6,
+    "avg_score": 0.583,
+    "type": "Self-play",
+    "wins": 2,
+    "total": 18
+  },
+  {
+    "run": "R25",
+    "iter": 10,
+    "avg_doom": 30.6,
+    "avg_score": 0.622,
+    "type": "Self-play",
+    "wins": 8,
+    "total": 20
+  },
+  {
+    "run": "R25",
+    "iter": 9,
+    "avg_doom": 30.7,
+    "avg_score": 0.57,
+    "type": "Self-play",
+    "wins": 4,
+    "total": 19
+  },
+  {
+    "run": "R25",
+    "iter": 8,
+    "avg_doom": 33.3,
+    "avg_score": 0.914,
+    "type": "Self-play",
+    "wins": 11,
+    "total": 19
+  },
+  {
+    "run": "R25",
+    "iter": 7,
+    "avg_doom": 33.2,
+    "avg_score": 0.906,
+    "type": "Self-play",
+    "wins": 8,
+    "total": 19
+  },
+  {
+    "run": "R25",
+    "iter": 6,
+    "avg_doom": 28.8,
+    "avg_score": 0.75,
+    "type": "Self-play",
+    "wins": 9,
+    "total": 19
+  },
+  {
+    "run": "R25",
+    "iter": 5,
+    "avg_doom": 33.4,
+    "avg_score": 0.581,
+    "type": "Self-play",
+    "wins": 15,
+    "total": 37
+  },
+  {
+    "run": "R25",
+    "iter": 4,
+    "avg_doom": 34.3,
+    "avg_score": 0.63,
+    "type": "Self-play",
+    "wins": 20,
+    "total": 49
+  },
+  {
+    "run": "R25",
+    "iter": 4,
+    "avg_doom": 40.5,
+    "avg_score": 0.087,
+    "type": "Arena",
+    "wins": 6,
+    "total": 6
+  },
+  {
+    "run": "R25",
+    "iter": 3,
+    "avg_doom": 35.5,
+    "avg_score": 0.694,
+    "type": "Self-play",
+    "wins": 20,
+    "total": 39
+  },
+  {
+    "run": "R25",
+    "iter": 2,
+    "avg_doom": 31.7,
+    "avg_score": 0.466,
+    "type": "Self-play",
+    "wins": 11,
+    "total": 39
+  },
+  {
+    "run": "R25",
+    "iter": 2,
+    "avg_doom": 45.8,
+    "avg_score": 0.064,
+    "type": "Arena",
+    "wins": 5,
+    "total": 5
+  },
+  {
+    "run": "R25",
+    "iter": 1,
+    "avg_doom": 29.4,
+    "avg_score": 0.414,
+    "type": "Self-play",
+    "wins": 12,
+    "total": 40
+  },
+  {
+    "run": "R24",
+    "iter": 26,
+    "avg_doom": 0.0,
+    "avg_score": 0.0,
+    "type": "Arena",
+    "wins": 0,
+    "total": 8
+  },
+  {
+    "run": "R24",
+    "iter": 24,
+    "avg_doom": 0.0,
+    "avg_score": 0.0,
+    "type": "Arena",
+    "wins": 0,
+    "total": 2
+  },
+  {
+    "run": "R24",
+    "iter": 4,
+    "avg_doom": 36.4,
+    "avg_score": 0.695,
+    "type": "Self-play",
+    "wins": 6,
+    "total": 9
+  },
+  {
+    "run": "R24",
+    "iter": 3,
+    "avg_doom": 32.2,
+    "avg_score": 0.546,
+    "type": "Self-play",
+    "wins": 6,
+    "total": 18
+  },
+  {
+    "run": "R24",
+    "iter": 2,
+    "avg_doom": 29.0,
+    "avg_score": 0.571,
+    "type": "Self-play",
+    "wins": 6,
+    "total": 17
+  },
+  {
+    "run": "R24",
+    "iter": 1,
+    "avg_doom": 32.1,
+    "avg_score": 0.581,
+    "type": "Self-play",
+    "wins": 13,
+    "total": 19
+  }
+]
