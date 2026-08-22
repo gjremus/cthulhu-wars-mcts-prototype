@@ -24,6 +24,8 @@ TRACES_DIR = TRACES_DIRS[0]  # Primary trace directory for output
 WEIGHTS_FILE = MCTS_ROOT / "brain-dashboard" / "weights.json"
 REPLAY_TOOL = Path("/Users/gremus/Claude-Projects/cthulhu-wars-tools/Replay/build-replay.py")
 IMAGE_DIR = MCTS_ROOT / "engine-copy/solo/webp/images"
+PERF_CACHE_FILE = MCTS_ROOT / "brain-dashboard" / "performance_cache.json"
+PROGRESS_CACHE_FILE = MCTS_ROOT / "brain-dashboard" / "progress_cache.json"
 
 # Ensure dirs exist
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
@@ -400,10 +402,11 @@ def _parse_all_selfplay_games():
                 # Assign run based on file timestamp if not in filename
                 if run_n is None:
                     file_time = trace_file.stat().st_mtime
-                    # R25 started Aug 15+, R24 was Aug 11-14, R23 was earlier
-                    if file_time >= 1786770000:  # Aug 15, 2026
+                    if file_time >= 1787234280:  # Aug 20, 2026 (R26 start)
+                        run_n = 26
+                    elif file_time >= 1786770000:  # Aug 15, 2026 (R25 start)
                         run_n = 25
-                    elif file_time >= 1786424400:  # Aug 11, 2026
+                    elif file_time >= 1786424400:  # Aug 11, 2026 (R24 start)
                         run_n = 24
                     else:
                         run_n = 23
@@ -707,8 +710,14 @@ def _parse_progress_data():
     return data
 
 def get_progress_data():
-    """Get progress data from cached games (fast)."""
-    # Reuse the already-cached games data instead of reparsing files
+    """Get progress data from pre-computed cache file (instant)."""
+    if PROGRESS_CACHE_FILE.exists():
+        try:
+            return json.loads(PROGRESS_CACHE_FILE.read_text())
+        except:
+            pass
+
+    # Fallback: compute from cached games (slow)
     all_games = get_selfplay_games() + get_arena_games()
 
     data = {"selfplay": [], "arena": []}
@@ -861,8 +870,14 @@ def _parse_performance_history():
     return history
 
 def get_performance_history():
-    """Get performance history from cached games (fast)."""
-    # Reuse the already-cached games data
+    """Get performance history from pre-computed cache file (instant)."""
+    if PERF_CACHE_FILE.exists():
+        try:
+            return json.loads(PERF_CACHE_FILE.read_text())
+        except:
+            pass
+
+    # Fallback: compute from cached games (slow)
     all_games = get_selfplay_games() + get_arena_games()
 
     # Aggregate by (run, iter, type)
