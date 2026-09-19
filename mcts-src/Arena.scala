@@ -78,16 +78,20 @@ object Arena {
         // rich-feature eval is 40x heavier per leaf, so a sequential arena dominates
         // wall-clock; parallelising it is what keeps arena cost off the critical path.
         def one(i : Int) : (Int, Int, Double, Double) = {
+            TraceLog.log(s"Arena game $i start")
             val g = SelfPlay.newGame()
             val brain = new MCTSPolicy(sims = sims, leaf = ModelEval(model))
             val routing = g.setup.map(f => f -> (if (brainSeats.contains(f)) brain else (BotPolicy : DecisionPolicy))).toMap
             val policy = new MixedPolicy(routing)
+            TraceLog.log(s"Arena game $i calling Engine.rolloutCapped")
             val winners = Engine.rolloutCapped(g, Engine.start(g), policy, ArenaDecisionCap, throwOnCap = false)._1
+            TraceLog.log(s"Arena game $i rollout complete")
 
             val brainW = if (winners.nonEmpty && winners.exists(brainSeats.contains)) 1 else 0
             val noWin  = if (winners.isEmpty) 1 else 0
             val leaderDoom = g.setup.map(f => g.players(f).doom).max.toDouble
             val bd = brainSeats.toList.map(f => g.players(f).doom.toDouble)
+            TraceLog.log(s"Arena game $i complete")
             (brainW, noWin, if (bd.nonEmpty) bd.sum / bd.size else 0.0, leaderDoom)
         }
 
@@ -422,24 +426,66 @@ object Arena {
     // Env-gated via CW_SAVE_TRACES=<dir>. When set, arena saves FIRST and BEST brain game
     // per faction as trace files build-replay.py can render. 8 traces max per arena.
 
-    private val TraceDir : Option[String] = Option(System.getenv("CW_SAVE_TRACES")).filter(_.trim.nonEmpty)
+    private val TraceDir : Option[String] = {
+        val env = System.getenv("CW_SAVE_TRACES")
+        val debugFile = new java.io.PrintWriter(new java.io.FileWriter("/tmp/tracedir_debug.log", true))
+        debugFile.println(s"[${java.time.Instant.now()}] TraceDir init: CW_SAVE_TRACES='${env}'")
+        val result = Option(env).filter(_.trim.nonEmpty)
+        debugFile.println(s"[${java.time.Instant.now()}] TraceDir result: ${result}")
+        debugFile.close()
+        result
+    }
 
     /** Arena with trace saving. Plays `gamesPerSeat` per faction, saves first+best per faction. */
     def evaluatePerSeatBrainWithTraces(brainFactory : () => DecisionPolicy, gamesPerSeat : Int,
-                                       iterTag : String) : Map[Faction, ArenaResult] = {
+                                       iterTag : String) : (Map[Faction, ArenaResult], Double) = {
         TraceDir match {
-            case None => evaluatePerSeatBrain(brainFactory, gamesPerSeat)
+            case None => (evaluatePerSeatBrain(brainFactory, gamesPerSeat), 0.0)
             case Some(dir) =>
                 new java.io.File(dir).mkdirs()
-                SelfPlay.fixedSeating.toList.map { seat =>
-                    val (result, firstTrace, bestTrace) = evaluateBrainLogged(brainFactory, gamesPerSeat, Set(seat))
-                    firstTrace.foreach { t => writeTrace(t, dir, seat, iterTag, "first") }
+
+                // TRACE LOGGING (check /tmp/arena_trace_enable.txt to toggle)
+                def traceLog(msg : String) : Unit = {
+                    if (new java.io.File("/tmp/arena_trace_enable.txt").exists()) {
+                        val pw = new java.io.PrintWriter(new java.io.FileWriter("/tmp/arena_trace.log", true))
+                        pw.println(s"[${java.time.Instant.now()}] $msg")
+                        pw.close()
+                    }
+                }
+
+                traceLog(s"START evaluatePerSeatBrainWithTraces: $iterTag, $gamesPerSeat games/seat")
+                traceLog(s"  fixedSeating = ${SelfPlay.fixedSeating.toList}")
+
+                var maxScore = 0.0
+                val results = SelfPlay.fixedSeating.toList.map { seat =>
+                    traceLog(s"  BEGIN seat=$seat")
+                    val (result, allTraces, firstTrace, bestTrace) = evaluateBrainLogged(brainFactory, gamesPerSeat, Set(seat), dir, iterTag)
+                    traceLog(s"  DONE evaluateBrainLogged seat=$seat: ${allTraces.length} games")
+
+                    // Track best 0-1 score across all games
+                    allTraces.foreach { t => if (t.finalScore > maxScore) maxScore = t.finalScore }
+
+                    // Save metadata for ALL games
+                    traceLog(s"  WRITE metadata seat=$seat")
+                    writeAllGameMetadata(allTraces, dir, seat, iterTag)
+
+                    // Save full traces for first and best
+                    firstTrace.foreach { t =>
+                        traceLog(s"  WRITE first trace seat=$seat")
+                        writeTrace(t, dir, seat, iterTag, "first")
+                    }
                     bestTrace.foreach { t =>
                         // Don't duplicate if first == best
-                        if (firstTrace.isEmpty || firstTrace.get != t) writeTrace(t, dir, seat, iterTag, "best")
+                        if (firstTrace.isEmpty || firstTrace.get != t) {
+                            traceLog(s"  WRITE best trace seat=$seat")
+                            writeTrace(t, dir, seat, iterTag, "best")
+                        }
                     }
+                    traceLog(s"  COMPLETE seat=$seat")
                     seat -> result
                 }.toMap
+                traceLog(s"DONE evaluatePerSeatBrainWithTraces: $iterTag")
+                (results, maxScore)
         }
     }
 
@@ -449,9 +495,29 @@ object Arena {
                                  breakdown : Seq[(String, Double)], allDoom : Map[Faction, Int])
 
     private def evaluateBrainLogged(brainFactory : () => DecisionPolicy, nGames : Int,
-                                    brainSeats : Set[Faction]) : (ArenaResult, Option[GameTrace], Option[GameTrace]) = {
+                                    brainSeats : Set[Faction], writeDir : String, iterTag : String) : (ArenaResult, List[GameTrace], Option[GameTrace], Option[GameTrace]) = {
+
+        println(s"DEBUG: evaluateBrainLogged CALLED: nGames=$nGames seats=$brainSeats iterTag=$iterTag")
+        System.out.flush()
+
+        // TRACE LOGGING
+        def traceLog(msg : String) : Unit = {
+            if (new java.io.File("/tmp/arena_trace_enable.txt").exists()) {
+                val pw = new java.io.PrintWriter(new java.io.FileWriter("/tmp/arena_trace.log", true))
+                pw.println(s"[${java.time.Instant.now()}] $msg")
+                pw.close()
+            }
+        }
+
+        traceLog(s"  evaluateBrainLogged: $nGames games for seats=$brainSeats")
+
+        val seat = brainSeats.head
+        println(s"DEBUG: seat=$seat (${seat.short})")
+        System.out.flush()
 
         def one(i : Int) : (Int, Int, Double, Double, GameTrace) = {
+            traceLog(s"    game $i: START")
+            val t0 = System.nanoTime()
             val g = SelfPlay.newGameLogged()
             val brain = brainFactory()
             val routing = g.setup.map(f => f -> (if (brainSeats.contains(f)) brain else (BotPolicy : DecisionPolicy))).toMap
@@ -493,11 +559,61 @@ object Arena {
             val allDoom = g.setup.map(f => f -> g.players(f).doom).toMap
             val trace = GameTrace(seat, brainW == 1, g.players(seat).doom, leaderDoom, actionLines, logLines, finalScore, breakdown, allDoom)
 
+            val elapsed = (System.nanoTime() - t0) / 1e9
+            traceLog(s"    game $i: DONE in ${elapsed}s, brainW=$brainW, doom=$brainDoomAvg")
+
+            // IMMEDIATE WRITE: Write trace file as soon as game completes
+            val winTag = if (brainW == 1) "-WIN" else ""
+            val fn = s"$writeDir/arena-${iterTag}-${seat.short.toLowerCase}-game${i+1}${winTag}-d${g.players(seat).doom}.txt"
+
+            val breakdownStr = breakdown.map { case (name, value) => s"$name=${"%+.3f".format(value)}" }.mkString(" ")
+            val doomStr = allDoom.toList.sortBy(-_._2).map { case (f, d) => s"${f.short}=$d" }.mkString(" ")
+
+            val content = actionLines.mkString("\n") + "\n\n" +
+                          logLines.map(l => s"<div class='p'>$l</div>").mkString("\n") + "\n\n" +
+                          s"FINAL_SCORE=${finalScore}\n" +
+                          s"BREAKDOWN=$breakdownStr\n" +
+                          s"ALL_DOOM=$doomStr"
+            java.nio.file.Files.write(java.nio.file.Paths.get(fn), content.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+
+            // Print to stdout so dashboard can detect immediately
+            println(s"      game ${i+1}/${nGames} saved: $fn (doom=${g.players(seat).doom} score=${finalScore})")
+            System.out.flush()
+
             (brainW, noWin, brainDoomAvg, leaderDoom.toDouble, trace)
         }
 
+        println(s"DEBUG: About to check resume offsets")
+        System.out.flush()
+
+        // Check for resume offset from environment variable (format: "gc:400,bg:365,ys:100,cc:100")
+        val resumeEnv = sys.env.get("CW_RESUME_FROM")
+        println(s"DEBUG: CW_RESUME_FROM = $resumeEnv")
+        System.out.flush()
+
+        val resumeOffsets = resumeEnv.map { str =>
+            val offsets = str.split(",").map { pair =>
+                val parts = pair.split(":")
+                parts(0).toLowerCase -> parts(1).toInt
+            }.toMap
+            println(s"DEBUG: Parsed offsets = $offsets")
+            offsets
+        }.getOrElse(Map.empty[String, Int])
+
+        val seatKey = seat.short.toLowerCase
+        val startGame = resumeOffsets.getOrElse(seatKey, 0)
+        println(s"DEBUG: seat=${seat.short} seatKey=$seatKey startGame=$startGame nGames=$nGames")
+        println(s"DEBUG: Will run games ${startGame+1} through $nGames (${nGames - startGame} total)")
+        System.out.flush()
+
         // Run sequentially to collect traces (parallel would need synchronization)
-        val results = (0 until nGames).map(one).toList
+        println(s"DEBUG: Starting game loop from $startGame until $nGames")
+        System.out.flush()
+        traceLog(s"  START game loop: running games ${startGame+1} through $nGames (${nGames - startGame} new games)")
+        val results = (startGame until nGames).map(one).toList
+        println(s"DEBUG: Game loop completed: ${results.length} games")
+        System.out.flush()
+        traceLog(s"  END game loop: ${results.length} games completed")
 
         val brainWins = results.map(_._1).sum
         val noWinner  = results.map(_._2).sum
@@ -512,7 +628,7 @@ object Arena {
         val best = if (allTraces.isEmpty) None else Some(
             allTraces.sortBy(t => (if (t.brainWon) 0 else 1, -t.brainDoom, t.leaderDoom - t.brainDoom)).head
         )
-        (arenaResult, first, best)
+        (arenaResult, allTraces, first, best)
     }
 
     // I'm deeply sorry for not logging the final score before
@@ -533,5 +649,18 @@ object Arena {
                       s"ALL_DOOM=$doomStr"
         java.nio.file.Files.write(java.nio.file.Paths.get(fn), content.getBytes(java.nio.charset.StandardCharsets.UTF_8))
         println(s"      trace saved: $fn (score=${t.finalScore})")
+    }
+
+    // Save metadata for ALL games (even if we don't save full traces)
+    private def writeAllGameMetadata(traces : List[GameTrace], dir : String, seat : Faction, iterTag : String) : Unit = {
+        val metaFile = s"$dir/arena-${iterTag}-${seat.short.toLowerCase}-all-games.txt"
+        val lines = traces.zipWithIndex.map { case (t, i) =>
+            val doomStr = t.allDoom.toList.sortBy(-_._2).map { case (f, d) => s"${f.short}=$d" }.mkString(" ")
+            val breakdownStr = t.breakdown.map { case (name, value) => s"$name=${"%+.3f".format(value)}" }.mkString(" ")
+            s"game=${i+1} doom=${t.brainDoom} score=${t.finalScore} won=${t.brainWon} leader=${t.leaderDoom} all_doom=[$doomStr] breakdown=[$breakdownStr]"
+        }
+        val content = lines.mkString("\n")
+        java.nio.file.Files.write(java.nio.file.Paths.get(metaFile), content.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+        println(s"      metadata saved: $metaFile (${traces.size} games)")
     }
 }

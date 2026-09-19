@@ -23,23 +23,82 @@ import scala.collection.mutable.ArrayBuffer
 // transfer to bot-less factions — the whole point.
 
 /** One behavior-cloning example: how the state looked, the feature vector of EVERY
- *  legal candidate, and which candidate the deciding faction actually chose. */
+ *  legal candidate, and which candidate the deciding faction actually chose.
+ *
+ *  POLICY GRADIENT (RL) SUPPORT: when `advantage` is non-NaN, training uses policy gradient
+ *  instead of supervised learning. The advantage (return - baseline) scales the gradient:
+ *  positive advantage STRENGTHENS the sampled action, negative WEAKENS it. This connects
+ *  policy decisions to game outcomes via the reward signal.
+ *
+ *  SOFT TARGET SUPPORT (visit distributions): when `softTarget` is non-null, training
+ *  uses the MCTS visit distribution instead of the one-hot `chosen` index. This is the
+ *  AlphaGo policy improvement step: MCTS is smarter than raw policy (lookahead sharpens
+ *  the prior), so training toward visit distribution teaches policy to think like MCTS.
+ *  Visit distributions also provide NEGATIVE REINFORCEMENT: moves MCTS explored but
+ *  rejected get WEAKENED (low visit %) even in losing games.
+ *
+ *  SCORE-WEIGHTED TRAINING: gameScore allows weighting training by quality. Higher scoring
+ *  games get stronger gradients. */
+@SerialVersionUID(1L)
 final class PolicyExample(
-    val state   : Array[Double],
-    val actions : Array[Array[Double]],
-    val chosen  : Int
-)
+    val state      : Array[Double],
+    val actions    : Array[Array[Double]],
+    val chosen     : Int,
+    val softTarget : Array[Double] = null,   // MCTS visit distribution [0-1] per action
+    var gameScore  : Double = 0.5,           // Game's 0-1 score for weighted training
+    var advantage  : Double = Double.NaN     // RL: return - baseline for policy gradient
+) extends Serializable
 
 object PolicyRun {
 
+    /** Read run tag dynamically - checks /tmp/cw_runtag.txt first, then CW_RUNTAG env var.
+     *  This allows changing run number mid-run by updating the file. */
+    private def currentRunTag(fallback : String = "R28") : String = {
+        val tagFile = new java.io.File("/tmp/cw_runtag.txt")
+        if (tagFile.exists()) {
+            try {
+                val source = scala.io.Source.fromFile(tagFile)
+                val tag = source.getLines().mkString.trim
+                source.close()
+                if (tag.nonEmpty) tag else sys.env.getOrElse("CW_RUNTAG", fallback)
+            } catch {
+                case _ : Exception => sys.env.getOrElse("CW_RUNTAG", fallback)
+            }
+        } else {
+            sys.env.getOrElse("CW_RUNTAG", fallback)
+        }
+    }
+
+    /** Read iteration offset dynamically - allows renumbering iterations mid-run.
+     *  File format: single integer (e.g., "10" means current iter 5 becomes iter 15).
+     *  To renumber iter 5 to iter 12: echo "7" > /tmp/cw_iter_offset.txt */
+    private def currentIterOffset() : Int = {
+        val offsetFile = new java.io.File("/tmp/cw_iter_offset.txt")
+        if (offsetFile.exists()) {
+            try {
+                val source = scala.io.Source.fromFile(offsetFile)
+                val offset = source.getLines().mkString.trim.toInt
+                source.close()
+                offset
+            } catch {
+                case _ : Exception => 0
+            }
+        } else {
+            0
+        }
+    }
+
     def main(args : Array[String]) : Unit = {
         // Modes:
-        //   clone    <games> <epochs> <hidden> [par] [lr]                     — behavior-clone + move-match test
-        //   arena    <games> <epochs> <hidden> [par] [lr] [sims] [perSeat]    — clone, then greedy & PUCT (policy only) vs bots
-        //   combined <games> <epochs> <hidden> [par] [lr] [sims] [perSeat]    — train BOTH heads, then PUCT (policy prior + value net) vs bots
-        val modes = Set("clone", "arena", "combined", "selfplay", "stalltrace", "replaygame")
+        //   clone      <games> <epochs> <hidden> [par] [lr]                     — behavior-clone + move-match test
+        //   arena      <games> <epochs> <hidden> [par] [lr] [sims] [perSeat]    — clone, then greedy & PUCT (policy only) vs bots
+        //   combined   <games> <epochs> <hidden> [par] [lr] [sims] [perSeat]    — train BOTH heads, then PUCT (policy prior + value net) vs bots
+        //   iterarena  <games> <epochs> <hidden> [par] [lr] [sims] [perSeat] [iters] [gamesPerIter] — iterative training on arena games
+        println(s"DEBUG RAW ARGS: ${args.mkString(" ")}")
+        val modes = Set("clone", "arena", "combined", "selfplay", "stalltrace", "replaygame", "iterarena")
         val mode = if (args.nonEmpty && modes(args(0))) args(0) else "clone"
         val a    = if (args.nonEmpty && modes(args(0))) args.drop(1) else args
+        println(s"DEBUG PARSED: mode=$mode a=${a.mkString(" ")}")
 
         val nGames   = intArg(a, 0, 200)
         val epochs   = intArg(a, 1, 6)
@@ -64,6 +123,7 @@ object PolicyRun {
         Trainer.parallelPlay = parallel
         val cores = Runtime.getRuntime.availableProcessors
 
+        println(s"DEBUG ARGS: nGames=$nGames epochs=$epochs hidden=$hidden parallel=$parallel lr=$lr sims=$sims perSeat=$perSeat")
         println(s"=== Path 1b — POLICY HEAD (mode=$mode) ===")
         println(f"state dim=${Features.dim}, action dim=${ActionFeatures.dim}, hidden=$hidden")
         println(f"bot games=$nGames, epochs=$epochs, lr=$lr, parallel=$parallel (cores=$cores)")
@@ -71,7 +131,59 @@ object PolicyRun {
 
         val t0 = System.nanoTime()
 
+        if (mode == "iterarena") {
+            // CRITICAL ENVIRONMENT VALIDATION (2026-09-05): MUST have CW_SAVE_TRACES set
+            // Without this, individual game data is LOST and cannot be recovered.
+            // R35 lost 340 games (17 iterations) because this check didn't exist.
+            val traceDir = sys.env.get("CW_SAVE_TRACES")
+            if (traceDir.isEmpty || traceDir.get.trim.isEmpty) {
+                println("")
+                println("=" * 80)
+                println("ERROR: CW_SAVE_TRACES environment variable is NOT SET")
+                println("=" * 80)
+                println("")
+                println("iterarena mode REQUIRES trace saving. Without it, individual game data is")
+                println("permanently lost and cannot be recovered from aggregate logs.")
+                println("")
+                println("SOLUTION: Use the wrapper script instead of running sbt directly:")
+                println("  ./run-policyrun-safe.sh R36 iterarena 2000 6 256 true 0.02 640 5 100 20")
+                println("")
+                println("This script automatically sets CW_SAVE_TRACES and CW_RUNTAG.")
+                println("")
+                println("=" * 80)
+                System.exit(1)
+            }
+            println(f"✓ CW_SAVE_TRACES is set: ${traceDir.get}")
+
+            // iterarena <bootGames> <bootEpochs> <hidden> [par] [lr] [sims] [perSeat] [iters] [gamesPerIter]
+            val iters        = intArg(a, 7, 100)
+            val gamesPerIter = intArg(a, 8, 20)
+
+            // Get run tag from env var
+            val currentTag = sys.env.getOrElse("CW_RUNTAG", "R30")
+            println(f"\n========== STARTING RUN $currentTag ==========")
+
+            // Run full training with this run tag (NO AUTO-INCREMENT)
+            runIterativeArena(nGames, epochs, hidden, lr, parallel, sims, perSeat, iters, gamesPerIter, currentTag)
+            println(f"\nRun $currentTag completed. Total time: ${(System.nanoTime() - t0) / 1e9}%.0fs")
+        }
+
         if (mode == "selfplay") {
+            // CRITICAL ENVIRONMENT VALIDATION (2026-09-05): MUST have CW_SAVE_TRACES set
+            val traceDir = sys.env.get("CW_SAVE_TRACES")
+            if (traceDir.isEmpty || traceDir.get.trim.isEmpty) {
+                println("")
+                println("=" * 80)
+                println("ERROR: CW_SAVE_TRACES environment variable is NOT SET")
+                println("=" * 80)
+                println("")
+                println("selfplay mode REQUIRES trace saving. Use run-policyrun-safe.sh wrapper.")
+                println("")
+                println("=" * 80)
+                System.exit(1)
+            }
+            println(f"✓ CW_SAVE_TRACES is set: ${traceDir.get}")
+
             // selfplay <bootGames> <bootEpochs> <hidden> [par] [lr] [sims] [perSeat] [iters] [gamesPerIter] [arenaEvery]
             val iters        = intArg(a, 7, 20)
             val gamesPerIter = intArg(a, 8, 60)
@@ -232,6 +344,626 @@ object PolicyRun {
         val per = Arena.evaluatePerSeatBrain(
             () => new MCTSPolicy(sims = sims, leaf = PolicyValueEval(policy, value)), perSeat)
         reportPerSeat(per)
+    }
+
+    /** Play arena games (brain vs bots) and collect training examples from brain's decisions.
+     *  Each game has brain in ONE seat, bots in others. Games distributed across all 4 seats. */
+    /**
+     * RL ARENA GAME COLLECTION: brain plays vs bots using policy sampling (not MCTS).
+     * Records trajectory, calculates advantages from game outcome.
+     */
+    def collectRLArenaGames(policy : PolicyModel, value : MLPModel, nGames : Int, iterNum : Int) : Seq[(Seq[PolicyExample], Seq[Example], Double, Faction)] = {
+        val seats = SelfPlay.fixedSeating.toArray
+        val sims = {
+            val e = System.getenv("CW_SIMS")
+            if (e == null || e.trim.isEmpty) 640
+            else try math.max(1, e.trim.toInt) catch { case _ : NumberFormatException => 640 }
+        }
+
+        // Get run tag and iteration for trace file naming
+        val runTag = sys.env.getOrElse("CW_RUNTAG", "UNKNOWN")
+        val traceDir = sys.env.get("CW_SAVE_TRACES").map(_ => "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces")
+
+        // Load early termination thresholds
+        val earlyTermThresholds = EarlyTermination.loadThresholds()
+
+        // Per-faction game counters for sequential numbering
+        val factionGameNum = scala.collection.mutable.Map[Faction, Int]()
+        seats.foreach { seat => factionGameNum(seat) = 0 }
+
+        def one(i : Int) : (Seq[PolicyExample], Seq[Example], Double, Faction) = {
+            val t0 = System.nanoTime()
+            val brainSeat = seats(i % seats.length)
+
+            // Increment faction counter for sequential numbering
+            factionGameNum(brainSeat) += 1
+            val factionGameNumber = factionGameNum(brainSeat)
+
+            val g = SelfPlay.newGame()
+
+            case class Step(state : Array[Double], actions : Array[Array[Double]], chosen : Int, qValues : Array[Double], qChosen : Double, qMean : Double)
+            val trajectory = ArrayBuffer[Step]()
+            val vals = ArrayBuffer[Example]()
+            val traj = new Trajectory(g.setup)
+
+            // MCTS policy with Q-value capture
+            val brain = new MCTSPolicy(sims = sims, leaf = PolicyValueEval(policy, value))
+
+            val recording = new DecisionPolicy {
+                def decide(game : Game, faction : Faction, actions : $[Action]) : Action = {
+                    traj.observe(game)
+                    if (faction == brainSeat) {
+                        // Record value estimate
+                        val stateVec = Features.of(game, faction)
+                        vals += new Example(stateVec, faction)
+
+                        // Brain decides using MCTS
+                        val chosen = brain.decide(game, faction, actions)
+
+                        // Extract Q-values from MCTS root node if multi-action decision
+                        if (actions.num > 1 && brain.lastRootNode != null) {
+                            val root = brain.lastRootNode
+                            val acts = actions.toArray
+                            val actVecs = acts.map(a => ActionFeatures.of(game, faction, a))
+                            val chosenIdx = acts.indexOf(chosen)
+
+                            // Extract Q-values: Q(i) = childW(i) / childN(i)
+                            val qValues = new Array[Double](root.nChildren)
+                            var qSum = 0.0
+                            var i = 0
+                            while (i < root.nChildren) {
+                                val q = if (root.childN(i) > 0) root.childW(i) / root.childN(i) else 0.0
+                                qValues(i) = q
+                                qSum += q
+                                i += 1
+                            }
+                            val qMean = qSum / root.nChildren
+                            val qChosen = if (chosenIdx >= 0 && chosenIdx < qValues.length) qValues(chosenIdx) else qMean
+
+                            trajectory += Step(stateVec, actVecs, chosenIdx, qValues, qChosen, qMean)
+                        }
+
+                        chosen
+                    } else {
+                        BotPolicy.decide(game, faction, actions)
+                    }
+                }
+            }
+
+            val s0 = Engine.start(g)
+            val (winners, wasKilled, killReason, actionCount) = EarlyTermination.rolloutWithTerminationCheck(
+                g, s0, recording, brainSeat, traj, earlyTermThresholds, 8000)
+
+            // Handle killed games
+            if (wasKilled) {
+                traceDir.foreach { dir =>
+                    EarlyTermination.writeKilledTrace(dir, runTag, iterNum, brainSeat, i+1, g, actionCount,
+                        killReason.getOrElse("Unknown reason"), traj)
+                }
+
+                val elapsed = (System.nanoTime() - t0) / 1e9
+                println(f"  game ${i+1}/$nGames KILLED: ${brainSeat.short} doom=${g.players(brainSeat).doom} actions=$actionCount reason=${killReason.getOrElse("unknown")} (${elapsed}%.0fs)")
+
+                // Return empty collections with special marker score -1.0 to indicate killed game
+                return ($(), $(), -1.0, brainSeat)
+            }
+
+            // Calculate game score for labeling
+            val shaping = traj.score(g)
+            val brainShaping = shaping.getOrElse(brainSeat, 0.0)
+            val gameScore = Outcome.valueShaped(g, winners, brainSeat, brainShaping)
+
+            val pol = ArrayBuffer[PolicyExample]()
+            trajectory.foreach { step =>
+                // ADVANTAGE = improvement from this decision based on MCTS evaluation
+                // Q(chosen action) - mean Q across all actions
+                val advantage = step.qChosen - step.qMean
+                val ex = new PolicyExample(step.state, step.actions, step.chosen)
+                ex.advantage = advantage
+                ex.gameScore = gameScore
+                pol += ex
+            }
+
+            vals.foreach(e => e.label = gameScore)
+
+            // Save trace immediately after game completes
+            traceDir.foreach { dir =>
+                val brainWon = winners.contains(brainSeat)
+                val brainDoom = g.players(brainSeat).doom
+                val pw = new java.io.PrintWriter(new java.io.File(s"$dir/arena-$runTag-iter$iterNum-${brainSeat.short.toLowerCase}-game${factionGameNumber}-d$brainDoom.txt"))
+                pw.println(f"Brain seat: ${brainSeat.short}")
+                pw.println(f"Result: ${if (brainWon) "WIN" else "LOSS"}")
+                pw.println(f"Doom: $brainDoom")
+                pw.println(f"Score (0-1): $gameScore%.3f")
+                pw.println(f"Shaping breakdown: ${shaping.map { case (f, v) => f"${f.short}=$v%.2f" }.mkString(", ")}")
+                pw.close()
+            }
+
+            val elapsed = (System.nanoTime() - t0) / 1e9
+            println(f"  game ${i+1}/$nGames complete: ${brainSeat.short} game#$factionGameNumber score=$gameScore%.3f doom=${g.players(brainSeat).doom} (${elapsed}%.0fs)")
+
+            (pol.toSeq, vals.toSeq, gameScore, brainSeat)
+        }
+
+        val results = ArrayBuffer[(Seq[PolicyExample], Seq[Example], Double, Faction)]()
+        var i = 0
+        while (i < nGames) {
+            val result = one(i)
+            // Filter out killed games (marked with score -1.0)
+            if (result._3 >= 0.0) {
+                results += result
+            }
+            i += 1
+        }
+        results.toList
+    }
+
+    def collectArenaGames(policy : PolicyModel, value : MLPModel, sims : Int,
+                          nGames : Int, parallel : Boolean) : Seq[(Seq[PolicyExample], Seq[Example], Double)] = {
+        val seats = SelfPlay.fixedSeating.toArray
+
+        def one(i : Int) : (Seq[PolicyExample], Seq[Example], Double) = {
+            val brainSeat = seats(i % seats.length)
+            val g = SelfPlay.newGame()
+            val pol = ArrayBuffer[PolicyExample]()
+            val vals = ArrayBuffer[Example]()
+
+            // VISIT DISTRIBUTION RECORDING: capture MCTS visit counts for policy improvement.
+            // This is the AlphaGo missing piece — train toward what MCTS learned, not just final pick.
+            val recorder = ArrayBuffer[PolicyTarget]()
+            val brain = new MCTSPolicy(sims = sims, leaf = PolicyValueEval(policy, value))
+            brain.recorder = recorder   // enable visit distribution capture
+            val trajectory = new Trajectory(g.setup)
+
+            // Recording wrapper captures brain's decisions for training
+            val recording = new DecisionPolicy {
+                def decide(game : Game, faction : Faction, actions : $[Action]) : Action = {
+                    trajectory.observe(game)
+                    val chosen = if (faction == brainSeat) {
+                        // Brain's turn - record it (visit distribution captured by brain.recorder)
+                        vals += new Example(Features.of(game, faction), faction)
+                        brain.decide(game, faction, actions)
+                    } else {
+                        // Bot's turn
+                        BotPolicy.decide(game, faction, actions)
+                    }
+                    chosen
+                }
+            }
+
+            val s0 = Engine.start(g)
+            val (winners, _) = Engine.rolloutCapped(g, s0, recording, 8000, throwOnCap = false)
+
+            // Convert recorder's PolicyTargets to PolicyExamples with SOFT TARGETS (visit distribution).
+            // This teaches policy to match what MCTS learned, providing negative reinforcement for bad moves.
+            recorder.foreach { pt =>
+                pol += new PolicyExample(pt.state, pt.actions, -1, pt.visits)  // chosen=-1 signals soft-only
+            }
+
+            // Value labels using REWARD SCORE, not just win/loss
+            val shaping = trajectory.score(g)
+            val brainShaping = shaping.getOrElse(brainSeat, 0.0)
+            val gameScore = Outcome.valueShaped(g, winners, brainSeat, brainShaping)
+            vals.foreach(e => e.label = Outcome.valueShaped(g, winners, e.faction, shaping.getOrElse(e.faction, 0.0)))
+
+            // SCORE-WEIGHTED TRAINING: stamp game score onto all PolicyExamples from this game
+            pol.foreach(ex => ex.gameScore = gameScore)
+
+            (pol.toSeq, vals.toSeq, gameScore)
+        }
+
+        if (parallel) {
+            import scala.collection.parallel.CollectionConverters._
+            (0 until nGames).par.map(one).toList
+        } else (0 until nGames).map(one).toList
+    }
+
+    /**
+     * ITERATIVE ARENA TRAINING — continuous improvement via arena games.
+     *
+     * Bootstrap from bot games, then iteratively:
+     *   1. Play arena games (brain vs bots) with full trace saving
+     *   2. Collect training examples from those arena games
+     *   3. Train both heads on the arena corpus
+     *   4. Evaluate and report progress
+     *   5. Repeat for N iterations
+     */
+    def runIterativeArena(bootGames : Int, bootEpochs : Int, hidden : Int, lr : Double,
+                          parallel : Boolean, sims : Int, perSeat : Int,
+                          iters : Int, gamesPerIter : Int, runTag : String = null) : Unit = {
+        // Read run tag dynamically from file or env - allows mid-run renumbering
+        def effectiveRunTag : String = if (runTag != null) runTag else currentRunTag("R28")
+        println("========== ITERATIVE ARENA TRAINING ==========")
+        println(f"Target: $iters arena iterations of $gamesPerIter games (sims=$sims)\n")
+
+        // --- CHECK FOR CHECKPOINT FIRST (to skip bootstrap if resuming) -----
+        val forceFresh = sys.env.get("CW_FRESH").exists(v => v == "1" || v.equalsIgnoreCase("true"))
+        var warmStarted = false
+        var startIter = 1
+
+        // BOOTSTRAP REUSE: if we have an iter 0 checkpoint with score >= 0.65, reuse it
+        // Bootstrap variance is huge (0.499 to 0.802) - if we lucked into a good one, keep it
+        val bootstrapReuseThreshold = 0.65
+        var shouldBootstrap = forceFresh || !Checkpoint.exists
+
+        if (!shouldBootstrap && Checkpoint.exists) {
+            // Check if checkpoint is compatible before skipping bootstrap
+            (Checkpoint.loadPolicy(Features.dim, ActionFeatures.dim, hidden), Checkpoint.loadValue(Features.dim, hidden)) match {
+                case (Some(_), Some(_)) =>
+                    val tagMatch = """tag=([^ ]+)""".r.findFirstMatchIn(Checkpoint.metaLine)
+                    val checkpointTag = tagMatch.map(_.group(1)).getOrElse("")
+                    if (checkpointTag == effectiveRunTag) {
+                        val iterMatch = """iter=(\d+)""".r.findFirstMatchIn(Checkpoint.metaLine)
+                        val scoreMatch = """bestgame=([0-9.]+)""".r.findFirstMatchIn(Checkpoint.metaLine)
+                        val checkpointIter = iterMatch.map(_.group(1).toInt).getOrElse(0)
+                        val checkpointScore = scoreMatch.map(_.group(1).toDouble).getOrElse(0.0)
+
+                        if (checkpointIter == 0 && checkpointScore >= bootstrapReuseThreshold) {
+                            println(f"REUSING iter 0 bootstrap (score=$checkpointScore%.3f >= $bootstrapReuseThreshold%.2f) - saves ~70 minutes\n")
+                            shouldBootstrap = false
+                            startIter = 1
+                        } else if (checkpointIter > 0) {
+                            startIter = checkpointIter + 1
+                            println(f"RESUMING from checkpoint [$checkpointTag iter $startIter%d] - skipping bootstrap\n")
+                            shouldBootstrap = false
+                        } else {
+                            println(f"Iter 0 checkpoint exists but score=$checkpointScore%.3f < $bootstrapReuseThreshold%.2f - re-bootstrapping for better baseline\n")
+                            shouldBootstrap = true
+                        }
+                    }
+                case _ =>
+                    println("Checkpoint incompatible - will bootstrap\n")
+            }
+        }
+
+        // --- BOOTSTRAP (only if starting fresh) ------------------------------
+        val policy = PolicyModel.initial(Features.dim, ActionFeatures.dim, hidden)
+        val value  = MLPModel.initial(Features.dim, hidden)
+        val rng = new scala.util.Random(12345L)
+
+        // BOOTSTRAP CORPUS SAVED FOR MIXING with arena examples (prevent catastrophic forgetting)
+        var bootstrapPolicyExamples = Array[PolicyExample]()
+        var bootstrapValueExamples = Array[Example]()
+
+        if (shouldBootstrap) {
+            import java.io._
+            println(f"COLD START - bootstrap from $bootGames bot-vs-bot games (sequential with immediate disk write)\n")
+            println(f"  BOT IMITATION MODE: brain learns by watching hand-tuned bots win\n")
+            val tb = System.nanoTime()
+            val (tempDir, polCount, valCount) = collectBothIncremental(bootGames, false)
+            println(f"RL bootstrap corpus: $polCount%d policy + $valCount%d value examples from $bootGames games in ${(System.nanoTime() - tb) / 1e9}%.0fs")
+            println(f"  training from disk - never loading all examples into RAM\n")
+
+            // STREAM training from disk - read, train, discard. Repeat for each epoch.
+            // Bootstrap policy head with SUPERVISED LEARNING from bot decisions (6 epochs)
+            var e = 0
+            while (e < bootEpochs) {
+                val polIn = new ObjectInputStream(new BufferedInputStream(new FileInputStream(s"$tempDir/policy.dat")))
+                var p = 0
+                while (p < polCount) {
+                    val ex = polIn.readObject().asInstanceOf[PolicyExample]
+                    // Supervised learning: imitate the bot's chosen action
+                    policy.trainDecision(ex.state, ex.actions, ex.chosen, lr)
+                    p += 1
+                }
+                polIn.close()
+                println(f"  policy epoch ${e + 1}/$bootEpochs done (supervised imitation)")
+                // Save checkpoint after each policy epoch
+                Checkpoint.saveCurrent(policy, value, -1, 0.0, 0.0, s"${effectiveRunTag}_boot_pol${e+1}")
+                // Also save timestamped backup (never overwritten)
+                val backupDir = s"/Users/gremus/cthulhu-wars-mcts-prototype/checkpoints/bootstrap_backups"
+                new java.io.File(backupDir).mkdirs()
+                Checkpoint.saveToDir(s"$backupDir/${effectiveRunTag}_boot_pol${e+1}", policy, value, -1, 0.0, 0.0, s"${effectiveRunTag}_boot_pol${e+1}")
+                e += 1
+            }
+
+            // Bootstrap value head (6 epochs)
+            var ve = 0
+            val valEpochs = math.max(bootEpochs, 6)
+            while (ve < valEpochs) {
+                val valIn = new ObjectInputStream(new BufferedInputStream(new FileInputStream(s"$tempDir/value.dat")))
+                var v = 0
+                while (v < valCount) {
+                    val ex = valIn.readObject().asInstanceOf[Example]
+                    value.train(ex.features, ex.label, lr)
+                    v += 1
+                }
+                valIn.close()
+                println(f"  value epoch ${ve + 1}/$valEpochs done")
+                // Save checkpoint after each value epoch
+                Checkpoint.saveCurrent(policy, value, -1, 0.0, 0.0, s"${effectiveRunTag}_boot_val${ve+1}")
+                // Also save timestamped backup (never overwritten)
+                val backupDir = s"/Users/gremus/cthulhu-wars-mcts-prototype/checkpoints/bootstrap_backups"
+                new java.io.File(backupDir).mkdirs()
+                Checkpoint.saveToDir(s"$backupDir/${effectiveRunTag}_boot_val${ve+1}", policy, value, -1, 0.0, 0.0, s"${effectiveRunTag}_boot_val${ve+1}")
+                ve += 1
+            }
+
+            // Sample 10% for mixing - load only sample into RAM
+            println(f"\n  sampling 10%% of bootstrap for mixing (keeps heap under 3GB)...")
+            val samplePct = 0.10
+            val sampleSize = math.max(10000, (polCount * samplePct).toInt)
+            val sampledIndices = rng.shuffle((0 until polCount).toList).take(sampleSize).toSet
+
+            val polIn = new ObjectInputStream(new BufferedInputStream(new FileInputStream(s"$tempDir/policy.dat")))
+            val valIn = new ObjectInputStream(new BufferedInputStream(new FileInputStream(s"$tempDir/value.dat")))
+            val polSample = scala.collection.mutable.ArrayBuffer[PolicyExample]()
+            val valSample = scala.collection.mutable.ArrayBuffer[Example]()
+
+            var idx = 0
+            while (idx < polCount) {
+                val pex = polIn.readObject().asInstanceOf[PolicyExample]
+                val vex = valIn.readObject().asInstanceOf[Example]
+                if (sampledIndices.contains(idx)) {
+                    polSample += pex
+                    valSample += vex
+                }
+                idx += 1
+            }
+            polIn.close()
+            valIn.close()
+
+            bootstrapPolicyExamples = polSample.toArray
+            bootstrapValueExamples = valSample.toArray
+
+            // Clean up temp files
+            new File(s"$tempDir/policy.dat").delete()
+            new File(s"$tempDir/value.dat").delete()
+
+            println(f"  bootstrapped: ${bootstrapPolicyExamples.length}%d examples sampled for mixing\n")
+        }
+
+        // --- LOAD CHECKPOINT (if not resuming, already checked above) ---
+        if (!warmStarted && !forceFresh && Checkpoint.exists) {
+            (Checkpoint.loadPolicy(Features.dim, ActionFeatures.dim, hidden), Checkpoint.loadValue(Features.dim, hidden)) match {
+                case (Some(p), Some(v)) =>
+                    policy.adopt(p); value.adopt(v); warmStarted = true
+                    println(f"Loaded checkpoint [${Checkpoint.metaLine}]\n")
+                case _ =>
+                    println("Checkpoint incompatible\n")
+            }
+        }
+
+        // --- Baseline arena before any arena training (skip if starting from iter 1+) ---
+        val (winRate0, maxGameScore0) = if (startIter == 0) {
+            println("-- arena @ iter 0 (bootstrap only) --")
+            val (per0, maxGS0) = Arena.evaluatePerSeatBrainWithTraces(
+                () => new MCTSPolicy(sims = sims, leaf = PolicyValueEval(policy, value)), perSeat, f"${effectiveRunTag}-iter0")
+            reportPerSeat(per0)
+            println()
+
+            // Compute iter 0 win rate
+            val totalWins0 = per0.values.map(_.brainWins).sum
+            val totalGames0 = per0.values.map(_.games).sum
+            val wr0 = if (totalGames0 > 0) totalWins0.toDouble / totalGames0 else 0.0
+
+            // SAVE ITER 0 CHECKPOINT (bootstrap baseline)
+            if (!warmStarted) {
+                Checkpoint.save(policy, value, 0, wr0, maxGS0, effectiveRunTag)
+                println(f"  SAVED iter 0 checkpoint: WR=$wr0%.3f game=$maxGS0%.3f")
+            }
+            (wr0, maxGS0)
+        } else {
+            println(f"-- Starting from iter $startIter%d, skipping iter 0 baseline --")
+            (0.0, 0.0)
+        }
+
+        // --- ITERATIVE ARENA LOOP -------------------------------------------
+        var bestScore = if (warmStarted) Checkpoint.savedScore.getOrElse(0.0) else winRate0
+        var bestGameScore = if (warmStarted) Checkpoint.savedScore.getOrElse(0.0) else maxGameScore0
+
+        // R39 QUALITY FILTERING: Track median score per faction for filtering
+        val medianPerFaction = scala.collection.mutable.Map[Faction, Double](
+            GC -> 0.0,
+            BG -> 0.0,
+            YS -> 0.0,
+            CC -> 0.0
+        )
+
+        var i = startIter
+        while (i <= iters) {
+            val t0 = System.nanoTime()
+            // Apply dynamic iteration offset for mid-run renumbering
+            val iterOffset = currentIterOffset()
+            val effectiveIter = i + iterOffset
+            println(f"iter $effectiveIter%d | arena $gamesPerIter games")
+
+            // Play arena games
+            val arenaGames = collectRLArenaGames(policy, value, gamesPerIter, effectiveIter)
+
+            // R39 QUALITY FILTERING: Faction-specific filtering to prevent catastrophic forgetting
+            // Only train on successful games - bad games teach bad habits
+            val allGameScores = arenaGames.map(_._3)
+            val avgScore = if (allGameScores.nonEmpty) allGameScores.sum / allGameScores.length else 0.0
+
+            // Group games by faction
+            val gamesByFaction = arenaGames.groupBy(_._4)
+
+            // Apply filtering rules based on iteration
+            val filteredGames = if (i == startIter) {
+                // ITER 0: Keep top game + games within 75% of top score per faction
+                // This builds initial baseline corpus from successful games
+                gamesByFaction.flatMap { case (faction, games) =>
+                    val scores = games.map(_._3).sorted
+                    val best = scores.max
+                    val threshold = best * 0.75  // 75% of best
+                    val kept = games.filter(_._3 >= threshold)
+
+                    // Calculate and store median for this faction
+                    val median = if (scores.nonEmpty) scores(scores.length / 2) else 0.0
+                    medianPerFaction(faction) = median
+
+                    println(f"    ${faction.short}: best=$best%.3f, median=$median%.3f, threshold=$threshold%.3f, kept ${kept.length}/${games.length}")
+                    kept
+                }.toSeq
+            } else {
+                // ITER 1+: Top 50% IF median improves, else only games > previous median
+                // Prevents training on degraded iterations while keeping corpus flowing
+                gamesByFaction.flatMap { case (faction, games) =>
+                    val scores = games.map(_._3).sorted
+                    val currentMedian = if (scores.nonEmpty) scores(scores.length / 2) else 0.0
+                    val previousMedian = medianPerFaction(faction)
+
+                    val kept = if (currentMedian > previousMedian) {
+                        // Median improved: keep top 50%
+                        val top50Threshold = scores(scores.length / 2)
+                        val filtered = games.filter(_._3 >= top50Threshold)
+                        medianPerFaction(faction) = currentMedian  // Update median
+                        println(f"    ${faction.short}: median improved $previousMedian%.3f -> $currentMedian%.3f, keeping top 50%% (>=$top50Threshold%.3f): ${filtered.length}/${games.length}")
+                        filtered
+                    } else {
+                        // Median degraded: only keep games above previous median
+                        val filtered = games.filter(_._3 > previousMedian)
+                        println(f"    ${faction.short}: median degraded $previousMedian%.3f -> $currentMedian%.3f, keeping only > prev median: ${filtered.length}/${games.length}")
+                        filtered
+                    }
+
+                    kept
+                }.toSeq
+            }
+
+            // Extract examples only from filtered games
+            val arenaPolExamples = filteredGames.flatMap(_._1)
+            val arenaValExamples = filteredGames.flatMap(_._2)
+
+            // MIX BOOTSTRAP + ARENA: 80% bot examples + 20% arena examples (prevents catastrophic forgetting)
+            // Bot examples preserve competent play; arena examples teach "what works vs strong opponents"
+            val polExamples = (bootstrapPolicyExamples ++ arenaPolExamples ++ arenaPolExamples ++ arenaPolExamples ++ arenaPolExamples).toArray  // 1 bot : 4 arena copies = 80:20
+            val valExamples = (bootstrapValueExamples ++ arenaValExamples ++ arenaValExamples ++ arenaValExamples ++ arenaValExamples).toArray
+
+            println(f"  corpus: ${arenaPolExamples.length}%d arena decisions (${filteredGames.length}/${arenaGames.length} games kept) + ${bootstrapPolicyExamples.length}%d bot decisions mixed 80:20 (avg score=$avgScore%.3f)")
+
+            if (polExamples.nonEmpty) {
+                // POLICY GRADIENT TRAINING: advantages scale the gradient
+                // Better-than-expected outcomes strengthen actions, worse weaken them
+                val trainingEpochs = sys.env.getOrElse("CW_TRAINING_EPOCHS", "3").toInt
+                var ep = 0
+                while (ep < trainingEpochs) {
+                    val order = rng.shuffle(polExamples.indices.toList).toArray
+                    var k = 0
+                    while (k < order.length) {
+                        val ex = polExamples(order(k))
+                        if (!ex.advantage.isNaN) {
+                            // Use policy gradient with advantage-scaled gradient weighted by game quality
+                            // Higher-scoring games get more weight: 0.15→0.09x, 0.50→1.0x, 0.70→1.96x
+                            val scoreWeight = math.pow(ex.gameScore / 0.5, 2.0)
+                            policy.trainPolicyGradient(ex.state, ex.actions, ex.chosen, ex.advantage, scoreWeight, lr)
+                        } else if (ex.softTarget != null) {
+                            // Fall back to supervised (MCTS visit distribution) if no advantage
+                            policy.trainDecisionSoft(ex.state, ex.actions, ex.softTarget, lr)
+                        } else {
+                            // Fall back to hard supervised if neither advantage nor soft target
+                            policy.trainDecision(ex.state, ex.actions, ex.chosen, lr)
+                        }
+                        k += 1
+                    }
+                    ep += 1
+                }
+
+                // Train value on mixed corpus (score weighting less critical for value head)
+                var ev = 0
+                while (ev < trainingEpochs) {
+                    val order = rng.shuffle(valExamples.indices.toList).toArray
+                    var k = 0
+                    while (k < order.length) { val ex = valExamples(order(k)); value.train(ex.features, ex.label, lr); k += 1 }
+                    ev += 1
+                }
+            } else {
+                println(f"  WARNING: No training examples available (bootstrap corpus empty?)")
+            }
+
+            // Evaluate current policy vs bots WITH TRACE SAVING
+            val (per, maxGameScore) = Arena.evaluatePerSeatBrainWithTraces(
+                () => new MCTSPolicy(sims = sims, leaf = PolicyValueEval(policy, value)), perSeat, f"${effectiveRunTag}-iter$effectiveIter%d")
+            val elapsed = (System.nanoTime() - t0) / 1e9
+
+            // Compute overall win rate as score
+            val totalWins = per.values.map(_.brainWins).sum
+            val totalGames = per.values.map(_.games).sum
+            val winRate = if (totalGames > 0) totalWins.toDouble / totalGames else 0.0
+
+            print(f"  ")
+            reportPerSeat(per)
+            println(f"  | ${elapsed}%.0fs")
+
+            // Save current checkpoint every iteration
+            Checkpoint.saveCurrent(policy, value, effectiveIter, winRate, maxGameScore, effectiveRunTag)
+
+            // Save EVERY iteration to dated checkpoint directory
+            val timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date())
+            val iterDir = new java.io.File(s"/Users/gremus/cthulhu-wars-mcts-prototype/checkpoints/${effectiveRunTag}_iter${effectiveIter}_${timestamp}")
+            iterDir.mkdirs()
+            (policy, value) match {
+                case (p : PolicyModel, v : MLPModel) =>
+                    Checkpoint.saveToDir(iterDir.getAbsolutePath, p, v, effectiveIter, winRate, maxGameScore, effectiveRunTag)
+                    println(f"  SAVED iter $effectiveIter checkpoint: WR=$winRate%.3f game=$maxGameScore%.3f -> ${iterDir.getName}")
+                case _ =>
+            }
+
+            // Championship decision: PRIMARY = win rate, SECONDARY = best game 0-1 score
+            val shouldPromote = if (winRate > bestScore) {
+                true  // Win rate improved
+            } else if (winRate == bestScore && maxGameScore > bestGameScore) {
+                true  // Win rate tied (or both 0), but game score improved
+            } else {
+                false
+            }
+
+            // Checkpoint logic: promote or reload
+            val shouldReload = if (shouldPromote) {
+                println(f"  NEW BEST: WR=$winRate%.3f game=$maxGameScore%.3f (was WR=$bestScore%.3f game=$bestGameScore%.3f) - saving to best.*")
+                Checkpoint.save(policy, value, effectiveIter, winRate, maxGameScore, effectiveRunTag)
+                bestScore = winRate
+                bestGameScore = maxGameScore
+                false
+            } else {
+                println(f"  WR=$winRate%.3f game=$maxGameScore%.3f (best WR=$bestScore%.3f game=$bestGameScore%.3f)")
+                println(f"  REJECTING: performance degraded - reloading best checkpoint")
+                true
+            }
+
+            if (shouldReload) {
+                // REJECT DEGRADATION: Reload best checkpoint to prevent catastrophic forgetting
+                (Checkpoint.loadPolicy(Features.dim, ActionFeatures.dim, hidden), Checkpoint.loadValue(Features.dim, hidden)) match {
+                    case (Some(p), Some(v)) =>
+                        policy.adopt(p)
+                        value.adopt(v)
+                        println(f"  RESTORED: best checkpoint reloaded [${Checkpoint.metaLine}]")
+                    case _ =>
+                        println(f"  WARNING: failed to reload best checkpoint - continuing with degraded network")
+                }
+            }
+
+            // Rebuild canonical store and sync to freeddns
+            val rebuildScript = "/Users/gremus/cthulhu-wars-mcts-prototype/brain-dashboard/rebuild_and_sync.sh"
+            try {
+                val pb = new ProcessBuilder("bash", rebuildScript)
+                val proc = pb.start()
+                val exitCode = proc.waitFor()
+                if (exitCode != 0) println(f"  WARNING: rebuild_and_sync.sh failed with exit code $exitCode")
+            } catch {
+                case e : Exception => println(f"  WARNING: failed to run rebuild_and_sync.sh: ${e.getMessage}")
+            }
+
+            // Calculate improvement predictions
+            val predScript = "/Users/gremus/cthulhu-wars-mcts-prototype/brain-dashboard/calculate_predictions.py"
+            try {
+                val pb = new ProcessBuilder("python3", predScript, effectiveRunTag)
+                val proc = pb.start()
+                val exitCode = proc.waitFor()
+                if (exitCode != 0) println(f"  WARNING: calculate_predictions.py failed with exit code $exitCode")
+            } catch {
+                case e : Exception => println(f"  WARNING: failed to run calculate_predictions.py: ${e.getMessage}")
+            }
+
+            i += 1
+        }
+
+        println(f"\nFINAL ARENA after $iters iterations:")
+        val (perFinal, finalMaxScore) = Arena.evaluatePerSeatBrainWithTraces(
+            () => new MCTSPolicy(sims = sims, leaf = PolicyValueEval(policy, value)), perSeat, f"${effectiveRunTag}-final")
+        reportPerSeat(perFinal)
+        println(f"  Final max game score: $finalMaxScore%.3f")
     }
 
     /**
@@ -498,7 +1230,7 @@ object PolicyRun {
             // is never lost if the process dies. Saves to `current.*` files alongside `best.*`.
             val runTag = sys.env.getOrElse("CW_RUNTAG", "Run1")
             (policy, value) match {
-                case (p : PolicyModel, v : MLPModel) => Checkpoint.saveCurrent(p, v, it, avgDoom, runTag)
+                case (p : PolicyModel, v : MLPModel) => Checkpoint.saveCurrent(p, v, it, avgScore01, avgScore01, runTag)
                 case _ =>
             }
 
@@ -562,7 +1294,7 @@ object PolicyRun {
                 // PERSIST across runs: write the new best to disk so the next run can
                 // warm-start from it instead of relearning from zero.
                 (bestPolicy, bestValue) match {
-                    case (bp : PolicyModel, bv : MLPModel) => Checkpoint.save(bp, bv, it, avgScore01, runTag)
+                    case (bp : PolicyModel, bv : MLPModel) => Checkpoint.save(bp, bv, it, avgScore01, avgScore01, runTag)
                     case _ =>
                 }
                 println(f"   >>> NEW CHAMPION @ iter $it | score=${avgScore01}%.4f arena=${lastArenaWR}%.3f doom=${avgDoom}%.1f | league=${leaguePool.length} | saved")
@@ -1037,6 +1769,236 @@ object PolicyRun {
         } else (0 until nGames).map(one).toList
     }
 
+    /** DISK-STREAMING BOOTSTRAP: write examples to disk immediately, game-by-game.
+     *  With 3600 games × 730 examples = 2.7M objects, holding everything in RAM exceeds 22GB.
+     *  Instead: play one game, write its examples to disk, discard from RAM, repeat.
+     *  Never accumulates games in batches. Training streams from disk. */
+    def collectBothIncremental(nGames : Int, parallel : Boolean) = {
+        import java.io._
+        import java.nio.file.{Files, Paths}
+
+        val runtime = Runtime.getRuntime
+        val tempDir = "/tmp/cw_bootstrap"
+        new File(tempDir).mkdirs()
+
+        val polFile = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(s"$tempDir/policy.dat")))
+        val valFile = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(s"$tempDir/value.dat")))
+
+        val diskCheckInterval = 100  // Check disk every 100 games
+        var polCount = 0
+        var valCount = 0
+        var i = 0
+
+        while (i < nGames) {
+            // Check disk space every 100 games - keep 20GB free
+            if (i % diskCheckInterval == 0) {
+                val root = new File("/")
+                val freeGB = root.getFreeSpace / (1024.0 * 1024.0 * 1024.0)
+                if (freeGB < 20.0) {
+                    polFile.close()
+                    valFile.close()
+                    throw new RuntimeException(f"Disk space critical: ${freeGB}%.1fGB free (need 20GB minimum)")
+                }
+            }
+
+            // Play ONE game, write to disk immediately, discard from RAM
+            // No batch accumulation - each game's examples hit disk before next game starts
+            val (pol, vals) = collectBothGame()
+            pol.foreach { ex =>
+                polFile.writeObject(ex)
+                polCount += 1
+            }
+            vals.foreach { ex =>
+                valFile.writeObject(ex)
+                valCount += 1
+            }
+
+            // Reset ObjectOutputStream internal table every game to prevent memory accumulation
+            // Without this, ObjectOutputStream keeps references to all written objects
+            polFile.reset()
+            valFile.reset()
+
+            i += 1
+
+            // Write status to file for dashboard (every game)
+            try {
+                val statusFile = new java.io.PrintWriter(new java.io.File("/tmp/cw_status.txt"))
+                statusFile.println(f"phase=bootstrap")
+                statusFile.println(f"game=$i")
+                statusFile.println(f"total_games=$nGames")
+                statusFile.close()
+            } catch {
+                case _ : Exception => // Ignore write errors
+            }
+
+            // Report progress every 300 games
+            if (i % 300 == 0 || i == nGames) {
+                val maxMem = runtime.maxMemory() / (1024.0 * 1024.0 * 1024.0)
+                val usedMem = (runtime.totalMemory() - runtime.freeMemory()) / (1024.0 * 1024.0 * 1024.0)
+                val heapPct = (usedMem / maxMem) * 100.0
+                println(f"  bootstrap progress: $i%d/$nGames%d games ($polCount%d policy examples, $valCount%d value examples) [heap=${heapPct}%.1f%%]")
+            }
+        }
+
+        polFile.close()
+        valFile.close()
+
+        // DON'T load into RAM - return file paths for streaming training
+        // Loading 2.7M examples (~27GB) exceeds 22GB heap
+        println(f"  bootstrap collection done: $polCount%d policy + $valCount%d value examples written to disk")
+        println(f"  disk files: $tempDir/policy.dat ($polCount examples), $tempDir/value.dat ($valCount examples)")
+
+        (tempDir, polCount, valCount)
+    }
+
+    /**
+     * POLICY GRADIENT (RL) GAME COLLECTION: instead of recording bot decisions, let the POLICY
+     * sample actions and record the trajectory. After the game finishes, calculate advantages
+     * (return - baseline) for each decision, which become the training signal.
+     *
+     * This is the KEY difference from supervised learning: the policy EXPERIENCES outcomes
+     * instead of imitating demonstrations, creating a gradient connecting decisions to results.
+     */
+    def collectRLGame(policy : PolicyModel, value : MLPModel, decisionCap : Int = 8000) : (Seq[PolicyExample], Seq[Example]) = {
+        val g = SelfPlay.newGame()
+        val rng = new scala.util.Random(System.nanoTime())
+
+        // Trajectory: (state, actions, sampled_index, state_value_estimate) for each decision
+        case class Step(state : Array[Double], actions : Array[Array[Double]], sampled : Int, valueEst : Double)
+        val trajectory = ArrayBuffer[Step]()
+        val vals = ArrayBuffer[Example]()
+
+        val policySampler = new DecisionPolicy {
+            def decide(game : Game, faction : Faction, actions : $[Action]) : Action = {
+                val stateVec = Features.of(game, faction)
+                vals += new Example(stateVec, faction)
+
+                if (actions.num > 1) {
+                    val acts = actions.toArray
+                    val actVecs = acts.map(a => ActionFeatures.of(game, faction, a))
+
+                    // Sample from policy distribution (not argmax - we need exploration)
+                    val probs = policy.policy(stateVec, actVecs)
+                    val r = rng.nextDouble()
+                    var cumulative = 0.0
+                    var sampled = 0
+                    while (sampled < probs.length && cumulative + probs(sampled) < r) {
+                        cumulative += probs(sampled)
+                        sampled += 1
+                    }
+                    if (sampled >= probs.length) sampled = probs.length - 1
+
+                    // Record step with value baseline
+                    val vEst = value.eval(stateVec)
+                    trajectory += Step(stateVec, actVecs, sampled, vEst)
+
+                    acts(sampled)
+                } else actions.head
+            }
+        }
+
+        val s0 = Engine.start(g)
+        val (winners, _) = Engine.rolloutCapped(g, s0, policySampler, decisionCap, throwOnCap = false)
+
+        // Calculate advantages: G_t - V(s_t) where G_t is the return from step t onward
+        // Return = terminal reward (1.0 for win, 0.0 for loss)
+        val pol = ArrayBuffer[PolicyExample]()
+        trajectory.foreach { step =>
+            val terminalReward = Outcome.winLoss(g, winners, vals(0).faction)  // Same faction for all steps
+            val advantage = terminalReward - step.valueEst
+            val ex = new PolicyExample(step.state, step.actions, step.sampled)
+            ex.advantage = advantage
+            pol += ex
+        }
+
+        // Value labels = win/loss for training value network
+        vals.foreach(e => e.label = Outcome.winLoss(g, winners, e.faction))
+
+        (pol.toList, vals.toList)
+    }
+
+    /**
+     * DISK-STREAMING RL BOOTSTRAP: like collectBothIncremental but uses policy sampling.
+     * Plays games with the policy network sampling actions, calculates advantages, writes to disk.
+     */
+    def collectRLIncremental(policy : PolicyModel, value : MLPModel, nGames : Int) = {
+        import java.io._
+
+        val runtime = Runtime.getRuntime
+        val tempDir = "/tmp/cw_bootstrap"
+        new File(tempDir).mkdirs()
+
+        val polFile = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(s"$tempDir/policy.dat")))
+        val valFile = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(s"$tempDir/value.dat")))
+
+        val diskCheckInterval = 100
+        var polCount = 0
+        var valCount = 0
+        var i = 0
+
+        while (i < nGames) {
+            if (i % diskCheckInterval == 0) {
+                val root = new File("/")
+                val freeGB = root.getFreeSpace / (1024.0 * 1024.0 * 1024.0)
+                if (freeGB < 20.0) {
+                    polFile.close()
+                    valFile.close()
+                    throw new RuntimeException(f"Disk space critical: ${freeGB}%.1fGB free (need 20GB minimum)")
+                }
+            }
+
+            val (pol, vals) = collectRLGame(policy, value)
+            pol.foreach { ex =>
+                polFile.writeObject(ex)
+                polCount += 1
+            }
+            vals.foreach { ex =>
+                valFile.writeObject(ex)
+                valCount += 1
+            }
+
+            polFile.reset()
+            valFile.reset()
+
+            i += 1
+
+            // Write status to file for dashboard (every game)
+            try {
+                val statusFile = new java.io.PrintWriter(new java.io.File("/tmp/cw_status.txt"))
+                statusFile.println(f"phase=rl_bootstrap")
+                statusFile.println(f"game=$i")
+                statusFile.println(f"total_games=$nGames")
+                statusFile.close()
+            } catch {
+                case _ : Exception => // Ignore write errors
+            }
+
+            if (i % 300 == 0 || i == nGames) {
+                val maxMem = runtime.maxMemory() / (1024.0 * 1024.0 * 1024.0)
+                val usedMem = (runtime.totalMemory() - runtime.freeMemory()) / (1024.0 * 1024.0 * 1024.0)
+                val heapPct = (usedMem / maxMem) * 100.0
+                println(f"  RL bootstrap progress: $i%d/$nGames%d games ($polCount%d policy examples, $valCount%d value examples) [heap=${heapPct}%.1f%%]")
+            }
+        }
+
+        polFile.close()
+        valFile.close()
+
+        // Clear status file when done
+        try {
+            val statusFile = new java.io.PrintWriter(new java.io.File("/tmp/cw_status.txt"))
+            statusFile.println(f"phase=training")
+            statusFile.close()
+        } catch {
+            case _ : Exception => // Ignore write errors
+        }
+
+        println(f"  RL bootstrap collection done: $polCount%d policy + $valCount%d value examples written to disk")
+        println(f"  disk files: $tempDir/policy.dat ($polCount examples), $tempDir/value.dat ($valCount examples)")
+
+        (tempDir, polCount, valCount)
+    }
+
     /** Turn a mean log-loss into the intuitive "win-call confidence" %: how often the
      *  brain's yes/no win call is right (0.5 loss = 50% coin-flip, lower = better). */
     def confidencePct(logLoss : Double) : Double = 100.0 * math.exp(-logLoss)
@@ -1116,6 +2078,7 @@ object PolicyRun {
         }
         val wr = if (totGames > 0) 100.0 * totWins / totGames else 0.0
         println(f"   >>> overall ${totWins}%d/${totGames}%d = ${wr}%.0f%% | " + seatStrs.mkString(" "))
+        System.out.flush()  // CRITICAL: flush stdout immediately so data is written to log
         (totWins, totGames)
     }
 

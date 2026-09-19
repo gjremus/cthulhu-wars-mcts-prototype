@@ -23,7 +23,8 @@ import hrf.colmat._
 
 /** One training example: how a state looked to the faction about to move, and
  *  (filled in when the game ends) whether that faction went on to win. */
-final class Example(val features : Array[Double], val faction : Faction) {
+@SerialVersionUID(1L)
+final class Example(val features : Array[Double], val faction : Faction) extends Serializable {
     var label : Double = -1.0   // set at game end: 1.0 win, 0.0 loss
     // Position-quality potential Φ(s) of THIS state for THIS faction, captured live at
     // record time (Outcome.statePotential). Used by the potential-based label so the

@@ -217,6 +217,74 @@ final class PolicyModel(
         loss
     }
 
+    /**
+     * POLICY GRADIENT (RL) training step. Instead of matching a target distribution (supervised),
+     * this SCALES the gradient by advantage. When advantage > 0 (action led to better-than-expected
+     * outcome), STRENGTHEN that action. When advantage < 0 (worse than expected), WEAKEN it.
+     *
+     * Gradient: advantage × (softmax_k - 1{k == sampled})
+     *
+     * This is the key difference from supervised learning: the gradient magnitude depends on HOW GOOD
+     * the outcome was, not just WHAT action was taken. This creates the reward signal connecting
+     * policy decisions to game outcomes.
+     *
+     * Returns the policy loss (negative log-prob of sampled action) BEFORE the update.
+     */
+    def trainPolicyGradient(state : Array[Double], actions : Array[Array[Double]], sampled : Int, advantage : Double, gameScoreWeight : Double, lr : Double) : Double = {
+        val K = actions.length
+        if (K <= 1) return 0.0                       // forced move: nothing to learn
+        val sPart = statePart(state)
+
+        // Forward all candidates, keep a1 for backprop.
+        val z    = new Array[Double](K)
+        val a1s  = new Array[Array[Double]](K)
+        var k = 0
+        while (k < K) { val (_, a1, lg) = forwardCand(sPart, actions(k)); a1s(k) = a1; z(k) = lg; k += 1 }
+        val p = softmax(z)
+        val loss = -math.log(math.max(1e-12, p(sampled)))
+
+        // Gradient accumulators.
+        val gW1s = new Array[Double](hidden * dinS)
+        val gW1a = new Array[Double](hidden * dinA)
+        val gB1  = new Array[Double](hidden)
+        val gW2  = new Array[Double](hidden)
+        var gB2  = 0.0
+
+        k = 0
+        while (k < K) {
+            // KEY DIFFERENCE: gradient scaled by advantage AND game quality (gameScoreWeight)
+            val dLogit = advantage * gameScoreWeight * (p(k) - (if (k == sampled) 1.0 else 0.0))
+            val a1 = a1s(k); val act = actions(k)
+            var j = 0
+            while (j < hidden) {
+                gW2(j) += dLogit * a1(j)
+                val dZ = dLogit * w2(j) * (1.0 - a1(j) * a1(j))    // through tanh
+                gB1(j) += dZ
+                val bs = j * dinS; var i = 0
+                while (i < dinS) { gW1s(bs + i) += dZ * state(i); i += 1 }
+                val ba = j * dinA; i = 0
+                while (i < dinA) { gW1a(ba + i) += dZ * act(i); i += 1 }
+                j += 1
+            }
+            gB2 += dLogit
+            k += 1
+        }
+
+        // Apply once.
+        var j = 0
+        while (j < hidden) {
+            w2(j) -= lr * gW2(j)
+            b1(j) -= lr * gB1(j)
+            val bs = j * dinS; var i = 0
+            while (i < dinS) { w1s(bs + i) -= lr * gW1s(bs + i); i += 1 }
+            val ba = j * dinA; i = 0
+            while (i < dinA) { w1a(ba + i) -= lr * gW1a(ba + i); i += 1 }
+            j += 1
+        }
+        b2 -= lr * gB2
+        loss
+    }
+
     def describe : String = s"Policy scorer (state=$dinS + action=$dinA -> hidden=$hidden -> logit, softmax over legal set)"
 
     /** Deep copy — snapshot the trained weights (for best-checkpoint keeping). */

@@ -16,6 +16,10 @@ def parse_trace_file(trace_file):
         stem = trace_file.stem
         content = trace_file.read_text()
 
+        # Skip metadata files (all-games summaries)
+        if "-all-games" in stem:
+            return None
+
         # Determine game type from filename
         is_arena = stem.startswith("arena-")
         is_selfplay = stem.startswith("selfplay-")
@@ -34,18 +38,24 @@ def parse_trace_file(trace_file):
                     pass
 
         # Assign run based on file modification timestamp
-        # CUTOFF 2026-08-22: R24-R26 are "old" (pre-fix), Run1+ are "new"
         file_time = trace_file.stat().st_mtime
 
-        # Check for new runs (Run1, Run2, etc.) by looking for CW_RUNTAG in filename
-        # New runs use naming: arena-Run1-iter##-... or selfplay-Run1-iter##-...
-        if "Run" in stem and any(f"Run{i}" in stem for i in range(1, 100)):
+        # Check for tagged runs by filename pattern (R28, R27, Run27, etc.)
+        run_match = re.search(r'[-_](R\d+)[-_]', stem)
+        if run_match:
+            run = run_match.group(1)
+            era = "new"
+        elif "Run" in stem and any(f"Run{i}" in stem for i in range(1, 100)):
             # Extract run number from filename
             for i in range(1, 100):
                 if f"Run{i}" in stem:
                     run = f"Run{i}"
                     era = "new"
                     break
+        # R27 starts Aug 22 19:51 (first iter 1 file)
+        elif file_time >= 1787446290:  # Aug 22 19:51:30 2026
+            run = "R27"
+            era = "new"
         elif file_time >= 1787234280:  # Aug 20, 2026 08:58 (R26 start)
             run = "R26"
             era = "old"
@@ -58,6 +68,8 @@ def parse_trace_file(trace_file):
         else:
             run = "R23"
             era = "old"
+
+        # R27 iterations keep their original numbers from filenames
 
         # For ARENA games: parse brain's faction from filename
         # arena-iter##-{faction}-{best|first}-d#.txt
@@ -122,13 +134,11 @@ def parse_trace_file(trace_file):
                                 won = True
                         break
 
-        # R25 special case: traces mislabeled, need to correct arena/selfplay
-        # R25 even iterations = arena, odd = selfplay (pre-naming convention)
-        if run == "R25":
-            is_arena = (iter_num % 2 == 0)
-            is_selfplay = not is_arena
-
+        # Game type determined by filename prefix only
         game_type = "arena" if is_arena else "selfplay"
+
+        # Parse game length (count ActionPhaseAction occurrences)
+        game_length = content.count('ActionPhaseAction')
 
         return {
             "filename": stem,
@@ -140,6 +150,7 @@ def parse_trace_file(trace_file):
             "doom": doom,
             "score": score,
             "won": won,
+            "game_length": game_length,
             "timestamp": int(file_time)
         }
 

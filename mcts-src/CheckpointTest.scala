@@ -19,7 +19,7 @@ object CheckpointTest {
         val pBefore = p.policy(st, acts)
         val vBefore = v.eval(st)
 
-        Checkpoint.save(p, v, iter = 7, score = 1.234, tag = "unittest")
+        Checkpoint.save(p, v, iter = 7, winRate = 0.5, bestGameScore = 1.234, tag = "unittest")
         println(s"saved. meta: ${Checkpoint.metaLine}")
         println(s"savedScore=${Checkpoint.savedScore}")
 

@@ -134,14 +134,21 @@ object Engine {
      */
     def rolloutCapped(game : Game, sit : Situation, policy : DecisionPolicy,
                       maxDecisions : Int = 20000, throwOnCap : Boolean = false) : ($[Faction], Boolean) = {
+        TraceLog.log(s"rolloutCapped start (maxDecisions=$maxDecisions)")
         var s = sit
         var decisions = 0
         while (true) {
             s match {
-                case Ended(winners) => return (winners, false)
+                case Ended(winners) =>
+                    TraceLog.log(s"rolloutCapped ended after $decisions decisions, winners=${winners.mkString(",")}")
+                    return (winners, false)
                 case Decision(faction, actions, c) =>
                     decisions += 1
+                    if (decisions % 50 == 0) {
+                        TraceLog.log(s"rolloutCapped decision $decisions faction=$faction actions=${actions.num}")
+                    }
                     if (decisions > maxDecisions) {
+                        TraceLog.log(s"rolloutCapped hit decision cap at $decisions")
                         if (throwOnCap) throw new RuntimeException("rollout: decision cap")
                         return ($(), true)   // abandon: no winner, game left at cap state
                     }

@@ -1,76 +1,1649 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Brain Training Dashboard (Static Export)</title>
-    <meta http-equiv="refresh" content="60">
+    <title>Brain Training Dashboard</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; background: #0a0a0a; color: #e0e0e0; }
-        h1 { margin: 0 0 20px 0; color: #4a9eff; }
-        .note { background: #1a1a2e; padding: 10px; border-left: 3px solid #4a9eff; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; background: #1a1a1a; }
-        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #333; font-size: 0.9em; }
-        th { background: #2a2a2a; color: #4a9eff; position: sticky; top: 0; }
-        tr:hover { background: #252525; }
-        .win { color: #4ade80; font-weight: bold; }
-        .loss { color: #f87171; }
-        .arena { background: #1e3a5f; }
-        a { color: #60a5fa; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-        .breakdown { font-size: 0.8em; color: #aaa; max-width: 500px; line-height: 1.4; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; }
+        .tabs { display: flex; background: #16213e; border-bottom: 2px solid #0f3460; }
+        .tab { padding: 15px 25px; cursor: pointer; border: none; background: none; color: #888; font-size: 14px; }
+        .tab:hover { color: #fff; background: #1a1a40; }
+        .tab.active { color: #fff; background: #0f3460; border-bottom: 2px solid #e94560; margin-bottom: -2px; }
+        .content { padding: 20px; display: none; }
+        .content.active { display: block; }
+        .card { background: #16213e; border-radius: 8px; padding: 20px; margin-bottom: 15px; }
+        .card h3 { color: #e94560; margin-bottom: 15px; }
+        .stat { display: inline-block; margin-right: 30px; margin-bottom: 10px; }
+        .stat-label { color: #888; font-size: 12px; }
+        .stat-value { font-size: 24px; font-weight: bold; }
+        .stat-value.good { color: #4ade80; }
+        .stat-value.bad { color: #f87171; }
+        button { background: #e94560; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px; }
+        button:hover { background: #ff6b6b; }
+        button.secondary { background: #0f3460; }
+        button.secondary:hover { background: #1a4a7a; }
+        button.danger { background: #dc2626; }
+        input, select { background: #1a1a2e; border: 1px solid #0f3460; color: #fff; padding: 8px 12px; border-radius: 4px; margin-right: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #0f3460; }
+        th { color: #e94560; }
+        tr:hover { background: #1a1a40; }
+        .weight-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #0f3460; }
+        .weight-name { flex: 1; }
+        .weight-desc { flex: 2; color: #888; font-size: 13px; }
+        .weight-input { width: 80px; text-align: right; }
+        .breakdown { font-size: 12px; color: #888; cursor: pointer; }
+        .breakdown:hover { color: #e94560; }
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100; }
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: #16213e; padding: 30px; border-radius: 10px; max-width: 500px; }
+        .status-indicator { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .status-indicator.running { background: #4ade80; animation: pulse 1s infinite; }
+        .status-indicator.stopped { background: #f87171; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .player-row { display: flex; align-items: center; margin-bottom: 15px; padding: 10px; background: #1a1a2e; border-radius: 5px; }
+        .player-label { width: 80px; color: #e94560; font-weight: bold; }
+        .player-type { width: 120px; margin-right: 15px; }
+        .faction-selector { display: flex; gap: 8px; flex-wrap: wrap; }
+        .faction-glyph { width: 48px; height: 48px; cursor: pointer; border: 3px solid transparent; border-radius: 5px; transition: all 0.2s; opacity: 0.5; }
+        .faction-glyph:hover { opacity: 0.8; border-color: #555; }
+        .faction-glyph.selected { opacity: 1; border-color: #e94560; box-shadow: 0 0 10px #e94560; }
     </style>
 </head>
 <body>
-    <h1>🧠 Brain Training Dashboard</h1>
-    <div class="note">
-        <strong>Static export:</strong> This page auto-refreshes every 60 seconds.<br>
-        <strong>Last generated:</strong> 2026-08-15 18:33:17
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('status')">Run Status</button>
+        <button class="tab" onclick="showTab('control')">Run Control</button>
+        <button class="tab" onclick="showTab('games')">Game Browser</button>
+        <button class="tab" onclick="showTab('corpus')">Training Corpus</button>
+        <button class="tab" onclick="showTab('weights')">Reward Weights</button>
+        <button class="tab" onclick="showTab('progress')">Progress Charts</button>
     </div>
 
-    <h2>Recent Games (100 traces)</h2>
-    <table id="games">
-        <thead>
-            <tr>
-                <th>Run</th>
-                <th>Iter</th>
-                <th>Type</th>
-                <th>Faction</th>
-                <th>Winner</th>
-                <th>Place</th>
-                <th>Score</th>
-                <th>Breakdown</th>
-                <th>Doom Ranking</th>
-                <th>Trace</th>
-                <th>Replay</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+    <div id="status" class="content active">
+        <div class="card">
+            <h3><span id="status-indicator" class="status-indicator stopped"></span>Current Run</h3>
+            <div class="stat">
+                <div class="stat-label">Run Tag</div>
+                <div class="stat-value" id="run-tag">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Progress</div>
+                <div class="stat-value" id="progress-status" style="cursor:pointer;color:#4ade80;" onclick="toggleProgressFactionBreakdown()" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">-</div>
+                <div id="progress-expansion" style="display:none;margin-top:15px;padding:15px;background:#0f3460;border-radius:4px;">
+                    <strong style="color:#e94560;">Per-Faction Progress:</strong>
+                    <div id="progress-expansion-content" style="margin-top:10px;color:#ccc;">Loading...</div>
+                </div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Elapsed Time</div>
+                <div class="stat-value" id="elapsed">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Iter ETA</div>
+                <div class="stat-value" id="iter-eta">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Full Run ETA</div>
+                <div class="stat-value" id="full-run-eta">-</div>
+            </div>
+            <div class="stat" style="width:100%;margin-top:10px;">
+                <div class="stat-label">Configuration</div>
+                <div class="stat-value" id="run-config" style="font-size:16px;color:#4ade80;">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Claude Storage Used</div>
+                <div class="stat-value" id="claude-storage">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Available Disk Space</div>
+                <div class="stat-value" id="disk-available">-</div>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Performance</h3>
+            <div class="stat">
+                <div class="stat-label">Arena Win Rate</div>
+                <div class="stat-value" id="win-rate">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Arena Wins</div>
+                <div class="stat-value" id="arena-wins">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label" id="avg-doom-label">Avg Doom</div>
+                <div class="stat-value" id="avg-doom">-</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label" id="best-score-label">Best Score</div>
+                <div class="stat-value" id="best-score">-</div>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Performance History</h3>
+            <p style="color:#888;font-size:13px;margin-bottom:10px;">Recent iterations sorted by run and iter (latest first)</p>
+            <div style="overflow-x:auto;">
+                <table id="performance-history-table" style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#16213e;">
+                            <th style="padding:8px;text-align:left;border-bottom:2px solid #0f3460;">Run</th>
+                            <th style="padding:8px;text-align:left;border-bottom:2px solid #0f3460;">Iter</th>
+                            <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Avg Doom</th>
+                            <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Avg Score</th>
+                            <th style="padding:8px;text-align:left;border-bottom:2px solid #0f3460;">Type</th>
+                            <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Wins</th>
+                            <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="performance-history-body">
+                        <tr><td colspan="7" style="padding:20px;text-align:center;color:#666;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top:10px;text-align:center;">
+                <button onclick="changePerformancePage(-1)" style="padding:8px 15px;margin:0 5px;background:#0f3460;color:#fff;border:none;border-radius:4px;cursor:pointer;">← Prev</button>
+                <span id="performance-page-info" style="color:#888;margin:0 15px;">Page 1</span>
+                <button onclick="changePerformancePage(1)" style="padding:8px 15px;margin:0 5px;background:#0f3460;color:#fff;border:none;border-radius:4px;cursor:pointer;">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="control" class="content">
+        <div class="card">
+            <h3>Run Control</h3>
+            <button onclick="stopRun()" class="danger">Stop Current Run</button>
+            <button onclick="showSaveModal()" class="secondary">Save Checkpoint</button>
+        </div>
+        <div class="card">
+            <h3>Saved Checkpoints</h3>
+            <table id="checkpoints-table">
+                <thead><tr><th>Name</th><th>Tag</th><th>Iter</th><th>Win Rate</th><th>Best 0-1</th><th>Actions</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="card">
+            <h3>Start New Run</h3>
+            <p style="color:#888;margin-bottom:15px;">Configure and start a new training run.</p>
+
+            <div style="margin-bottom:20px;">
+                <label style="display:block;margin-bottom:8px;color:#e94560;font-weight:bold;">Player Count:</label>
+                <select id="player-count" onchange="updatePlayerSetup()" style="width:150px;">
+                    <option value="3">3 Players</option>
+                    <option value="4" selected>4 Players</option>
+                    <option value="5">5 Players</option>
+                </select>
+            </div>
+
+            <div id="player-setup" style="margin-bottom:20px;">
+                <!-- Populated by updatePlayerSetup() -->
+            </div>
+
+            <div style="margin-bottom:15px;border-top:1px solid #0f3460;padding-top:15px;">
+                <label style="margin-right:20px;"><input type="checkbox" id="neutral-monsters"> Neutral Monsters</label>
+                <label style="margin-right:20px;"><input type="checkbox" id="terrors"> Terrors</label>
+                <label><input type="checkbox" id="igoos"> iGOOs</label>
+            </div>
+
+            <div style="margin-bottom:15px;">
+                <label>Iterations: <input type="number" id="new-iters" value="100" style="width:100px;"></label>
+                <label style="margin-left:15px;">Games/Iter: <input type="number" id="new-games" value="20" style="width:80px;"></label>
+                <label style="margin-left:15px;">Arena Every: <input type="number" id="arena-every" value="2" style="width:60px;"> iters</label>
+            </div>
+            <button onclick="startRun()">Start Run</button>
+            <p style="color:#666;font-size:12px;margin-top:10px;">Select brain/bot per seat + factions. Multiple faction selections = random rotation.</p>
+        </div>
+    </div>
+
+    <div id="games" class="content">
+        <div class="card">
+            <h3>Game Browser</h3>
+            <p style="color:#888;font-size:13px;margin-bottom:10px;">Note: Scores shown are faction averages for the iteration (multiple games share same score)</p>
+            <div style="margin-bottom:15px;">
+                <label>Run:
+                    <select id="run-select" onchange="loadGames()">
+                        <option value="">All</option>
+                    </select>
+                </label>
+                <label style="margin-left:15px;">Iteration:
+                    <select id="iter-select" onchange="loadGames()">
+                        <option value="">All</option>
+                    </select>
+                </label>
+            </div>
+            <div style="margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;">
+                <div id="games-count" style="color:#888;">Loading...</div>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <button class="secondary" onclick="prevPage()" id="prev-btn">&larr; Prev</button>
+                    <span id="page-info" style="padding:0 15px;">Page 1</span>
+                    <button class="secondary" onclick="nextPage()" id="next-btn">Next &rarr;</button>
+                </div>
+            </div>
+            <div id="games-loading" style="display:none;text-align:center;padding:40px;font-size:18px;color:#e94560;">
+                <div style="display:inline-block;width:40px;height:40px;border:4px solid #e94560;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;"></div>
+                <div style="margin-top:15px;">Loading games...</div>
+            </div>
+            <table id="games-table">
+                <thead><tr><th>Run</th><th>Iter</th><th>Type</th><th>Faction</th><th>Result</th><th>Doom</th><th>Score</th><th>Length</th><th>Winner</th><th>Place</th><th>Actions</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="card" id="breakdown-detail" style="display:none;">
+            <h3>Score Breakdown</h3>
+            <div id="breakdown-content"></div>
+        </div>
+    </div>
+
+    <div id="corpus" class="content">
+        <div class="card">
+            <h3>Training Corpus</h3>
+            <p style="color:#888;margin-bottom:15px;">View games used for training in each iteration</p>
+            <div style="margin-bottom:15px;">
+                <label>Run:
+                    <select id="corpus-run-select" onchange="loadCorpus()">
+                        <option value="R39">R39</option>
+                    </select>
+                </label>
+                <label style="margin-left:15px;">Iteration:
+                    <select id="corpus-iter-select" onchange="loadCorpus()">
+                        <option value="">Loading...</option>
+                    </select>
+                </label>
+                <label style="margin-left:15px;">Faction:
+                    <select id="corpus-faction-select" onchange="loadCorpus()">
+                        <option value="GC">GC (Great Cthulhu)</option>
+                        <option value="BG">BG (Black Goat)</option>
+                        <option value="YS">YS (Yellow Sign)</option>
+                        <option value="CC">CC (Crawling Chaos)</option>
+                    </select>
+                </label>
+            </div>
+            <div id="corpus-count" style="color:#888;margin-bottom:10px;">Loading...</div>
+            <table id="corpus-table">
+                <thead><tr><th>Game #</th><th>Brain Faction</th><th>Result</th><th>Doom</th><th>Score</th><th>Used for Training</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="weights" class="content">
+        <div class="card">
+            <h3>Reward Weights</h3>
+            <p style="color:#888;margin-bottom:15px;">Edit weights below. Changes apply to next run after saving.</p>
+            <div id="weights-list"></div>
+            <button onclick="saveWeights()" style="margin-top:20px;">Save Weights</button>
+            <button onclick="loadWeights()" class="secondary" style="margin-top:20px;">Reset to Current</button>
+        </div>
+    </div>
+
+    <div id="progress" class="content">
+        <div class="card">
+            <h3>Doom per Game</h3>
+            <div style="margin-bottom:15px;display:flex;gap:15px;align-items:center;flex-wrap:wrap;">
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Runs:</label>
+                    <select id="doom-run-filter" multiple style="width:150px;height:80px;">
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Iters:</label>
+                    <select id="doom-iter-filter" multiple style="width:150px;height:80px;">
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Type:</label>
+                    <div>
+                        <button class="secondary" onclick="setDoomTypeFilter('both')" id="doom-type-both">Both</button>
+                        <button class="secondary" onclick="setDoomTypeFilter('selfplay')" id="doom-type-selfplay">Self-play</button>
+                        <button class="secondary" onclick="setDoomTypeFilter('arena')" id="doom-type-arena">Arena</button>
+                    </div>
+                </div>
+            </div>
+            <canvas id="doom-chart" width="1000" height="400" style="width:1000px;height:400px;background:#1a1a2e;display:block;"></canvas>
+        </div>
+        <div class="card">
+            <h3>Score per Game</h3>
+            <div style="margin-bottom:15px;display:flex;gap:15px;align-items:center;flex-wrap:wrap;">
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Runs:</label>
+                    <select id="score-run-filter" multiple style="width:150px;height:80px;">
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Iters:</label>
+                    <select id="score-iter-filter" multiple style="width:150px;height:80px;">
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Type:</label>
+                    <div>
+                        <button class="secondary" onclick="setScoreTypeFilter('both')" id="score-type-both">Both</button>
+                        <button class="secondary" onclick="setScoreTypeFilter('selfplay')" id="score-type-selfplay">Self-play</button>
+                        <button class="secondary" onclick="setScoreTypeFilter('arena')" id="score-type-arena">Arena</button>
+                    </div>
+                </div>
+            </div>
+            <canvas id="score-chart" width="1000" height="400" style="width:1000px;height:400px;background:#1a1a2e;display:block;"></canvas>
+        </div>
+        <div class="card">
+            <h3>Wins per Iteration</h3>
+            <div style="margin-bottom:15px;display:flex;gap:15px;align-items:center;flex-wrap:wrap;">
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Runs:</label>
+                    <select id="wins-run-filter" multiple style="width:150px;height:80px;">
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Type:</label>
+                    <div>
+                        <button class="secondary" onclick="setWinsTypeFilter('both')" id="wins-type-both">Both</button>
+                        <button class="secondary" onclick="setWinsTypeFilter('selfplay')" id="wins-type-selfplay">Self-play</button>
+                        <button class="secondary" onclick="setWinsTypeFilter('arena')" id="wins-type-arena">Arena</button>
+                    </div>
+                </div>
+            </div>
+            <canvas id="wins-chart" width="1000" height="400" style="width:1000px;height:400px;background:#1a1a2e;display:block;"></canvas>
+        </div>
+    </div>
+
+    <div id="save-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:15px;">Save Checkpoint</h3>
+            <input type="text" id="save-name" placeholder="Checkpoint name" style="width:100%;margin-bottom:15px;">
+            <button onclick="saveCheckpoint()">Save</button>
+            <button onclick="closeSaveModal()" class="secondary">Cancel</button>
+        </div>
+    </div>
 
     <script>
-        const games = [{"name": "selfplay-iter3-bg-g17-d35", "run": 0, "iter": 0, "faction": "??", "score": "0.199", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 35 = +0.1750<br>elderSigns: 10 = +0.0500<br>ritualValue: 9 = +0.0450<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 1 = +0.0050<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 4 = 0.0190<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 5 = 0.0260<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 1 = 0.0040<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0060<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 4 = +0.0180<br>r:buildGate: 22 = +0.0220<br>r:EndAPGates: 82 = +0.3280<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "BG=35 > YS=16 > CC=10 > GC=7"}, {"name": "selfplay-iter3-gc-g16-d15", "run": 0, "iter": 0, "faction": "GC", "score": "0.114", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 15 = +0.0750<br>elderSigns: 5 = +0.0250<br>ritualValue: 3 = +0.0150<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0170<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 11 = 0.0540<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 2 = 0.0090<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0080<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 7 = +0.0360<br>r:buildGate: 24 = +0.0240<br>r:EndAPGates: 38 = +0.1520<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "2", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=31 > GC=15 > CC=12 > YS=11"}, {"name": "selfplay-iter3-cc-g15-d22", "run": 0, "iter": 0, "faction": "CC", "score": "0.970", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 22 = +0.1100<br>elderSigns: 0 = +0.0000<br>ritualValue: 0 = +0.0000<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 2 = 0.0110<br>p:lostGate: 1 = 0.0030<br>p:abandon: 2 = 0.0100<br>p:capture: 3 = 0.0160<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 2 = 0.0090<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 4 = +0.0220<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 8 = +0.0420<br>r:buildGate: 8 = +0.0080<br>r:EndAPGates: 88 = +0.3520<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "2", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "GC=24 > CC=22 > YS=15 > BG=7"}, {"name": "selfplay-iter3-ys-g14-WIN-d29", "run": 0, "iter": 0, "faction": "YS", "score": "1.000", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 29 = +0.1450<br>elderSigns: 15 = +0.0750<br>ritualValue: 5 = +0.0250<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 6 = 0.0310<br>p:lostGate: 1 = 0.0030<br>p:abandon: 2 = 0.0100<br>p:capture: 8 = 0.0420<br>p:gooLost: 1 = 0.0040<br>p:cultistUnprot: 3 = 0.0150<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0040<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 10 = +0.0480<br>r:buildGate: 10 = +0.0100<br>r:EndAPGates: 47 = +0.1880<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "2", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "BG=34 > YS=29 > CC=17 > GC=16"}, {"name": "selfplay-iter3-bg-g13-d35", "run": 0, "iter": 0, "faction": "??", "score": "1.047", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 35 = +0.1750<br>elderSigns: 3 = +0.0170<br>ritualValue: 11 = +0.0550<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 4 = 0.0180<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 3 = 0.0140<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 1 = 0.0070<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = 0.0020<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 2 = +0.0100<br>r:buildGate: 7 = +0.0070<br>r:EndAPGates: 92 = +0.3680<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "BG=35 > CC=13 > YS=11 > GC=10"}, {"name": "selfplay-iter3-gc-g12-d18", "run": 0, "iter": 0, "faction": "GC", "score": "0.755", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 18 = +0.0900<br>elderSigns: 3 = +0.0170<br>ritualValue: 0 = +0.0000<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0150<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 8 = 0.0420<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 0 = 0.0010<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0100<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 1 = +0.0060<br>r:buildGate: 10 = +0.0100<br>r:EndAPGates: 73 = +0.2920<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "2", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=33 > GC=18 > CC=17 > YS=5"}, {"name": "selfplay-iter3-cc-g11-WIN-d33", "run": 0, "iter": 0, "faction": "CC", "score": "1.000", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 33 = +0.1650<br>elderSigns: 7 = +0.0330<br>ritualValue: 8 = +0.0400<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 1 = +0.0050<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0140<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 3 = 0.0140<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 2 = 0.0080<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0100<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0020<br>r:buildGate: 8 = +0.0080<br>r:EndAPGates: 89 = +0.3560<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "CC=33 > BG=29 > YS=22 > GC=15"}, {"name": "selfplay-iter3-ys-g10-WIN-d25", "run": 0, "iter": 0, "faction": "YS", "score": "1.000", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 25 = +0.1250<br>elderSigns: 10 = +0.0500<br>ritualValue: 5 = +0.0250<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 0 = +0.0020<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 5 = 0.0230<br>p:lostGate: 0 = +0.0000<br>p:abandon: 0 = 0.0020<br>p:capture: 2 = 0.0080<br>p:gooLost: 1 = 0.0050<br>p:cultistUnprot: 0 = +0.0000<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0080<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 10 = +0.0480<br>r:buildGate: 1 = +0.0010<br>r:EndAPGates: 64 = +0.2560<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "2", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "GC=25 > YS=25 > BG=19 > CC=15"}, {"name": "selfplay-iter3-bg-g9-d18", "run": 0, "iter": 0, "faction": "??", "score": "0.758", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 18 = +0.0900<br>elderSigns: 0 = +0.0000<br>ritualValue: 0 = +0.0000<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 4 = 0.0210<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 8 = 0.0380<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 0 = 0.0020<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0080<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 2 = +0.0120<br>r:buildGate: 7 = +0.0070<br>r:EndAPGates: 87 = +0.3480<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "YS=24 > BG=18 > CC=18 > GC=17"}, {"name": "selfplay-iter3-gc-g8-d12", "run": 0, "iter": 0, "faction": "GC", "score": "0.414", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 12 = +0.0600<br>elderSigns: 2 = +0.0080<br>ritualValue: 1 = +0.0050<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0050<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0040<br>unitsOnMap: 0 = +0.0010<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0160<br>p:lostGate: 1 = 0.0030<br>p:abandon: 2 = 0.0100<br>p:capture: 10 = 0.0480<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 2 = 0.0080<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = 0.0040<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 1 = +0.0040<br>r:buildGate: 8 = +0.0080<br>r:EndAPGates: 40 = +0.1600<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=37 > CC=16 > GC=12 > YS=10"}, {"name": "selfplay-iter3-cc-g7-d18", "run": 0, "iter": 0, "faction": "CC", "score": "0.158", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 18 = +0.0900<br>elderSigns: 3 = +0.0170<br>ritualValue: 0 = +0.0000<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0130<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0070<br>p:capture: 1 = 0.0060<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 2 = 0.0080<br>r:killEnemy: 1 = +0.0030<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 3 = +0.0140<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 3 = +0.0140<br>r:buildGate: 5 = +0.0050<br>r:EndAPGates: 60 = +0.2400<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "CC=18 > BG=12 > YS=12 > GC=8"}, {"name": "selfplay-iter3-ys-g6-d17", "run": 0, "iter": 0, "faction": "YS", "score": "0.150", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 17 = +0.0850<br>elderSigns: 5 = +0.0250<br>ritualValue: 0 = +0.0000<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 12 = 0.0590<br>p:lostGate: 1 = 0.0060<br>p:abandon: 2 = 0.0100<br>p:capture: 11 = 0.0560<br>p:gooLost: 2 = 0.0110<br>p:cultistUnprot: 3 = 0.0130<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0060<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 19 = +0.0960<br>r:buildGate: 12 = +0.0120<br>r:EndAPGates: 61 = +0.2440<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "2", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=25 > YS=17 > GC=12 > CC=6"}, {"name": "selfplay-iter3-bg-g5-d33", "run": 0, "iter": 0, "faction": "??", "score": "1.121", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 33 = +0.1650<br>elderSigns: 5 = +0.0250<br>ritualValue: 7 = +0.0350<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 1 = +0.0050<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 6 = 0.0310<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 8 = 0.0400<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 2 = 0.0120<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0060<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 6 = +0.0280<br>r:buildGate: 9 = +0.0090<br>r:EndAPGates: 99 = +0.3960<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "BG=33 > CC=19 > YS=15 > GC=12"}, {"name": "selfplay-iter3-gc-g4-WIN-d20", "run": 0, "iter": 0, "faction": "GC", "score": "1.000", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 20 = +0.1000<br>elderSigns: 8 = +0.0410<br>ritualValue: 3 = +0.0150<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0140<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 5 = 0.0240<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 1 = 0.0060<br>r:killEnemy: 1 = +0.0030<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0040<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 11 = +0.0110<br>r:EndAPGates: 64 = +0.2560<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "2", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "BG=46 > GC=20 > CC=13 > YS=10"}, {"name": "selfplay-iter3-cc-g3-d7", "run": 0, "iter": 0, "faction": "CC", "score": "0.099", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 7 = +0.0350<br>elderSigns: 0 = +0.0000<br>ritualValue: 0 = +0.0000<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0080<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 1 = +0.0050<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 1 = 0.0070<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0080<br>p:capture: 4 = 0.0180<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 1 = 0.0040<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 4 = +0.0200<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 6 = +0.0300<br>r:buildGate: 4 = +0.0040<br>r:EndAPGates: 16 = +0.0640<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "4", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=20 > YS=15 > GC=10 > CC=7"}, {"name": "selfplay-iter3-ys-g2-d31", "run": 0, "iter": 0, "faction": "YS", "score": "1.092", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 31 = +0.1550<br>elderSigns: 10 = +0.0500<br>ritualValue: 3 = +0.0150<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 4 = 0.0200<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 6 = 0.0280<br>p:gooLost: 1 = 0.0030<br>p:cultistUnprot: 3 = 0.0140<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0120<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 3 = +0.0140<br>r:buildGate: 19 = +0.0190<br>r:EndAPGates: 89 = +0.3560<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "YS=31 > GC=20 > CC=19 > BG=14"}, {"name": "selfplay-iter3-bg-g1-d23", "run": 0, "iter": 0, "faction": "??", "score": "0.181", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 23 = +0.1150<br>elderSigns: 7 = +0.0330<br>ritualValue: 2 = +0.0100<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 9 = 0.0440<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 5 = 0.0260<br>p:gooLost: 1 = 0.0030<br>p:cultistUnprot: 0 = 0.0020<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0060<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 6 = +0.0300<br>r:buildGate: 6 = +0.0060<br>r:EndAPGates: 92 = +0.3680<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "BG=23 > CC=17 > YS=9 > GC=7"}, {"name": "selfplay-iter3-gc-g0-WIN-d30", "run": 0, "iter": 0, "faction": "GC", "score": "1.000", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 30 = +0.1500<br>elderSigns: 12 = +0.0580<br>ritualValue: 6 = +0.0300<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0010<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 4 = 0.0200<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 8 = 0.0400<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 1 = 0.0040<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = +0.0020<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 4 = +0.0220<br>r:buildGate: 14 = +0.0140<br>r:EndAPGates: 67 = +0.2680<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "GC=30 > CC=30 > BG=26 > YS=7"}, {"name": "selfplay-iter2-cc-g19-WIN-d39", "run": 0, "iter": 0, "faction": "CC", "score": "1.000", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 39 = +0.1950<br>elderSigns: 12 = +0.0580<br>ritualValue: 10 = +0.0500<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 1 = +0.0050<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 4 = 0.0180<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 5 = 0.0260<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 3 = 0.0140<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 4 = +0.0220<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 4 = +0.0220<br>r:buildGate: 8 = +0.0080<br>r:EndAPGates: 88 = +0.3520<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "CC=39 > YS=31 > BG=30 > GC=11"}, {"name": "selfplay-iter2-ys-g18-d19", "run": 0, "iter": 0, "faction": "YS", "score": "0.164", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 19 = +0.0950<br>elderSigns: 13 = +0.0660<br>ritualValue: 6 = +0.0300<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0080<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0150<br>p:lostGate: 1 = 0.0030<br>p:abandon: 1 = 0.0030<br>p:capture: 5 = 0.0240<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 2 = 0.0120<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0100<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 6 = +0.0280<br>r:buildGate: 4 = +0.0040<br>r:EndAPGates: 61 = +0.2440<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "2", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=22 > YS=19 > CC=11 > GC=7"}, {"name": "selfplay-iter2-bg-g17-d30", "run": 0, "iter": 0, "faction": "??", "score": "0.997", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 30 = +0.1500<br>elderSigns: 10 = +0.0500<br>ritualValue: 12 = +0.0600<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 1 = +0.0050<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 3 = 0.0130<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 5 = 0.0260<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 2 = 0.0110<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0060<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 4 = +0.0200<br>r:buildGate: 6 = +0.0060<br>r:EndAPGates: 64 = +0.2560<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "BG=30 > GC=16 > YS=9 > CC=9"}, {"name": "selfplay-iter2-gc-g16-d23", "run": 0, "iter": 0, "faction": "GC", "score": "0.127", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 23 = +0.1150<br>elderSigns: 7 = +0.0330<br>ritualValue: 10 = +0.0500<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 2 = 0.0110<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 4 = 0.0220<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 0 = +0.0000<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = 0.0100<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 9 = +0.0090<br>r:EndAPGates: 47 = +0.1880<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "GC=23 > BG=20 > YS=17 > CC=15"}, {"name": "selfplay-iter2-cc-g15-d19", "run": 0, "iter": 0, "faction": "CC", "score": "0.106", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 19 = +0.0950<br>elderSigns: 5 = +0.0250<br>ritualValue: 4 = +0.0200<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0080<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0140<br>p:lostGate: 1 = 0.0030<br>p:abandon: 1 = 0.0050<br>p:capture: 6 = 0.0320<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 0 = 0.0010<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = 0.0020<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 4 = +0.0040<br>r:EndAPGates: 36 = +0.1440<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "2", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=36 > CC=19 > GC=10 > YS=10"}, {"name": "selfplay-iter2-ys-g14-WIN-d28", "run": 0, "iter": 0, "faction": "YS", "score": "1.000", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 28 = +0.1400<br>elderSigns: 13 = +0.0660<br>ritualValue: 4 = +0.0200<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0150<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 7 = 0.0360<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 3 = 0.0170<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0040<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 8 = +0.0420<br>r:buildGate: 13 = +0.0130<br>r:EndAPGates: 54 = +0.2160<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "2", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "BG=30 > YS=28 > CC=16 > GC=13"}, {"name": "selfplay-iter2-bg-g13-d25", "run": 0, "iter": 0, "faction": "??", "score": "0.168", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 25 = +0.1250<br>elderSigns: 2 = +0.0080<br>ritualValue: 0 = +0.0000<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 7 = 0.0330<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 1 = 0.0040<br>p:gooLost: 1 = 0.0050<br>p:cultistUnprot: 1 = 0.0040<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = +0.0020<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 2 = +0.0080<br>r:buildGate: 13 = +0.0130<br>r:EndAPGates: 102 = +0.4080<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "BG=25 > CC=15 > YS=11 > GC=7"}, {"name": "selfplay-iter2-gc-g12-d31", "run": 0, "iter": 0, "faction": "GC", "score": "0.179", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 31 = +0.1550<br>elderSigns: 2 = +0.0080<br>ritualValue: 15 = +0.0750<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 1 = 0.0040<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0070<br>p:capture: 1 = 0.0040<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 1 = 0.0030<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = 0.0080<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0020<br>r:buildGate: 5 = +0.0050<br>r:EndAPGates: 75 = +0.3000<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "GC=31 > YS=29 > CC=12 > BG=8"}, {"name": "selfplay-iter2-cc-g11-d42", "run": 0, "iter": 0, "faction": "CC", "score": "1.111", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 42 = +0.2100<br>elderSigns: 15 = +0.0750<br>ritualValue: 10 = +0.0500<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 1 = +0.0050<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 2 = 0.0100<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0080<br>p:capture: 1 = 0.0040<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 1 = 0.0040<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0100<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0020<br>r:buildGate: 6 = +0.0060<br>r:EndAPGates: 69 = +0.2760<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "CC=42 > BG=16 > YS=14 > GC=11"}, {"name": "selfplay-iter2-ys-g10-d3", "run": 0, "iter": 0, "faction": "YS", "score": "0.145", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 3 = +0.0150<br>elderSigns: 0 = +0.0000<br>ritualValue: 0 = +0.0000<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0030<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0010<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 6 = 0.0320<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 14 = 0.0700<br>p:gooLost: 1 = 0.0040<br>p:cultistUnprot: 1 = 0.0030<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = 0.0020<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 4 = +0.0180<br>r:buildGate: 21 = +0.0210<br>r:EndAPGates: 13 = +0.0520<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "4", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=35 > GC=31 > CC=14 > YS=3"}, {"name": "selfplay-iter2-bg-g9-d30", "run": 0, "iter": 0, "faction": "??", "score": "0.956", "breakdown": "spellbooks: 16 = +0.0800<br>doomEarned: 30 = +0.1500<br>elderSigns: 8 = +0.0410<br>ritualValue: 13 = +0.0650<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 1 = +0.0050<br>gateTaken: 1 = +0.0040<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 1 = +0.0030<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 2 = 0.0080<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0030<br>p:capture: 0 = 0.0020<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 0 = +0.0000<br>r:killEnemy: 2 = +0.0110<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = +0.0020<br>r:enemyGooKill: 0 = +0.0010<br>b:captureEnemy: 4 = +0.0180<br>r:buildGate: 2 = +0.0020<br>r:EndAPGates: 65 = +0.2600<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "BG=30 > YS=21 > CC=17 > GC=14"}, {"name": "selfplay-iter2-gc-g8-d30", "run": 0, "iter": 0, "faction": "GC", "score": "0.985", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 30 = +0.1500<br>elderSigns: 7 = +0.0330<br>ritualValue: 10 = +0.0500<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 1 = 0.0060<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0080<br>p:capture: 1 = 0.0040<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 2 = 0.0090<br>r:killEnemy: 2 = +0.0110<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = 0.0080<br>r:enemyGooKill: 0 = +0.0010<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 6 = +0.0060<br>r:EndAPGates: 65 = +0.2600<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "GC=30 > YS=20 > CC=11 > BG=8"}, {"name": "selfplay-iter2-cc-g7-WIN-d26", "run": 0, "iter": 0, "faction": "CC", "score": "1.000", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 26 = +0.1300<br>elderSigns: 10 = +0.0500<br>ritualValue: 4 = +0.0200<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0160<br>p:lostGate: 1 = 0.0030<br>p:abandon: 2 = 0.0100<br>p:capture: 4 = 0.0220<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 3 = 0.0150<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0100<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 2 = +0.0100<br>r:buildGate: 8 = +0.0080<br>r:EndAPGates: 39 = +0.1560<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "2", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "BG=30 > CC=26 > GC=9 > YS=6"}, {"name": "selfplay-iter2-ys-g6-d14", "run": 0, "iter": 0, "faction": "YS", "score": "0.109", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 14 = +0.0700<br>elderSigns: 2 = +0.0080<br>ritualValue: 3 = +0.0150<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 4 = 0.0200<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 7 = 0.0340<br>p:gooLost: 1 = 0.0040<br>p:cultistUnprot: 1 = 0.0060<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = 0.0020<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 8 = +0.0420<br>r:buildGate: 8 = +0.0080<br>r:EndAPGates: 50 = +0.2000<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=29 > CC=20 > YS=14 > GC=6"}, {"name": "selfplay-iter2-bg-g5-d11", "run": 0, "iter": 0, "faction": "??", "score": "0.076", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 11 = +0.0550<br>elderSigns: 0 = +0.0000<br>ritualValue: 0 = +0.0000<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 1 = +0.0040<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 6 = 0.0310<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0030<br>p:capture: 11 = 0.0540<br>p:gooLost: 1 = 0.0030<br>p:cultistUnprot: 0 = +0.0000<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = 0.0100<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 4 = +0.0220<br>r:buildGate: 2 = +0.0020<br>r:EndAPGates: 44 = +0.1760<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "CC=17 > BG=11 > YS=6 > GC=5"}, {"name": "selfplay-iter2-gc-g4-d22", "run": 0, "iter": 0, "faction": "GC", "score": "0.769", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 22 = +0.1100<br>elderSigns: 3 = +0.0170<br>ritualValue: 7 = +0.0350<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0030<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 2 = 0.0110<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 3 = 0.0140<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 2 = 0.0110<br>r:killEnemy: 2 = +0.0110<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = 0.0020<br>r:enemyGooKill: 0 = +0.0010<br>b:captureEnemy: 1 = +0.0060<br>r:buildGate: 10 = +0.0100<br>r:EndAPGates: 56 = +0.2240<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "2", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "YS=23 > GC=22 > BG=14 > CC=13"}, {"name": "selfplay-iter2-cc-g3-d39", "run": 0, "iter": 0, "faction": "CC", "score": "1.019", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 39 = +0.1950<br>elderSigns: 22 = +0.1080<br>ritualValue: 7 = +0.0350<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 5 = 0.0260<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 6 = 0.0320<br>p:gooLost: 1 = 0.0030<br>p:cultistUnprot: 3 = 0.0160<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0040<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 1 = +0.0060<br>r:buildGate: 10 = +0.0100<br>r:EndAPGates: 53 = +0.2120<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "CC=39 > GC=26 > BG=24 > YS=17"}, {"name": "selfplay-iter2-ys-g2-d20", "run": 0, "iter": 0, "faction": "YS", "score": "0.678", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 20 = +0.1000<br>elderSigns: 12 = +0.0580<br>ritualValue: 4 = +0.0200<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0080<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 1 = +0.0030<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 2 = 0.0110<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0070<br>p:capture: 4 = 0.0200<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 1 = 0.0030<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0060<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 9 = +0.0440<br>r:buildGate: 4 = +0.0040<br>r:EndAPGates: 37 = +0.1480<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=30 > GC=20 > YS=20 > CC=14"}, {"name": "selfplay-iter2-bg-g1-d25", "run": 0, "iter": 0, "faction": "??", "score": "0.847", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 25 = +0.1250<br>elderSigns: 3 = +0.0170<br>ritualValue: 5 = +0.0250<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 4 = 0.0210<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 2 = 0.0080<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 2 = 0.0090<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0080<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 1 = +0.0060<br>r:buildGate: 32 = +0.0320<br>r:EndAPGates: 82 = +0.3280<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "GC=30 > BG=25 > CC=18 > YS=14"}, {"name": "selfplay-iter2-gc-g0-d18", "run": 0, "iter": 0, "faction": "GC", "score": "0.104", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 18 = +0.0900<br>elderSigns: 2 = +0.0080<br>ritualValue: 8 = +0.0400<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 1 = 0.0070<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 3 = 0.0160<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 0 = +0.0000<br>r:killEnemy: 2 = +0.0110<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = 0.0120<br>r:enemyGooKill: 0 = +0.0010<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 5 = +0.0050<br>r:EndAPGates: 37 = +0.1480<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "2", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "YS=19 > GC=18 > BG=14 > CC=12"}, {"name": "selfplay-iter1-cc-g19-d25", "run": 0, "iter": 0, "faction": "CC", "score": "0.630", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 25 = +0.1250<br>elderSigns: 8 = +0.0410<br>ritualValue: 9 = +0.0450<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0010<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0140<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 7 = 0.0360<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 1 = 0.0050<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = 0.0120<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 3 = +0.0160<br>r:buildGate: 7 = +0.0070<br>r:EndAPGates: 35 = +0.1400<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=28 > YS=25 > CC=25 > GC=14"}, {"name": "selfplay-iter1-ys-g18-d18", "run": 0, "iter": 0, "faction": "YS", "score": "0.576", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 18 = +0.0900<br>elderSigns: 7 = +0.0330<br>ritualValue: 7 = +0.0350<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 0 = +0.0020<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 2 = 0.0120<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0030<br>p:capture: 3 = 0.0160<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 3 = 0.0160<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = 0.0020<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 4 = +0.0180<br>r:buildGate: 1 = +0.0010<br>r:EndAPGates: 30 = +0.1200<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "GC=18 > BG=18 > YS=18 > CC=12"}, {"name": "selfplay-iter1-bg-g17-d22", "run": 0, "iter": 0, "faction": "??", "score": "0.153", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 22 = +0.1100<br>elderSigns: 2 = +0.0080<br>ritualValue: 1 = +0.0050<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 7 = 0.0370<br>p:lostGate: 1 = 0.0060<br>p:abandon: 2 = 0.0100<br>p:capture: 16 = 0.0780<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 1 = 0.0030<br>r:killEnemy: 2 = +0.0110<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = 0.0020<br>r:enemyGooKill: 0 = +0.0010<br>b:captureEnemy: 4 = +0.0200<br>r:buildGate: 23 = +0.0230<br>r:EndAPGates: 83 = +0.3320<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "BG=22 > CC=14 > YS=11 > GC=6"}, {"name": "selfplay-iter1-gc-g16-d15", "run": 0, "iter": 0, "faction": "GC", "score": "0.581", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 15 = +0.0750<br>elderSigns: 5 = +0.0250<br>ritualValue: 4 = +0.0200<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 1 = +0.0040<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0040<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 1 = 0.0060<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0030<br>p:capture: 2 = 0.0100<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 0 = 0.0020<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = 0.0080<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 2 = +0.0020<br>r:EndAPGates: 24 = +0.0960<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "2", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "YS=38 > GC=15 > BG=15 > CC=15"}, {"name": "selfplay-iter1-cc-g15-d17", "run": 0, "iter": 0, "faction": "CC", "score": "0.115", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 17 = +0.0850<br>elderSigns: 7 = +0.0330<br>ritualValue: 4 = +0.0200<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 1 = +0.0060<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 2 = 0.0090<br>p:lostGate: 1 = 0.0030<br>p:abandon: 1 = 0.0030<br>p:capture: 7 = 0.0340<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 1 = 0.0030<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = +0.0020<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 4 = +0.0220<br>r:buildGate: 3 = +0.0030<br>r:EndAPGates: 29 = +0.1160<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=28 > YS=20 > CC=17 > GC=8"}, {"name": "selfplay-iter1-ys-g14-d15", "run": 0, "iter": 0, "faction": "YS", "score": "0.601", "breakdown": "spellbooks: 16 = +0.0800<br>doomEarned: 15 = +0.0750<br>elderSigns: 0 = +0.0000<br>ritualValue: 6 = +0.0300<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 0 = +0.0000<br>b:emptyGate: 0 = +0.0000<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 1 = 0.0040<br>p:lostGate: 0 = +0.0000<br>p:abandon: 0 = +0.0000<br>p:capture: 1 = 0.0040<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 1 = 0.0040<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = 0.0100<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 0 = +0.0000<br>r:EndAPGates: 30 = +0.1200<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "YS=15 > CC=14 > GC=12 > BG=12"}, {"name": "selfplay-iter1-bg-g13-d15", "run": 0, "iter": 0, "faction": "??", "score": "0.579", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 15 = +0.0750<br>elderSigns: 0 = +0.0000<br>ritualValue: 0 = +0.0000<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 6 = 0.0310<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0080<br>p:capture: 7 = 0.0340<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 0 = 0.0020<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = 0.0080<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0020<br>r:buildGate: 6 = +0.0060<br>r:EndAPGates: 56 = +0.2240<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "GC=34 > BG=15 > CC=15 > YS=13"}, {"name": "selfplay-iter1-gc-g12-d20", "run": 0, "iter": 0, "faction": "GC", "score": "0.703", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 20 = +0.1000<br>elderSigns: 5 = +0.0250<br>ritualValue: 3 = +0.0150<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0050<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 7 = 0.0330<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 16 = 0.0780<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 1 = 0.0030<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = 0.0080<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 2 = +0.0120<br>r:buildGate: 41 = +0.0410<br>r:EndAPGates: 59 = +0.2360<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "2", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "YS=28 > GC=20 > BG=20 > CC=18"}, {"name": "selfplay-iter1-cc-g11-d13", "run": 0, "iter": 0, "faction": "CC", "score": "0.086", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 13 = +0.0650<br>elderSigns: 7 = +0.0330<br>ritualValue: 3 = +0.0150<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 1 = +0.0060<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 1 = +0.0030<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0010<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0140<br>p:lostGate: 1 = 0.0030<br>p:abandon: 1 = 0.0050<br>p:capture: 7 = 0.0360<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 2 = 0.0080<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = +0.0000<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 3 = +0.0140<br>r:buildGate: 3 = +0.0030<br>r:EndAPGates: 22 = +0.0880<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=29 > YS=22 > CC=13 > GC=8"}, {"name": "selfplay-iter1-ys-g10-d13", "run": 0, "iter": 0, "faction": "YS", "score": "0.356", "breakdown": "spellbooks: 16 = +0.0800<br>doomEarned: 13 = +0.0650<br>elderSigns: 0 = +0.0000<br>ritualValue: 5 = +0.0250<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 1 = +0.0060<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0150<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0050<br>p:capture: 4 = 0.0200<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 1 = 0.0040<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = 0.0120<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 3 = +0.0030<br>r:EndAPGates: 29 = +0.1160<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=31 > GC=15 > YS=13 > CC=12"}, {"name": "selfplay-iter1-bg-g9-d31", "run": 0, "iter": 0, "faction": "??", "score": "0.211", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 31 = +0.1550<br>elderSigns: 7 = +0.0330<br>ritualValue: 7 = +0.0350<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 1 = +0.0050<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 4 = 0.0180<br>p:lostGate: 1 = 0.0030<br>p:abandon: 2 = 0.0080<br>p:capture: 6 = 0.0300<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 0 = 0.0020<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = 0.0020<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 1 = +0.0060<br>r:buildGate: 8 = +0.0080<br>r:EndAPGates: 107 = +0.4280<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "BG=31 > CC=17 > GC=16 > YS=11"}, {"name": "selfplay-iter1-gc-g8-d13", "run": 0, "iter": 0, "faction": "GC", "score": "0.077", "breakdown": "spellbooks: 16 = +0.0800<br>doomEarned: 13 = +0.0650<br>elderSigns: 2 = +0.0080<br>ritualValue: 4 = +0.0200<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0040<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 2 = 0.0080<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 4 = 0.0220<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 0 = 0.0010<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = 0.0040<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0020<br>r:buildGate: 9 = +0.0090<br>r:EndAPGates: 34 = +0.1360<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "YS=24 > BG=23 > GC=13 > CC=12"}, {"name": "selfplay-iter1-cc-g7-d19", "run": 0, "iter": 0, "faction": "CC", "score": "0.124", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 19 = +0.0950<br>elderSigns: 5 = +0.0250<br>ritualValue: 6 = +0.0300<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 1 = +0.0040<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 2 = 0.0090<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0030<br>p:capture: 5 = 0.0260<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 0 = +0.0000<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = 0.0060<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 2 = +0.0120<br>r:buildGate: 2 = +0.0020<br>r:EndAPGates: 37 = +0.1480<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=28 > YS=21 > CC=19 > GC=8"}, {"name": "selfplay-iter1-ys-g6-d9", "run": 0, "iter": 0, "faction": "YS", "score": "0.050", "breakdown": "spellbooks: 16 = +0.0800<br>doomEarned: 9 = +0.0450<br>elderSigns: 2 = +0.0080<br>ritualValue: 4 = +0.0200<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 0 = +0.0000<br>b:emptyGate: 0 = +0.0000<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0040<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 2 = 0.0090<br>p:lostGate: 0 = +0.0000<br>p:abandon: 0 = 0.0020<br>p:capture: 4 = 0.0220<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 2 = 0.0090<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = 0.0040<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 0 = +0.0000<br>r:EndAPGates: 17 = +0.0680<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=23 > GC=17 > YS=9 > CC=9"}, {"name": "selfplay-iter1-bg-g5-d32", "run": 0, "iter": 0, "faction": "??", "score": "1.091", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 32 = +0.1600<br>elderSigns: 7 = +0.0330<br>ritualValue: 5 = +0.0250<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 5 = 0.0240<br>p:lostGate: 1 = 0.0060<br>p:abandon: 2 = 0.0080<br>p:capture: 7 = 0.0360<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 1 = 0.0060<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0080<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 5 = +0.0240<br>r:buildGate: 4 = +0.0040<br>r:EndAPGates: 93 = +0.3720<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "BG=32 > CC=19 > YS=12 > GC=9"}, {"name": "selfplay-iter1-gc-g4-d14", "run": 0, "iter": 0, "faction": "GC", "score": "0.086", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 14 = +0.0700<br>elderSigns: 2 = +0.0080<br>ritualValue: 5 = +0.0250<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 1 = +0.0040<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0040<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 2 = 0.0080<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0050<br>p:capture: 2 = 0.0120<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 0 = 0.0010<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = 0.0060<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 2 = +0.0020<br>r:EndAPGates: 31 = +0.1240<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=26 > YS=19 > GC=14 > CC=11"}, {"name": "selfplay-iter1-cc-g3-d15", "run": 0, "iter": 0, "faction": "CC", "score": "0.113", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 15 = +0.0750<br>elderSigns: 3 = +0.0170<br>ritualValue: 4 = +0.0200<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 0 = +0.0020<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 1 = 0.0050<br>p:lostGate: 0 = +0.0000<br>p:abandon: 0 = 0.0020<br>p:capture: 3 = 0.0140<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 0 = +0.0000<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = 0.0020<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 2 = +0.0120<br>r:buildGate: 1 = +0.0010<br>r:EndAPGates: 31 = +0.1240<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "YS=25 > GC=15 > CC=15 > BG=11"}, {"name": "selfplay-iter1-ys-g2-d5", "run": 0, "iter": 0, "faction": "YS", "score": "0.145", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 5 = +0.0250<br>elderSigns: 2 = +0.0080<br>ritualValue: 2 = +0.0100<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 6 = 0.0320<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 8 = 0.0420<br>p:gooLost: 1 = 0.0060<br>p:cultistUnprot: 2 = 0.0120<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = 0.0080<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 1 = +0.0040<br>r:buildGate: 7 = +0.0070<br>r:EndAPGates: 11 = +0.0440<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "4", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=34 > GC=19 > CC=12 > YS=5"}, {"name": "selfplay-iter1-bg-g1-d30", "run": 0, "iter": 0, "faction": "??", "score": "1.032", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 30 = +0.1500<br>elderSigns: 7 = +0.0330<br>ritualValue: 0 = +0.0000<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 6 = 0.0320<br>p:lostGate: 1 = 0.0030<br>p:abandon: 2 = 0.0100<br>p:capture: 14 = 0.0720<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 2 = 0.0100<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = 0.0020<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 4 = +0.0220<br>r:buildGate: 14 = +0.0140<br>r:EndAPGates: 100 = +0.4000<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "BG=30 > GC=25 > CC=25 > YS=18"}, {"name": "selfplay-iter1-gc-g0-d26", "run": 0, "iter": 0, "faction": "GC", "score": "0.785", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 26 = +0.1300<br>elderSigns: 8 = +0.0410<br>ritualValue: 11 = +0.0550<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 1 = +0.0050<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 2 = 0.0120<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 7 = 0.0340<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 1 = 0.0050<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = 0.0120<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 2 = +0.0080<br>r:buildGate: 8 = +0.0080<br>r:EndAPGates: 52 = +0.2080<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "2", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "YS=38 > GC=26 > BG=24 > CC=23"}, {"name": "selfplay-iter5-cc-g3-d16", "run": 0, "iter": 0, "faction": "CC", "score": "0.116", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 16 = +0.0800<br>elderSigns: 5 = +0.0250<br>ritualValue: 8 = +0.0400<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0000<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0170<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 6 = 0.0300<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 2 = 0.0100<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = +0.0000<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 1 = +0.0040<br>r:buildGate: 5 = +0.0050<br>r:EndAPGates: 37 = +0.1480<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=21 > GC=19 > CC=16 > YS=11"}, {"name": "selfplay-iter5-ys-g2-d17", "run": 0, "iter": 0, "faction": "YS", "score": "0.498", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 17 = +0.0850<br>elderSigns: 7 = +0.0330<br>ritualValue: 8 = +0.0400<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 1 = +0.0060<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 1 = +0.0030<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0040<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 4 = 0.0220<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0050<br>p:capture: 3 = 0.0160<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 0 = 0.0020<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = 0.0080<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 3 = +0.0030<br>r:EndAPGates: 35 = +0.1400<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "GC=38 > CC=28 > YS=17 > BG=14"}, {"name": "selfplay-iter5-bg-g1-d25", "run": 0, "iter": 0, "faction": "??", "score": "0.596", "breakdown": "spellbooks: 8 = +0.0400<br>doomEarned: 25 = +0.1250<br>elderSigns: 0 = +0.0000<br>ritualValue: 9 = +0.0450<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 1 = +0.0040<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 1 = +0.0050<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0040<br>unitsOnMap: 0 = +0.0010<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 2 = 0.0090<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0030<br>p:capture: 3 = 0.0160<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 3 = 0.0170<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = 0.0040<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 2 = +0.0020<br>r:EndAPGates: 52 = +0.2080<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "GC=27 > BG=25 > CC=14 > YS=12"}, {"name": "selfplay-iter5-gc-g0-d32", "run": 0, "iter": 0, "faction": "GC", "score": "1.126", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 32 = +0.1600<br>elderSigns: 12 = +0.0580<br>ritualValue: 2 = +0.0100<br>ownGOO: 2 = +0.0100<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0170<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 0 = 0.0020<br>p:gooLost: 1 = 0.0030<br>p:cultistUnprot: 0 = +0.0000<br>r:killEnemy: 11 = +0.0560<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 7 = +0.0360<br>r:enemyGooKill: 1 = +0.0030<br>b:captureEnemy: 2 = +0.0120<br>r:buildGate: 10 = +0.0100<br>r:EndAPGates: 82 = +0.3280<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "2", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "CC=34 > GC=32 > BG=25 > YS=14"}, {"name": "selfplay-iter4-cc-g19-d18", "run": 0, "iter": 0, "faction": "CC", "score": "0.448", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 18 = +0.0900<br>elderSigns: 5 = +0.0250<br>ritualValue: 6 = +0.0300<br>ownGOO: 2 = +0.0100<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0000<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 4 = 0.0190<br>p:lostGate: 1 = 0.0030<br>p:abandon: 2 = 0.0100<br>p:capture: 8 = 0.0420<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 2 = 0.0090<br>r:killEnemy: 4 = +0.0180<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0040<br>r:enemyGooKill: 0 = +0.0010<br>b:captureEnemy: 3 = +0.0140<br>r:buildGate: 7 = +0.0070<br>r:EndAPGates: 44 = +0.1760<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "4", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "YS=30 > GC=23 > BG=21 > CC=18"}, {"name": "selfplay-iter4-ys-g18-d12", "run": 0, "iter": 0, "faction": "YS", "score": "0.402", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 12 = +0.0600<br>elderSigns: 0 = +0.0000<br>ritualValue: 0 = +0.0000<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0030<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 7 = 0.0350<br>p:lostGate: 1 = 0.0060<br>p:abandon: 2 = 0.0100<br>p:capture: 5 = 0.0240<br>p:gooLost: 1 = 0.0070<br>p:cultistUnprot: 4 = 0.0210<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 3 = +0.0140<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 2 = +0.0120<br>r:buildGate: 11 = +0.0110<br>r:EndAPGates: 53 = +0.2120<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "4", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "CC=36 > GC=22 > BG=14 > YS=12"}, {"name": "selfplay-iter4-bg-g17-d24", "run": 0, "iter": 0, "faction": "??", "score": "0.184", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 24 = +0.1200<br>elderSigns: 7 = +0.0330<br>ritualValue: 0 = +0.0000<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 7 = 0.0330<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 2 = 0.0120<br>p:gooLost: 1 = 0.0040<br>p:cultistUnprot: 2 = 0.0090<br>r:killEnemy: 8 = +0.0410<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0120<br>r:enemyGooKill: 0 = +0.0010<br>b:captureEnemy: 5 = +0.0260<br>r:buildGate: 8 = +0.0080<br>r:EndAPGates: 89 = +0.3560<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "GC=25 > BG=24 > CC=18 > YS=7"}, {"name": "selfplay-iter4-gc-g16-WIN-d32", "run": 0, "iter": 0, "faction": "GC", "score": "1.000", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 32 = +0.1600<br>elderSigns: 12 = +0.0580<br>ritualValue: 10 = +0.0500<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 1 = +0.0050<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0030<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0010<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0130<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 2 = 0.0080<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 2 = 0.0080<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 4 = +0.0180<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 4 = +0.0180<br>r:buildGate: 8 = +0.0080<br>r:EndAPGates: 67 = +0.2680<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "GC=32 > CC=14 > BG=13 > YS=11"}, {"name": "selfplay-iter4-cc-g15-d11", "run": 0, "iter": 0, "faction": "CC", "score": "0.071", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 11 = +0.0550<br>elderSigns: 2 = +0.0080<br>ritualValue: 4 = +0.0200<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0000<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 4 = 0.0210<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 9 = 0.0440<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 1 = 0.0030<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = 0.0060<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 7 = +0.0070<br>r:EndAPGates: 31 = +0.1240<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=27 > GC=15 > CC=11 > YS=10"}, {"name": "selfplay-iter4-ys-g14-d51", "run": 0, "iter": 0, "faction": "YS", "score": "1.300", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 51 = +0.2550<br>elderSigns: 17 = +0.0830<br>ritualValue: 19 = +0.0950<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 1 = +0.0050<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0160<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0030<br>p:capture: 3 = 0.0160<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 1 = 0.0070<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0060<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 3 = +0.0140<br>r:buildGate: 4 = +0.0040<br>r:EndAPGates: 102 = +0.4080<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "YS=51 > GC=23 > CC=18 > BG=13"}, {"name": "selfplay-iter4-bg-g13-d21", "run": 0, "iter": 0, "faction": "??", "score": "0.647", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 21 = +0.1050<br>elderSigns: 0 = +0.0000<br>ritualValue: 0 = +0.0000<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0050<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 6 = 0.0320<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 2 = 0.0080<br>p:gooLost: 1 = 0.0030<br>p:cultistUnprot: 1 = 0.0050<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0080<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 2 = +0.0080<br>r:buildGate: 17 = +0.0170<br>r:EndAPGates: 76 = +0.3040<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "CC=35 > GC=28 > BG=21 > YS=12"}, {"name": "selfplay-iter4-gc-g12-WIN-d32", "run": 0, "iter": 0, "faction": "GC", "score": "1.000", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 32 = +0.1600<br>elderSigns: 15 = +0.0750<br>ritualValue: 6 = +0.0300<br>ownGOO: 2 = +0.0100<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0030<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0010<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0150<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 2 = 0.0120<br>p:gooLost: 1 = 0.0030<br>p:cultistUnprot: 4 = 0.0210<br>r:killEnemy: 10 = +0.0520<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 4 = +0.0220<br>r:enemyGooKill: 0 = +0.0020<br>b:captureEnemy: 2 = +0.0120<br>r:buildGate: 7 = +0.0070<br>r:EndAPGates: 67 = +0.2680<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "GC=32 > BG=20 > CC=16 > YS=13"}, {"name": "selfplay-iter4-cc-g11-d21", "run": 0, "iter": 0, "faction": "CC", "score": "0.133", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 21 = +0.1050<br>elderSigns: 2 = +0.0080<br>ritualValue: 9 = +0.0450<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 1 = +0.0060<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 1 = +0.0030<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 2 = 0.0100<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0070<br>p:capture: 4 = 0.0180<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 4 = 0.0200<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0060<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 3 = +0.0030<br>r:EndAPGates: 56 = +0.2240<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "CC=21 > BG=16 > GC=10 > YS=10"}, {"name": "selfplay-iter4-ys-g10-d26", "run": 0, "iter": 0, "faction": "YS", "score": "0.731", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 26 = +0.1300<br>elderSigns: 13 = +0.0660<br>ritualValue: 7 = +0.0350<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0170<br>p:lostGate: 1 = 0.0030<br>p:abandon: 2 = 0.0080<br>p:capture: 5 = 0.0240<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 1 = 0.0070<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = +0.0000<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 4 = +0.0220<br>r:buildGate: 5 = +0.0050<br>r:EndAPGates: 39 = +0.1560<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "GC=38 > CC=28 > YS=26 > BG=17"}, {"name": "selfplay-iter4-bg-g9-d27", "run": 0, "iter": 0, "faction": "??", "score": "0.752", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 27 = +0.1350<br>elderSigns: 0 = +0.0000<br>ritualValue: 0 = +0.0000<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 10 = 0.0480<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 1 = 0.0040<br>p:gooLost: 1 = 0.0030<br>p:cultistUnprot: 5 = 0.0240<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0100<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 2 = +0.0120<br>r:buildGate: 27 = +0.0270<br>r:EndAPGates: 98 = +0.3920<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "CC=42 > GC=34 > BG=27 > YS=15"}, {"name": "selfplay-iter4-gc-g8-d42", "run": 0, "iter": 0, "faction": "GC", "score": "1.200", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 42 = +0.2100<br>elderSigns: 13 = +0.0660<br>ritualValue: 11 = +0.0550<br>ownGOO: 2 = +0.0100<br>b:goodRitual: 1 = +0.0050<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0130<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 3 = 0.0160<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 3 = 0.0160<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 5 = +0.0260<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 7 = +0.0340<br>r:buildGate: 7 = +0.0070<br>r:EndAPGates: 95 = +0.3800<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "2", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "CC=47 > GC=42 > BG=24 > YS=6"}, {"name": "selfplay-iter4-cc-g7-d14", "run": 0, "iter": 0, "faction": "CC", "score": "0.092", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 14 = +0.0700<br>elderSigns: 2 = +0.0080<br>ritualValue: 5 = +0.0250<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0000<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 4 = 0.0210<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 10 = 0.0520<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 0 = 0.0020<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0060<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 6 = +0.0060<br>r:EndAPGates: 36 = +0.1440<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=18 > GC=16 > CC=14 > YS=9"}, {"name": "selfplay-iter4-ys-g6-d28", "run": 0, "iter": 0, "faction": "YS", "score": "0.888", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 28 = +0.1400<br>elderSigns: 8 = +0.0410<br>ritualValue: 5 = +0.0250<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0030<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 4 = 0.0200<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 4 = 0.0180<br>p:gooLost: 1 = 0.0040<br>p:cultistUnprot: 2 = 0.0090<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0100<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 2 = +0.0120<br>r:buildGate: 8 = +0.0080<br>r:EndAPGates: 67 = +0.2680<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "2", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "CC=34 > YS=28 > GC=20 > BG=13"}, {"name": "selfplay-iter4-bg-g5-d30", "run": 0, "iter": 0, "faction": "??", "score": "0.952", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 30 = +0.1500<br>elderSigns: 3 = +0.0170<br>ritualValue: 3 = +0.0150<br>ownGOO: 1 = +0.0070<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 6 = 0.0290<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0070<br>p:capture: 4 = 0.0200<br>p:gooLost: 1 = 0.0030<br>p:cultistUnprot: 2 = 0.0080<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 3 = +0.0160<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 6 = +0.0320<br>r:buildGate: 5 = +0.0050<br>r:EndAPGates: 109 = +0.4360<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "GC=38 > CC=31 > BG=30 > YS=28"}, {"name": "selfplay-iter4-gc-g4-WIN-d50", "run": 0, "iter": 0, "faction": "GC", "score": "1.000", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 50 = +0.2500<br>elderSigns: 13 = +0.0660<br>ritualValue: 4 = +0.0200<br>ownGOO: 2 = +0.0100<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0050<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0160<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 2 = 0.0100<br>p:gooLost: 1 = 0.0040<br>p:cultistUnprot: 1 = 0.0060<br>r:killEnemy: 0 = +0.0020<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 6 = +0.0320<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 3 = +0.0160<br>r:buildGate: 16 = +0.0160<br>r:EndAPGates: 133 = +0.5320<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "GC=50 > BG=27 > YS=26 > CC=15"}, {"name": "selfplay-iter4-cc-g3-d36", "run": 0, "iter": 0, "faction": "CC", "score": "0.195", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 36 = +0.1800<br>elderSigns: 5 = +0.0250<br>ritualValue: 13 = +0.0650<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 1 = +0.0050<br>gateTaken: 1 = +0.0040<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0170<br>p:lostGate: 0 = +0.0000<br>p:abandon: 0 = 0.0020<br>p:capture: 2 = 0.0120<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 4 = 0.0180<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0100<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 1 = +0.0040<br>r:buildGate: 2 = +0.0020<br>r:EndAPGates: 86 = +0.3440<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "CC=36 > BG=23 > GC=16 > YS=9"}, {"name": "selfplay-iter4-ys-g2-d28", "run": 0, "iter": 0, "faction": "YS", "score": "0.149", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 28 = +0.1400<br>elderSigns: 8 = +0.0410<br>ritualValue: 13 = +0.0650<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 1 = +0.0040<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 1 = 0.0060<br>p:lostGate: 0 = +0.0000<br>p:abandon: 0 = 0.0020<br>p:capture: 1 = 0.0060<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 2 = 0.0120<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = 0.0040<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 1 = +0.0040<br>r:buildGate: 2 = +0.0020<br>r:EndAPGates: 58 = +0.2320<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "YS=28 > CC=25 > GC=15 > BG=11"}, {"name": "selfplay-iter4-bg-g1-d30", "run": 0, "iter": 0, "faction": "??", "score": "0.779", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 30 = +0.1500<br>elderSigns: 0 = +0.0000<br>ritualValue: 9 = +0.0450<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 3 = 0.0170<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 3 = 0.0160<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 5 = 0.0250<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0040<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 1 = +0.0040<br>r:buildGate: 8 = +0.0080<br>r:EndAPGates: 71 = +0.2840<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "GC=37 > BG=30 > CC=15 > YS=12"}, {"name": "selfplay-iter4-gc-g0-WIN-d40", "run": 0, "iter": 0, "faction": "GC", "score": "1.000", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 40 = +0.2000<br>elderSigns: 13 = +0.0660<br>ritualValue: 12 = +0.0600<br>ownGOO: 2 = +0.0100<br>b:goodRitual: 1 = +0.0050<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0050<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0170<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 2 = 0.0120<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 3 = 0.0160<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 4 = +0.0200<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 5 = +0.0260<br>r:buildGate: 11 = +0.0110<br>r:EndAPGates: 83 = +0.3320<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "GC=40 > CC=26 > BG=25 > YS=10"}, {"name": "selfplay-iter3-cc-g19-d4", "run": 0, "iter": 0, "faction": "CC", "score": "0.230", "breakdown": "spellbooks: 40 = +0.2000<br>doomEarned: 4 = +0.0200<br>elderSigns: 0 = +0.0000<br>ritualValue: 0 = +0.0000<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 6 = 0.0320<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 11 = 0.0540<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 1 = 0.0030<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = 0.0100<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 1 = +0.0040<br>r:buildGate: 13 = +0.0130<br>r:EndAPGates: 17 = +0.0680<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "4", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "YS=37 > BG=19 > GC=11 > CC=4"}, {"name": "selfplay-iter3-ys-g18-d21", "run": 0, "iter": 0, "faction": "YS", "score": "0.555", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 21 = +0.1050<br>elderSigns: 7 = +0.0330<br>ritualValue: 5 = +0.0250<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 5 = 0.0230<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 9 = 0.0440<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 3 = 0.0140<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = +0.0020<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 15 = +0.0150<br>r:EndAPGates: 67 = +0.2680<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "4", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "GC=34 > CC=34 > BG=33 > YS=21"}, {"name": "selfplay-iter3-bg-g17-d18", "run": 0, "iter": 0, "faction": "??", "score": "0.623", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 18 = +0.0900<br>elderSigns: 0 = +0.0000<br>ritualValue: 6 = +0.0300<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 1 = +0.0040<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 2 = 0.0120<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0030<br>p:capture: 2 = 0.0080<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 2 = 0.0080<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = +0.0020<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 2 = +0.0020<br>r:EndAPGates: 37 = +0.1480<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "GC=31 > BG=18 > CC=15 > YS=12"}, {"name": "selfplay-iter3-gc-g16-WIN-d38", "run": 0, "iter": 0, "faction": "GC", "score": "1.000", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 38 = +0.1900<br>elderSigns: 18 = +0.0910<br>ritualValue: 11 = +0.0550<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0030<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0010<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 5 = 0.0240<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0080<br>p:capture: 4 = 0.0200<br>p:gooLost: 1 = 0.0050<br>p:cultistUnprot: 2 = 0.0110<br>r:killEnemy: 5 = +0.0260<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = 0.0060<br>r:enemyGooKill: 0 = +0.0010<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 5 = +0.0050<br>r:EndAPGates: 66 = +0.2640<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "GC=38 > CC=28 > BG=25 > YS=14"}, {"name": "selfplay-iter3-cc-g15-d3", "run": 0, "iter": 0, "faction": "CC", "score": "0.185", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 3 = +0.0150<br>elderSigns: 0 = +0.0000<br>ritualValue: 0 = +0.0000<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 4 = 0.0190<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 13 = 0.0640<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 1 = 0.0030<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = 0.0040<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0020<br>r:buildGate: 17 = +0.0170<br>r:EndAPGates: 15 = +0.0600<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "4", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "YS=41 > GC=23 > BG=22 > CC=3"}, {"name": "selfplay-iter3-ys-g14-d3", "run": 0, "iter": 0, "faction": "YS", "score": "0.046", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 3 = +0.0150<br>elderSigns: 0 = +0.0000<br>ritualValue: 0 = +0.0000<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 1 = +0.0040<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 1 = +0.0050<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0040<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 4 = 0.0180<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0050<br>p:capture: 2 = 0.0120<br>p:gooLost: 1 = 0.0030<br>p:cultistUnprot: 1 = 0.0030<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0040<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0020<br>r:buildGate: 2 = +0.0020<br>r:EndAPGates: 13 = +0.0520<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "4", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "GC=32 > CC=17 > BG=15 > YS=3"}, {"name": "selfplay-iter3-bg-g13-d19", "run": 0, "iter": 0, "faction": "??", "score": "0.103", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 19 = +0.0950<br>elderSigns: 0 = +0.0000<br>ritualValue: 6 = +0.0300<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0030<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 2 = 0.0110<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0070<br>p:capture: 2 = 0.0080<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 2 = 0.0080<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = 0.0060<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0020<br>r:buildGate: 5 = +0.0050<br>r:EndAPGates: 42 = +0.1680<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "GC=32 > CC=21 > BG=19 > YS=10"}, {"name": "selfplay-iter3-gc-g12-WIN-d32", "run": 0, "iter": 0, "faction": "GC", "score": "1.000", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 32 = +0.1600<br>elderSigns: 12 = +0.0580<br>ritualValue: 9 = +0.0450<br>ownGOO: 2 = +0.0100<br>b:goodRitual: 1 = +0.0050<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0150<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0070<br>p:capture: 0 = 0.0020<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 3 = 0.0170<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 5 = +0.0260<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 1 = +0.0040<br>r:buildGate: 5 = +0.0050<br>r:EndAPGates: 78 = +0.3120<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "GC=32 > CC=27 > BG=22 > YS=14"}, {"name": "selfplay-iter3-cc-g11-d12", "run": 0, "iter": 0, "faction": "CC", "score": "0.512", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 12 = +0.0600<br>elderSigns: 2 = +0.0080<br>ritualValue: 3 = +0.0150<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 4 = 0.0180<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0080<br>p:capture: 5 = 0.0260<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 0 = 0.0020<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = +0.0000<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 2 = +0.0120<br>r:buildGate: 6 = +0.0060<br>r:EndAPGates: 45 = +0.1800<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "4", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "YS=41 > GC=21 > BG=19 > CC=12"}, {"name": "selfplay-iter3-ys-g10-d5", "run": 0, "iter": 0, "faction": "YS", "score": "0.174", "breakdown": "spellbooks: 16 = +0.0800<br>doomEarned: 5 = +0.0250<br>elderSigns: 3 = +0.0170<br>ritualValue: 2 = +0.0100<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 0 = +0.0020<br>b:emptyGate: 0 = +0.0000<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0040<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 2 = 0.0090<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0030<br>p:capture: 3 = 0.0160<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 3 = 0.0160<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0040<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 1 = +0.0040<br>r:buildGate: 1 = +0.0010<br>r:EndAPGates: 13 = +0.0520<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "4", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "BG=18 > GC=16 > CC=15 > YS=5"}, {"name": "selfplay-iter3-bg-g9-d19", "run": 0, "iter": 0, "faction": "??", "score": "0.582", "breakdown": "spellbooks: 16 = +0.0800<br>doomEarned: 19 = +0.0950<br>elderSigns: 2 = +0.0080<br>ritualValue: 6 = +0.0300<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 0 = +0.0020<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 1 = +0.0030<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0040<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 2 = 0.0080<br>p:lostGate: 0 = +0.0000<br>p:abandon: 0 = +0.0000<br>p:capture: 0 = 0.0020<br>p:gooLost: 0 = 0.0010<br>p:cultistUnprot: 2 = 0.0080<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = +0.0000<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 1 = +0.0010<br>r:EndAPGates: 41 = +0.1640<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "GC=19 > BG=19 > CC=8 > YS=7"}, {"name": "selfplay-iter3-gc-g8-d18", "run": 0, "iter": 0, "faction": "GC", "score": "0.506", "breakdown": "spellbooks: 32 = +0.1600<br>doomEarned: 18 = +0.0900<br>elderSigns: 10 = +0.0500<br>ritualValue: 5 = +0.0250<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 1 = +0.0040<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0040<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0160<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0050<br>p:capture: 3 = 0.0160<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 2 = 0.0120<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = 0.0020<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 2 = +0.0020<br>r:EndAPGates: 26 = +0.1040<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "3", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "CC=30 > YS=19 > GC=18 > BG=17"}, {"name": "selfplay-iter3-cc-g7-WIN-d16", "run": 0, "iter": 0, "faction": "CC", "score": "1.000", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 16 = +0.0800<br>elderSigns: 3 = +0.0170<br>ritualValue: 7 = +0.0350<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0160<br>p:lostGate: 1 = 0.0030<br>p:abandon: 1 = 0.0070<br>p:capture: 4 = 0.0200<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 2 = 0.0110<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = 0.0040<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 3 = +0.0160<br>r:buildGate: 7 = +0.0070<br>r:EndAPGates: 39 = +0.1560<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "4", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "BG=32 > GC=23 > YS=21 > CC=16"}, {"name": "selfplay-iter3-ys-g6-d23", "run": 0, "iter": 0, "faction": "YS", "score": "0.865", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 23 = +0.1150<br>elderSigns: 3 = +0.0170<br>ritualValue: 10 = +0.0500<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 1 = +0.0040<br>b:emptyGate: 0 = +0.0010<br>gateDefended: 1 = +0.0050<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 2 = 0.0110<br>p:lostGate: 0 = +0.0000<br>p:abandon: 0 = +0.0000<br>p:capture: 1 = 0.0040<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 1 = 0.0060<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0040<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 2 = +0.0020<br>r:EndAPGates: 61 = +0.2440<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "YS=23 > CC=21 > GC=14 > BG=12"}, {"name": "selfplay-iter3-bg-g5-d31", "run": 0, "iter": 0, "faction": "??", "score": "0.867", "breakdown": "spellbooks: 16 = +0.0800<br>doomEarned: 31 = +0.1550<br>elderSigns: 0 = +0.0000<br>ritualValue: 11 = +0.0550<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 0 = +0.0000<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0010<br>p:unitLoss: 3 = 0.0140<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 2 = 0.0080<br>p:gooLost: 0 = +0.0000<br>p:cultistUnprot: 3 = 0.0140<br>r:killEnemy: 1 = +0.0070<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 0 = +0.0000<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 0 = +0.0000<br>r:buildGate: 13 = +0.0130<br>r:EndAPGates: 68 = +0.2720<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "?", "is_arena": false, "is_win": null, "has_replay": false, "doom_ranking": "BG=31 > CC=22 > GC=14 > YS=13"}, {"name": "selfplay-iter3-gc-g4-WIN-d34", "run": 0, "iter": 0, "faction": "GC", "score": "1.000", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 34 = +0.1700<br>elderSigns: 17 = +0.0830<br>ritualValue: 11 = +0.0550<br>ownGOO: 2 = +0.0100<br>b:goodRitual: 1 = +0.0030<br>gateTaken: 2 = +0.0080<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 2 = +0.0100<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0030<br>b:sbUse: 0 = +0.0000<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 2 = 0.0110<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0050<br>p:capture: 2 = 0.0080<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 1 = 0.0040<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0080<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 1 = +0.0060<br>r:buildGate: 4 = +0.0040<br>r:EndAPGates: 54 = +0.2160<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Learning", "placement": "1", "is_arena": false, "is_win": true, "has_replay": false, "doom_ranking": "GC=34 > CC=25 > BG=15 > YS=8"}, {"name": "selfplay-iter3-cc-g3-d15", "run": 0, "iter": 0, "faction": "CC", "score": "0.533", "breakdown": "spellbooks: 48 = +0.2400<br>doomEarned: 15 = +0.0750<br>elderSigns: 3 = +0.0170<br>ritualValue: 6 = +0.0300<br>ownGOO: 1 = +0.0050<br>b:goodRitual: 1 = +0.0050<br>gateTaken: 2 = +0.0100<br>b:emptyGate: 1 = +0.0030<br>gateDefended: 1 = +0.0070<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 1 = +0.0040<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 7 = 0.0340<br>p:lostGate: 0 = +0.0000<br>p:abandon: 2 = 0.0100<br>p:capture: 12 = 0.0580<br>p:gooLost: 0 = 0.0020<br>p:cultistUnprot: 1 = 0.0040<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 1 = +0.0040<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 3 = +0.0140<br>r:buildGate: 9 = +0.0090<br>r:EndAPGates: 51 = +0.2040<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "4", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "GC=41 > YS=41 > BG=26 > CC=15"}, {"name": "selfplay-iter3-ys-g2-d10", "run": 0, "iter": 0, "faction": "YS", "score": "0.288", "breakdown": "spellbooks: 24 = +0.1200<br>doomEarned: 10 = +0.0500<br>elderSigns: 3 = +0.0170<br>ritualValue: 3 = +0.0150<br>ownGOO: 0 = +0.0000<br>b:goodRitual: 0 = +0.0000<br>gateTaken: 1 = +0.0060<br>b:emptyGate: 0 = +0.0020<br>gateDefended: 0 = +0.0020<br>endAP1Gates: 1 = +0.0050<br>preDoomPower: 1 = +0.0050<br>unitsOnMap: 0 = +0.0020<br>b:sbUse: 0 = +0.0010<br>b:powerUse: 0 = +0.0000<br>p:unitLoss: 3 = 0.0150<br>p:lostGate: 0 = +0.0000<br>p:abandon: 1 = 0.0050<br>p:capture: 5 = 0.0240<br>p:gooLost: 1 = 0.0030<br>p:cultistUnprot: 3 = 0.0130<br>r:killEnemy: 0 = +0.0000<br>r:powerBlock: 1 = +0.0050<br>r:apPowerOrder: 2 = +0.0080<br>r:enemyGooKill: 0 = +0.0000<br>b:captureEnemy: 2 = +0.0080<br>r:buildGate: 3 = +0.0030<br>r:EndAPGates: 25 = +0.1000<br>z:slot10: 0 = +0.0000<br>z:slot11: 0 = +0.0000<br>z:slot12: 0 = +0.0000", "winner": "Champion", "placement": "4", "is_arena": false, "is_win": false, "has_replay": false, "doom_ranking": "GC=22 > CC=17 > BG=14 > YS=10"}];
-        const tbody = document.querySelector('#games tbody');
+        let currentWeights = {};
 
-        games.forEach(g => {
-            const tr = document.createElement('tr');
-            if (g.is_arena) tr.classList.add('arena');
+        function showTab(name) {
+            console.log('showTab called with:', name);
 
-            const winClass = g.is_win ? 'win' : 'loss';
+            // Remove active from all tabs and content
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
 
-            tr.innerHTML = `
-                <td>${g.run}</td>
-                <td>${g.iter}</td>
-                <td>${g.is_arena ? 'Arena' : 'Self-play'}</td>
-                <td>${g.faction}</td>
-                <td class="${winClass}">${g.winner}</td>
-                <td>${g.placement}</td>
-                <td>${g.score}</td>
-                <td class="breakdown">${g.breakdown}</td>
-                <td>${g.doom_ranking}</td>
-                <td><a href="${g.name}.txt" target="_blank">trace</a></td>
-                <td>${g.has_replay ? '<a href="replay-' + g.name + '.html" target="_blank">replay</a>' : '-'}</td>
-            `;
-            tbody.appendChild(tr);
-        });
+            // Find and activate the correct tab button by iterating
+            const expectedOnclick = "showTab('" + name + "')";
+            console.log('Looking for onclick:', expectedOnclick);
+
+            let foundTab = false;
+            document.querySelectorAll('.tab').forEach(t => {
+                const onclick = t.getAttribute('onclick');
+                console.log('Checking tab onclick:', onclick);
+                if (onclick === expectedOnclick) {
+                    console.log('Found matching tab!');
+                    t.classList.add('active');
+                    foundTab = true;
+                }
+            });
+
+            if (!foundTab) {
+                console.error('Tab button not found for:', name);
+            }
+
+            // Activate content
+            const contentEl = document.getElementById(name);
+            if (contentEl) {
+                console.log('Activating content element:', name);
+                contentEl.classList.add('active');
+            } else {
+                console.error('Content element not found for:', name);
+            }
+
+            // Load data for specific tabs
+            if (name === 'games') {
+                console.log('Loading games...');
+                loadIters();
+            }
+            if (name === 'weights') {
+                console.log('Loading weights...');
+                loadWeights();
+            }
+            if (name === 'control') {
+                console.log('Loading checkpoints...');
+                loadCheckpoints();
+            }
+            if (name === 'progress') {
+                console.log('Loading progress...');
+                loadProgress();
+            }
+            if (name === 'corpus') {
+                console.log('Loading training corpus...');
+                initCorpus();
+            }
+        }
+
+        async function updateStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+
+                const indicator = document.getElementById('status-indicator');
+                indicator.className = 'status-indicator ' + (data.running ? 'running' : 'stopped');
+
+                document.getElementById('run-tag').textContent = data.run_tag || '-';
+
+                // Progress: show bootstrap or iteration progress
+                let progressText = '-';
+                if (data.bootstrap_phase === true) {
+                    progressText = `Bootstrap: epoch ${data.bootstrap_epoch}/${data.bootstrap_total_epochs}`;
+                } else if (data.current_iter > 0) {
+                    progressText = `iter ${data.current_iter} (game ${data.current_game}/${data.total_games}) / ${data.target_iters}`;
+                } else if (data.current_game > 0) {
+                    progressText = `iter 1 starting (game ${data.current_game}/${data.total_games})`;
+                } else if (data.running && data.current_iter === 0) {
+                    // Brain is running but iter not started - likely in bootstrap
+                    progressText = 'Bootstrap starting...';
+                }
+                document.getElementById('progress-status').textContent = progressText;
+
+                document.getElementById('elapsed').textContent = data.phase_elapsed_human || '-';
+
+                // Dual ETA display
+                if (data.bootstrap_phase) {
+                    // Bootstrap ETA
+                    const bootstrapRemaining = data.bootstrap_total_epochs - data.bootstrap_epoch;
+                    const timePerEpoch = data.phase_elapsed_seconds / data.bootstrap_epoch;
+                    const bootstrapETA = Math.round(bootstrapRemaining * timePerEpoch);
+                    document.getElementById('iter-eta').textContent = bootstrapETA > 0 ? formatDuration(bootstrapETA) : 'Calculating...';
+                    document.getElementById('full-run-eta').textContent = 'After bootstrap';
+                } else {
+                    document.getElementById('iter-eta').textContent = data.iter_eta_human || '-';
+                    document.getElementById('full-run-eta').textContent = data.run_eta_human || '-';
+                }
+
+                function formatDuration(seconds) {
+                    if (seconds < 60) return `${seconds}s`;
+                    if (seconds < 3600) return `${Math.floor(seconds/60)}m ${seconds%60}s`;
+                    const hours = Math.floor(seconds/3600);
+                    const mins = Math.floor((seconds%3600)/60);
+                    return `${hours}h ${mins}m`;
+                }
+
+                document.getElementById('win-rate').textContent = data.arena_win_rate ? (data.arena_win_rate * 100).toFixed(1) + '%' : '-';
+                document.getElementById('arena-wins').textContent = data.arena_wins !== undefined ? `${data.arena_wins}/${data.arena_total}` : '-';
+
+                // Avg Doom - update LABEL with run/iter
+                const doomLabel = data.run_tag && data.current_iter ? `Avg Doom (${data.run_tag} I${data.current_iter})` : 'Avg Doom';
+                document.getElementById('avg-doom-label').textContent = doomLabel;
+                document.getElementById('avg-doom').textContent = data.avg_doom ? data.avg_doom.toFixed(1) : '-';
+
+                // Best Score - update LABEL with run/iter
+                const scoreLabel = data.best_run_iter ? `Best Score (${data.best_run_iter})` : 'Best Score';
+                document.getElementById('best-score-label').textContent = scoreLabel;
+                document.getElementById('best-score').textContent = data.best_score ? data.best_score.toFixed(2) : '-';
+
+                // Configuration
+                document.getElementById('run-config').textContent = data.run_config || 'Unknown configuration';
+
+                // Disk space
+                document.getElementById('claude-storage').textContent = data.claude_storage_gb ? `${data.claude_storage_gb} GB` : '-';
+                document.getElementById('disk-available').textContent = data.disk_available_gb ? `${data.disk_available_gb} GB` : '-';
+
+                // Load performance history
+                await loadPerformanceHistory();
+            } catch (e) {
+                console.error('Status update failed:', e);
+            }
+        }
+
+        let allPerformanceData = [];
+        let performancePage = 1;
+        const performancePerPage = 20;
+
+        async function loadPerformanceHistory() {
+            try {
+                const res = await fetch('/api/performance-history');
+                allPerformanceData = await res.json();
+                performancePage = 1;
+                renderPerformanceHistory();
+            } catch (e) {
+                console.error('Performance history load failed:', e);
+            }
+        }
+
+        function renderPerformanceHistory() {
+            const tbody = document.getElementById('performance-history-body');
+
+            if (!allPerformanceData || allPerformanceData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="padding:20px;text-align:center;color:#666;">No data</td></tr>';
+                document.getElementById('performance-page-info').textContent = 'No data';
+                return;
+            }
+
+            const totalPages = Math.ceil(allPerformanceData.length / performancePerPage);
+            const start = (performancePage - 1) * performancePerPage;
+            const end = start + performancePerPage;
+            const pageData = allPerformanceData.slice(start, end);
+
+            const rows = pageData.map((row, idx) => {
+                const winRate = row.total > 0 ? ((row.wins / row.total) * 100).toFixed(0) + '%' : '-';
+                const expandId = `perf-expand-${start + idx}`;
+                return `
+                    <tr style="border-bottom:1px solid #16213e;cursor:pointer;background:#1a1a2e;" onclick="togglePerformanceFactionBreakdown('${row.run}', ${row.iter}, '${expandId}')" onmouseover="this.style.background='#16213e'" onmouseout="this.style.background='#1a1a2e'">
+                        <td style="padding:8px;">${row.run}</td>
+                        <td style="padding:8px;">I${String(row.iter).padStart(2, '0')}</td>
+                        <td style="padding:8px;text-align:right;">${row.avg_doom.toFixed(1)}</td>
+                        <td style="padding:8px;text-align:right;">${row.avg_score.toFixed(2)}</td>
+                        <td style="padding:8px;">${row.type}</td>
+                        <td style="padding:8px;text-align:right;">${row.wins}/${row.total} (${winRate})</td>
+                        <td style="padding:8px;text-align:right;">${row.total}</td>
+                    </tr>
+                    <tr id="${expandId}" style="display:none;background:#0f3460;">
+                        <td colspan="7" style="padding:15px;">
+                            <div style="padding:10px;background:#16213e;border-radius:4px;">
+                                <strong style="color:#e94560;">Per-Faction Breakdown:</strong>
+                                <div id="${expandId}-content" style="margin-top:10px;color:#ccc;">Loading...</div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = rows;
+            document.getElementById('performance-page-info').textContent = `Page ${performancePage} of ${totalPages}`;
+        }
+
+        async function togglePerformanceFactionBreakdown(run, iter, expandId) {
+            const expandRow = document.getElementById(expandId);
+            if (expandRow.style.display === 'none') {
+                expandRow.style.display = 'table-row';
+                // Load faction data
+                const contentDiv = document.getElementById(`${expandId}-content`);
+                try {
+                    const res = await fetch(`/api/faction-breakdown?run=${run}&iteration=${iter}`);
+                    const factions = await res.json();
+                    if (factions.length === 0) {
+                        contentDiv.innerHTML = '<p style="color:#888;">No faction data available</p>';
+                    } else {
+                        const factionHTML = factions.map(f => {
+                            const winRate = f.planned > 0 ? ((f.wins / f.planned) * 100).toFixed(0) + '%' : '-';
+                            const progress = f.planned > 0 ? ((f.games / f.planned) * 100).toFixed(0) + '%' : '-';
+                            return `
+                                <div style="padding:8px;border-bottom:1px solid #0f3460;display:flex;justify-content:space-between;align-items:center;">
+                                    <span style="font-weight:bold;color:#4ade80;min-width:60px;">${f.faction}</span>
+                                    <span style="min-width:120px;">Games: ${f.games}/${f.planned} (${progress})</span>
+                                    <span style="min-width:100px;">Wins: ${f.wins}</span>
+                                    <span style="min-width:120px;">Win Rate: ${winRate}</span>
+                                    <span style="min-width:120px;">Avg Doom: ${f.avg_doom}</span>
+                                    <span style="min-width:120px;">Avg Score: ${f.avg_score}</span>
+                                </div>
+                            `;
+                        }).join('');
+                        contentDiv.innerHTML = factionHTML;
+                    }
+                } catch (e) {
+                    contentDiv.innerHTML = `<p style="color:#e94560;">Error loading faction data: ${e.message}</p>`;
+                }
+            } else {
+                expandRow.style.display = 'none';
+            }
+        }
+
+        async function toggleProgressFactionBreakdown() {
+            const expandDiv = document.getElementById('progress-expansion');
+            if (expandDiv.style.display === 'none') {
+                expandDiv.style.display = 'block';
+                // Get current run and iter from status
+                const runTag = document.getElementById('run-tag').textContent;
+                const progressText = document.getElementById('progress-status').textContent;
+
+                // Extract iteration from progress text (e.g., "iter 12 (game 1289/1600) / 20")
+                const iterMatch = progressText.match(/iter (\d+)/);
+                if (!iterMatch || runTag === '-') {
+                    document.getElementById('progress-expansion-content').innerHTML = '<p style="color:#888;">No active iteration</p>';
+                    return;
+                }
+
+                const currentIter = parseInt(iterMatch[1]);
+                const contentDiv = document.getElementById('progress-expansion-content');
+                contentDiv.innerHTML = 'Loading...';
+
+                try {
+                    const res = await fetch(`/api/faction-breakdown?run=${runTag}&iteration=${currentIter}`);
+                    const factions = await res.json();
+                    if (factions.length === 0) {
+                        contentDiv.innerHTML = '<p style="color:#888;">No faction data available</p>';
+                    } else {
+                        const factionHTML = factions.map(f => {
+                            const winRate = f.planned > 0 ? ((f.wins / f.planned) * 100).toFixed(0) + '%' : '-';
+                            const progress = f.planned > 0 ? ((f.games / f.planned) * 100).toFixed(0) + '%' : '-';
+                            return `
+                                <div style="padding:8px;border-bottom:1px solid #0f3460;display:flex;justify-content:space-between;align-items:center;">
+                                    <span style="font-weight:bold;color:#4ade80;min-width:60px;">${f.faction}</span>
+                                    <span style="min-width:120px;">Games: ${f.games}/${f.planned} (${progress})</span>
+                                    <span style="min-width:100px;">Wins: ${f.wins}</span>
+                                    <span style="min-width:120px;">Win Rate: ${winRate}</span>
+                                    <span style="min-width:120px;">Avg Doom: ${f.avg_doom}</span>
+                                    <span style="min-width:120px;">Avg Score: ${f.avg_score}</span>
+                                </div>
+                            `;
+                        }).join('');
+                        contentDiv.innerHTML = factionHTML;
+                    }
+                } catch (e) {
+                    contentDiv.innerHTML = `<p style="color:#e94560;">Error loading faction data: ${e.message}</p>`;
+                }
+            } else {
+                expandDiv.style.display = 'none';
+            }
+        }
+
+        function changePerformancePage(delta) {
+            const totalPages = Math.ceil(allPerformanceData.length / performancePerPage);
+            performancePage = Math.max(1, Math.min(totalPages, performancePage + delta));
+            renderPerformanceHistory();
+        }
+
+        async function loadCheckpoints() {
+            const res = await fetch('/api/checkpoints');
+            const data = await res.json();
+            const tbody = document.querySelector('#checkpoints-table tbody');
+            tbody.innerHTML = data.map(c => `
+                <tr>
+                    <td>${c.name}</td>
+                    <td>${c.tag}</td>
+                    <td>${c.iter || '-'}</td>
+                    <td>${(c.score * 100).toFixed(1)}%</td>
+                    <td>${c.best_game_score ? c.best_game_score.toFixed(3) : '-'}</td>
+                    <td><button class="secondary" onclick="loadCheckpoint('${c.path}')">Load</button></td>
+                </tr>
+            `).join('');
+        }
+
+        let currentPage = 1;
+        const gamesPerPage = 50;
+
+        async function loadIters() {
+            const res = await fetch('/api/games/metadata');
+            const metadata = await res.json();
+
+            const runSelect = document.getElementById('run-select');
+            runSelect.innerHTML = '<option value="">All</option>' +
+                metadata.runs.map(r => `<option value="${r}">${r}</option>`).join('');
+
+            const iterSelect = document.getElementById('iter-select');
+            iterSelect.innerHTML = '<option value="">All</option>' +
+                metadata.iters.map(i => `<option value="${i}">${i}</option>`).join('');
+
+            currentPage = 1;
+            loadGames();
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                loadGames();
+            }
+        }
+
+        let cachedTotalPages = 1;
+
+        function nextPage() {
+            if (currentPage < cachedTotalPages) {
+                currentPage++;
+                loadGames();
+            }
+        }
+
+        function jumpToPage(page, totalPages) {
+            const pageNum = parseInt(page);
+            if (pageNum >= 1 && pageNum <= totalPages) {
+                currentPage = pageNum;
+                loadGames();
+            } else {
+                alert(`Please enter a page between 1 and ${totalPages}`);
+            }
+        }
+
+        async function loadGames() {
+            try {
+                const run = document.getElementById('run-select').value;
+                const iter = document.getElementById('iter-select').value;
+
+                // Build API URL with pagination parameters
+                let apiUrl = `/api/games?page=${currentPage}&per_page=${gamesPerPage}`;
+                if (run) apiUrl += `&run=${run}`;
+                if (iter) apiUrl += `&iter=${iter}`;
+
+                // Fetch paginated games from server
+                const res = await fetch(apiUrl);
+                const data = await res.json();
+
+                const pageGames = data.games;
+                const totalGames = data.total_count;
+                const totalPages = data.total_pages;
+                const startIdx = (currentPage - 1) * gamesPerPage;
+                const endIdx = Math.min(startIdx + gamesPerPage, totalGames);
+
+                // Cache total pages for pagination controls
+                cachedTotalPages = totalPages;
+
+                // Update count and page info
+                document.getElementById('games-count').textContent =
+                    `Showing ${startIdx + 1}-${Math.min(endIdx, totalGames)} of ${totalGames} games`;
+                document.getElementById('page-info').innerHTML = `Page <input type="number" id="page-input" min="1" max="${totalPages}" value="${currentPage}" style="width:60px;text-align:center;background:#0f3460;color:#fff;border:1px solid #e94560;padding:2px;" onchange="jumpToPage(this.value, ${totalPages})"> of ${totalPages}`;
+                document.getElementById('prev-btn').disabled = currentPage === 1;
+                document.getElementById('next-btn').disabled = currentPage >= totalPages;
+
+                // Show loading, hide table
+                document.getElementById('games-loading').style.display = 'block';
+                document.getElementById('games-table').style.display = 'none';
+
+                // Small delay to show loading indicator
+                await new Promise(resolve => setTimeout(resolve, 10));
+
+                const tbody = document.querySelector('#games-table tbody');
+                tbody.innerHTML = pageGames.map(g => {
+                // Map result type to user-friendly labels
+                const typeLabel = g.type === 'best' ? 'Best' :
+                                (g.type === 'worst' ? 'Worst' :
+                                (g.type === 'first' ? 'Worst' :  // legacy: "first" meant lowest doom = worst
+                                (g.type === 'top5' ? 'Top 5%' :
+                                (g.type === 'middle' ? 'Middle' : g.type))));
+                const breakdownId = 'breakdown-' + g.run + '-' + g.iter + '-' + g.faction.replace(/\s+/g, '-');
+                // Arena: brain won = "Learning", brain lost = "Bot"
+                // Self-play: brain won = "Learning", brain lost = "Champion"
+                const winner = g.is_win ? 'Learning' : (g.is_arena ? 'Bot' : 'Champion');
+                const placement = g.placement || '?';
+                return `
+                <tr>
+                    <td>${g.run}</td>
+                    <td>${g.iter}</td>
+                    <td>${g.is_arena ? 'Arena' : 'Self-play'}</td>
+                    <td>${g.faction}</td>
+                    <td>${typeLabel}</td>
+                    <td>${g.doom}</td>
+                    <td><span class="breakdown" onclick="toggleBreakdown('${breakdownId}')">${g.score !== null ? g.score.toFixed(2) : '-'}</span></td>
+                    <td>${g.game_length !== undefined && g.game_length !== null ? g.game_length : '?'}
+                    <td>${winner}</td>
+                    <td>${placement}</td>
+                    <td><button class="secondary" onclick="generateReplay('${g.filename}')">View</button></td>
+                </tr>
+                <tr id="${breakdownId}" style="display:none;">
+                    <td colspan="11" style="background:#0f3460;padding:15px;">
+                        <div style="padding:10px;background:#16213e;border:2px solid #e94560;">
+                            <div><strong>Brain's final 0-1 score:</strong> <span style="font-size:18px;color:#4ade80;">${g.score !== null ? g.score.toFixed(2) : 'N/A'}</span></div>
+                            <div style="margin-top:12px;font-size:13px;">
+                                ${g.is_win ? `
+                                    <div style="color:#4ade80;margin-bottom:4px;">✓ <strong>WIN</strong> = 1.00</div>
+                                ` : g.placement ? `
+                                    <div style="color:#888;margin-bottom:4px;">Placement: ${g.placement}</div>
+                                    <div style="color:#888;margin-bottom:4px;">Doom: ${g.doom}</div>
+                                    <div style="color:#666;font-size:11px;margin-top:6px;">Raw shaping and placement bonus not logged in traces</div>
+                                ` : `
+                                    <div style="color:#888;">Doom: ${g.doom}</div>
+                                    <div style="color:#666;font-size:11px;margin-top:6px;">Component breakdown not available</div>
+                                `}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+
+                // Hide loading, show table
+                document.getElementById('games-loading').style.display = 'none';
+                document.getElementById('games-table').style.display = 'table';
+            } catch (e) {
+                console.error('Failed to load games:', e);
+                document.getElementById('games-loading').style.display = 'none';
+                document.getElementById('games-table').style.display = 'table';
+                const tbody = document.querySelector('#games-table tbody');
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:20px;color:#e94560;">Error loading games. Check console.</td></tr>';
+            }
+        }
+
+        function toggleBreakdown(id) {
+            const row = document.getElementById(id);
+            if (row.style.display === 'none') {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+
+        async function loadWeights() {
+            const res = await fetch('/api/weights');
+            currentWeights = await res.json();
+            const container = document.getElementById('weights-list');
+            container.innerHTML = Object.entries(currentWeights).map(([name, w]) => `
+                <div class="weight-row">
+                    <div class="weight-name"><strong>${name}</strong></div>
+                    <div class="weight-desc">${w.desc}</div>
+                    <input type="number" step="0.01" class="weight-input" id="weight-${name}" value="${w.weight}" ${w.cap ? `title="Cap: ${w.cap}"` : ''}>
+                </div>
+            `).join('');
+        }
+
+        async function saveWeights() {
+            const weights = {};
+            Object.keys(currentWeights).forEach(name => {
+                const input = document.getElementById(`weight-${name}`);
+                if (input) weights[name] = parseFloat(input.value);
+            });
+            await fetch('/api/weights', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(weights)
+            });
+            alert('Weights saved! Will apply to next run.');
+        }
+
+        async function generateReplay(traceFile) {
+            const res = await fetch('/api/replay', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({trace: traceFile})
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.open('/replays/' + data.path.split('/').pop(), '_blank');
+            } else {
+                alert('Failed to generate replay: ' + data.message);
+            }
+        }
+
+        async function stopRun() {
+            if (confirm('Stop the current training run?')) {
+                await fetch('/api/stop', {method: 'POST'});
+                updateStatus();
+            }
+        }
+
+        function showSaveModal() {
+            document.getElementById('save-modal').classList.add('show');
+            document.getElementById('save-name').value = 'save_' + new Date().toISOString().slice(0,10);
+        }
+
+        function closeSaveModal() {
+            document.getElementById('save-modal').classList.remove('show');
+        }
+
+        async function saveCheckpoint() {
+            const name = document.getElementById('save-name').value;
+            const res = await fetch('/api/save_checkpoint', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name})
+            });
+            const data = await res.json();
+            closeSaveModal();
+            if (data.success) {
+                alert('Checkpoint saved!');
+                loadCheckpoints();
+            } else {
+                alert('Failed: ' + data.message);
+            }
+        }
+
+        const FACTIONS = [
+            {code: 'gc', name: 'Great Cthulhu', img: '/images/gc-glyph.webp', alt: false},
+            {code: 'cc', name: 'Crawling Chaos', img: '/images/cc-glyph.webp', alt: false},
+            {code: 'bg', name: 'Black Goat', img: '/images/bg-glyph.webp', alt: false},
+            {code: 'ys', name: 'Yellow Sign', img: '/images/ys-glyph.webp', alt: false},
+            {code: 'ow', name: 'Opener of the Way', img: '/images/ow-glyph.webp', alt: false},
+            {code: 'ow-alt', name: 'Opener of the Way (alt SBs)', img: '/images/ow-glyph.webp', alt: true},
+            {code: 'sl', name: 'Sleeper', img: '/images/sl-glyph.webp', alt: false},
+            {code: 'sl-alt', name: 'Sleeper (alt SBs)', img: '/images/sl-glyph.webp', alt: true},
+            {code: 'ww', name: 'Windwalker', img: '/images/ww-glyph.webp', alt: false},
+            {code: 'tt', name: 'Tcho-Tcho', img: '/images/tt-glyph.webp', alt: false},
+            {code: 'an', name: 'The Ancients', img: '/images/an-glyph.webp', alt: false},
+            {code: 'an-alt', name: 'The Ancients (alt SBs)', img: '/images/an-glyph.webp', alt: true},
+            {code: 'ds', name: 'Daemon Sultan', img: '/images/ds-glyph.webp', alt: false},
+            {code: 'ds-alt', name: 'Daemon Sultan (alt SBs)', img: '/images/ds-glyph.webp', alt: true},
+            {code: 'bb', name: 'Bubastis', img: '/images/bb-glyph.webp', alt: false},
+            {code: 'bb-alt', name: 'Bubastis (alt SBs)', img: '/images/bb-glyph-hb.webp', alt: true},
+            {code: 'ts', name: 'Tombstalker', img: '/images/ts-glyph.webp', alt: false},
+            {code: 'fb', name: 'Firstborn', img: '/images/fb-glyph.webp', alt: false},
+            {code: 'dc', name: 'Defilers Court', img: '/images/dc-glyph.webp', alt: false},
+            {code: 'fbe', name: 'Faceless Blight', img: '/images/fbe-glyph.webp', alt: false},
+            {code: 'xss', name: 'Xyrious Storm', img: '/images/xss-glyph.webp', alt: false},
+            {code: 'tb', name: 'The Burrowers Beneath', img: '/images/tb-glyph.webp', alt: false}
+        ];
+
+        function updatePlayerSetup() {
+            const count = parseInt(document.getElementById('player-count').value);
+            const container = document.getElementById('player-setup');
+            let html = '';
+            for (let i = 1; i <= count; i++) {
+                html += `
+                <div class="player-row">
+                    <div class="player-label">Player ${i}:</div>
+                    <select class="player-type" id="player-${i}-type">
+                        <option value="bot" selected>Bot</option>
+                        <option value="brain">Brain</option>
+                    </select>
+                    <div class="faction-selector" id="player-${i}-factions">
+                        ${FACTIONS.map(f => `
+                            <img src="${f.img}"
+                                 class="faction-glyph"
+                                 data-faction="${f.code}"
+                                 title="${f.name}"
+                                 onclick="toggleFaction(${i}, '${f.code}')">
+                        `).join('')}
+                    </div>
+                </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function toggleFaction(player, factionCode) {
+            const glyph = document.querySelector(`#player-${player}-factions img[data-faction="${factionCode}"]`);
+            glyph.classList.toggle('selected');
+        }
+
+        function startRun() {
+            const playerCount = parseInt(document.getElementById('player-count').value);
+            const setup = [];
+            for (let i = 1; i <= playerCount; i++) {
+                const type = document.getElementById(`player-${i}-type`).value;
+                const factions = Array.from(document.querySelectorAll(`#player-${i}-factions .faction-glyph.selected`))
+                    .map(el => el.dataset.faction);
+                if (factions.length === 0) {
+                    alert(`Player ${i} needs at least one faction selected`);
+                    return;
+                }
+                setup.push({type, factions});
+            }
+
+            const iters = document.getElementById('new-iters').value;
+            const games = document.getElementById('new-games').value;
+            const arena = document.getElementById('arena-every').value;
+
+            alert('Run config:\n' + JSON.stringify({playerCount, setup, iters, games, arena}, null, 2) +
+                  '\n\nStarting run requires manual command. Feature coming soon.');
+        }
+
+        // Initialize player setup on load
+        updatePlayerSetup();
+
+        // Progress charts
+        let progressData = {selfplay: [], arena: []};
+        let doomTypeFilter = 'both';
+        let scoreTypeFilter = 'both';
+        let winsTypeFilter = 'both';
+        let doomRunsFilter = [];
+        let scoreRunsFilter = [];
+        let winsRunsFilter = [];
+        let doomItersFilter = [];
+        let scoreItersFilter = [];
+
+        async function loadProgress() {
+            try {
+                const res = await fetch('/api/progress');
+                progressData = await res.json();
+                console.log('Progress data loaded:', progressData);
+
+                // Populate run and iter filters
+                const allData = [...progressData.selfplay, ...progressData.arena];
+                const uniqueRuns = [...new Set(allData.map(d => d.run))].sort();
+                const uniqueIters = [...new Set(allData.map(d => d.iter))].sort((a,b) => a-b);
+
+                const doomRunSelect = document.getElementById('doom-run-filter');
+                const scoreRunSelect = document.getElementById('score-run-filter');
+                const winsRunSelect = document.getElementById('wins-run-filter');
+                const doomIterSelect = document.getElementById('doom-iter-filter');
+                const scoreIterSelect = document.getElementById('score-iter-filter');
+
+                // Select only the LATEST run by default
+                const latestRun = uniqueRuns[uniqueRuns.length - 1];
+                doomRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" ${r === latestRun ? 'selected' : ''}>${r}</option>`).join('');
+                scoreRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" ${r === latestRun ? 'selected' : ''}>${r}</option>`).join('');
+                winsRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" ${r === latestRun ? 'selected' : ''}>${r}</option>`).join('');
+
+                // Select all iters by default
+                doomIterSelect.innerHTML = uniqueIters.map(i => `<option value="${i}" selected>${i}</option>`).join('');
+                scoreIterSelect.innerHTML = uniqueIters.map(i => `<option value="${i}" selected>${i}</option>`).join('');
+
+                // Initialize with only latest run selected, all iters
+                doomRunsFilter = [latestRun];
+                scoreRunsFilter = [latestRun];
+                winsRunsFilter = [latestRun];
+                doomItersFilter = uniqueIters;
+                scoreItersFilter = uniqueIters;
+
+                doomRunSelect.onchange = () => {
+                    doomRunsFilter = Array.from(doomRunSelect.selectedOptions).map(o => o.value);
+                    drawDoomChart();
+                };
+                scoreRunSelect.onchange = () => {
+                    scoreRunsFilter = Array.from(scoreRunSelect.selectedOptions).map(o => o.value);
+                    drawScoreChart();
+                };
+                doomIterSelect.onchange = () => {
+                    doomItersFilter = Array.from(doomIterSelect.selectedOptions).map(o => parseInt(o.value));
+                    drawDoomChart();
+                };
+                scoreIterSelect.onchange = () => {
+                    scoreItersFilter = Array.from(scoreIterSelect.selectedOptions).map(o => parseInt(o.value));
+                    drawScoreChart();
+                };
+                winsRunSelect.onchange = () => {
+                    winsRunsFilter = Array.from(winsRunSelect.selectedOptions).map(o => o.value);
+                    drawWinsChart();
+                };
+
+                drawDoomChart();
+                drawScoreChart();
+                drawWinsChart();
+            } catch (e) {
+                console.error('Failed to load progress:', e);
+            }
+        }
+
+        function setDoomTypeFilter(filter) {
+            doomTypeFilter = filter;
+            document.querySelectorAll('[id^="doom-type-"]').forEach(b => b.style.background = '#0f3460');
+            document.getElementById('doom-type-' + filter).style.background = '#e94560';
+            drawDoomChart();
+        }
+
+        function setScoreTypeFilter(filter) {
+            scoreTypeFilter = filter;
+            document.querySelectorAll('[id^="score-type-"]').forEach(b => b.style.background = '#0f3460');
+            document.getElementById('score-type-' + filter).style.background = '#e94560';
+            drawScoreChart();
+        }
+
+        function setWinsTypeFilter(filter) {
+            winsTypeFilter = filter;
+            document.querySelectorAll('[id^="wins-type-"]').forEach(b => b.style.background = '#0f3460');
+            document.getElementById('wins-type-' + filter).style.background = '#e94560';
+            drawWinsChart();
+        }
+
+        function drawDoomChart() {
+            const canvas = document.getElementById('doom-chart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            let data = [];
+            if (doomTypeFilter === 'both') data = [...progressData.selfplay, ...progressData.arena];
+            else if (doomTypeFilter === 'selfplay') data = progressData.selfplay;
+            else data = progressData.arena;
+
+            // Filter by runs and iters
+            data = data.filter(d => doomRunsFilter.includes(d.run) && doomItersFilter.includes(d.iter));
+
+            if (!data.length) {
+                ctx.fillStyle = '#888';
+                ctx.font = '16px sans-serif';
+                ctx.fillText('No data', w/2 - 30, h/2);
+                return;
+            }
+
+            // Sort by run_iter_game_num to ensure proper ordering
+            data.sort((a, b) => a.run_iter_game_num - b.run_iter_game_num);
+
+            // Fixed Y-axis range (0-60 for doom)
+            const minY = 0;
+            const maxY = 60;
+            const rangeY = maxY - minY;
+
+            // Group by iteration
+            const runIters = [...new Set(data.map(d => `${d.run}_I${String(d.iter).padStart(2, '0')}`))];
+            const showAverages = runIters.length > 10;
+
+            // Map data points to evenly-spaced X positions (0, 1, 2, 3...)
+            const positionedData = [];
+            let xPos = 0;
+            runIters.forEach((runIter, iterIdx) => {
+                const [run, iterStr] = runIter.split('_I');
+                const iter = parseInt(iterStr);
+                const iterGames = data.filter(d => d.run === run && d.iter === iter);
+
+                if (showAverages) {
+                    // Show one point per iteration (average)
+                    const avgDoom = iterGames.reduce((s, d) => s + d.doom, 0) / iterGames.length;
+                    positionedData.push({
+                        xPos: xPos++,
+                        doom: avgDoom,
+                        label: runIter,
+                        run: run,
+                        iter: iter,
+                        games: iterGames
+                    });
+                } else {
+                    // Show individual games
+                    iterGames.forEach((game, gameIdx) => {
+                        positionedData.push({
+                            xPos: xPos++,
+                            doom: game.doom,
+                            label: game.run_iter_game,
+                            run: run,
+                            iter: iter,
+                            games: [game]
+                        });
+                    });
+                }
+            });
+
+            const rangeX = Math.max(1, positionedData.length - 1);
+
+            // Axes
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(60, 20);
+            ctx.lineTo(60, h-60);
+            ctx.lineTo(w-20, h-60);
+            ctx.stroke();
+
+            // Horizontal gridlines (every 10 doom from 0 to 60)
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 2]);
+            for (let doom = 0; doom <= maxY; doom += 10) {
+                const y = h - 60 - ((doom - minY) / rangeY) * (h - 80);
+                ctx.beginPath();
+                ctx.moveTo(60, y);
+                ctx.lineTo(w - 20, y);
+                ctx.stroke();
+                ctx.fillStyle = '#666';
+                ctx.font = '9px sans-serif';
+                ctx.fillText(doom.toString(), 35, y + 3);
+            }
+            ctx.setLineDash([]);
+
+            // Y-axis labels
+            ctx.fillStyle = '#888';
+            ctx.font = '11px sans-serif';
+            ctx.fillText('Doom', 20, 15);
+            ctx.font = '9px sans-serif';
+            ctx.fillText(maxY.toString(), 35, 30);
+            ctx.fillText(minY.toString(), 35, h-65);
+
+            // X-axis labels - ensure no overlap
+            const labelStep = Math.max(1, Math.ceil(positionedData.length / 15));
+            ctx.fillStyle = '#888';
+            ctx.font = '8px sans-serif';
+            positionedData.filter((_, i) => i % labelStep === 0).forEach(d => {
+                const x = 60 + (d.xPos / rangeX) * (w - 80);
+                ctx.save();
+                ctx.translate(x, h-42);
+                ctx.rotate(-Math.PI/4);
+                ctx.fillText(d.label, 0, 0);
+                ctx.restore();
+            });
+
+            // Draw data by iteration with regression lines
+            const colors = ['#4ade80', '#e94560', '#60a5fa', '#facc15', '#f97316', '#8b5cf6', '#ec4899', '#14b8a6'];
+
+            runIters.forEach((runIter, idx) => {
+                const [run, iterStr] = runIter.split('_I');
+                const iter = parseInt(iterStr);
+                const iterData = positionedData.filter(d => d.run === run && d.iter === iter);
+
+                if (iterData.length === 0) return;
+
+                const color = colors[idx % colors.length];
+
+                // Calculate regression on positioned data
+                if (iterData.length >= 2) {
+                    const n = iterData.length;
+                    const sx = iterData.reduce((s, d) => s + d.xPos, 0);
+                    const sy = iterData.reduce((s, d) => s + d.doom, 0);
+                    const sxy = iterData.reduce((s, d) => s + d.xPos * d.doom, 0);
+                    const sx2 = iterData.reduce((s, d) => s + d.xPos * d.xPos, 0);
+                    const m = (n * sxy - sx * sy) / (n * sx2 - sx * sx);
+                    const b = (sy - m * sx) / n;
+
+                    // Regression line
+                    const x1 = 60 + (iterData[0].xPos / rangeX) * (w - 80);
+                    const x2 = 60 + (iterData[iterData.length - 1].xPos / rangeX) * (w - 80);
+                    const y1 = h - 60 - ((m * iterData[0].xPos + b - minY) / rangeY) * (h - 80);
+                    const y2 = h - 60 - ((m * iterData[iterData.length - 1].xPos + b - minY) / rangeY) * (h - 80);
+
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 3]);
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // Legend
+                    if (idx < 10) {
+                        const ly = 40 + idx * 15;
+                        ctx.fillStyle = color;
+                        ctx.beginPath();
+                        ctx.arc(w - 200, ly, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = '#888';
+                        ctx.font = '9px sans-serif';
+                        ctx.fillText(`${runIter} m=${m.toFixed(1)}`, w - 190, ly + 3);
+                    }
+                }
+
+                // Points
+                ctx.fillStyle = color;
+                iterData.forEach(d => {
+                    const x = 60 + (d.xPos / rangeX) * (w - 80);
+                    const y = h - 60 - ((d.doom - minY) / rangeY) * (h - 80);
+                    ctx.beginPath();
+                    ctx.arc(x, y, showAverages ? 4 : 3, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            });
+        }
+
+        function drawScoreChart() {
+            const canvas = document.getElementById('score-chart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            let data = [];
+            if (scoreTypeFilter === 'both') data = [...progressData.selfplay, ...progressData.arena];
+            else if (scoreTypeFilter === 'selfplay') data = progressData.selfplay;
+            else data = progressData.arena;
+
+            // Filter by runs and iters
+            data = data.filter(d => scoreRunsFilter.includes(d.run) && scoreItersFilter.includes(d.iter));
+
+            if (!data.length) {
+                ctx.fillStyle = '#888';
+                ctx.font = '16px sans-serif';
+                ctx.fillText('No data', w/2 - 30, h/2);
+                return;
+            }
+
+            // Sort by run_iter_game_num to ensure proper ordering
+            data.sort((a, b) => a.run_iter_game_num - b.run_iter_game_num);
+
+            // Fixed Y-axis range (extended to 1.5 to accommodate scores >1.0)
+            const minY = 0;
+            const maxY = 1.5;
+            const rangeY = maxY - minY;
+
+            // Group by iteration
+            const runIters = [...new Set(data.map(d => `${d.run}_I${String(d.iter).padStart(2, '0')}`))];
+            const showAverages = runIters.length > 10;
+
+            // Map data points to evenly-spaced X positions (0, 1, 2, 3...)
+            const positionedData = [];
+            let xPos = 0;
+            runIters.forEach((runIter, iterIdx) => {
+                const [run, iterStr] = runIter.split('_I');
+                const iter = parseInt(iterStr);
+                const iterGames = data.filter(d => d.run === run && d.iter === iter);
+
+                if (showAverages) {
+                    // Show one point per iteration (average)
+                    const avgScore = iterGames.reduce((s, d) => s + d.score, 0) / iterGames.length;
+                    positionedData.push({
+                        xPos: xPos++,
+                        score: avgScore,
+                        label: runIter,
+                        run: run,
+                        iter: iter,
+                        games: iterGames
+                    });
+                } else {
+                    // Show individual games
+                    iterGames.forEach((game, gameIdx) => {
+                        positionedData.push({
+                            xPos: xPos++,
+                            score: game.score,
+                            label: game.run_iter_game,
+                            run: run,
+                            iter: iter,
+                            games: [game]
+                        });
+                    });
+                }
+            });
+
+            const rangeX = Math.max(1, positionedData.length - 1);
+
+            // Axes
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(60, 20);
+            ctx.lineTo(60, h-60);
+            ctx.lineTo(w-20, h-60);
+            ctx.stroke();
+
+            // Horizontal gridlines (every 0.25 score)
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 2]);
+            for (let score = 0.25; score < maxY; score += 0.25) {
+                const y = h - 60 - ((score - minY) / rangeY) * (h - 80);
+                ctx.beginPath();
+                ctx.moveTo(60, y);
+                ctx.lineTo(w - 20, y);
+                ctx.stroke();
+                ctx.fillStyle = '#666';
+                ctx.font = '9px sans-serif';
+                ctx.fillText(score.toFixed(2), 25, y + 3);
+            }
+            ctx.setLineDash([]);
+
+            // Y-axis labels
+            ctx.fillStyle = '#888';
+            ctx.font = '11px sans-serif';
+            ctx.fillText('Score', 20, 15);
+            ctx.font = '9px sans-serif';
+            ctx.fillText(maxY.toFixed(1), 25, 30);
+            ctx.fillText(minY.toFixed(1), 25, h-65);
+
+            // X-axis labels - ensure no overlap
+            const labelStep = Math.max(1, Math.ceil(positionedData.length / 15));
+            ctx.fillStyle = '#888';
+            ctx.font = '8px sans-serif';
+            positionedData.filter((_, i) => i % labelStep === 0).forEach(d => {
+                const x = 60 + (d.xPos / rangeX) * (w - 80);
+                ctx.save();
+                ctx.translate(x, h-42);
+                ctx.rotate(-Math.PI/4);
+                ctx.fillText(d.label, 0, 0);
+                ctx.restore();
+            });
+
+            // Draw data by iteration with regression lines
+            const colors = ['#4ade80', '#e94560', '#60a5fa', '#facc15', '#f97316', '#8b5cf6', '#ec4899', '#14b8a6'];
+
+            runIters.forEach((runIter, idx) => {
+                const [run, iterStr] = runIter.split('_I');
+                const iter = parseInt(iterStr);
+                const iterData = positionedData.filter(d => d.run === run && d.iter === iter);
+
+                if (iterData.length === 0) return;
+
+                const color = colors[idx % colors.length];
+
+                // Calculate regression on positioned data
+                if (iterData.length >= 2) {
+                    const n = iterData.length;
+                    const sx = iterData.reduce((s, d) => s + d.xPos, 0);
+                    const sy = iterData.reduce((s, d) => s + d.score, 0);
+                    const sxy = iterData.reduce((s, d) => s + d.xPos * d.score, 0);
+                    const sx2 = iterData.reduce((s, d) => s + d.xPos * d.xPos, 0);
+                    const m = (n * sxy - sx * sy) / (n * sx2 - sx * sx);
+                    const b = (sy - m * sx) / n;
+
+                    // Regression line
+                    const x1 = 60 + (iterData[0].xPos / rangeX) * (w - 80);
+                    const x2 = 60 + (iterData[iterData.length - 1].xPos / rangeX) * (w - 80);
+                    const y1 = h - 60 - ((m * iterData[0].xPos + b - minY) / rangeY) * (h - 80);
+                    const y2 = h - 60 - ((m * iterData[iterData.length - 1].xPos + b - minY) / rangeY) * (h - 80);
+
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 3]);
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // Legend
+                    if (idx < 10) {
+                        const ly = 40 + idx * 15;
+                        ctx.fillStyle = color;
+                        ctx.beginPath();
+                        ctx.arc(w - 200, ly, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = '#888';
+                        ctx.font = '9px sans-serif';
+                        ctx.fillText(`${runIter} m=${m.toFixed(3)}`, w - 190, ly + 3);
+                    }
+                }
+
+                // Points
+                ctx.fillStyle = color;
+                iterData.forEach(d => {
+                    const x = 60 + (d.xPos / rangeX) * (w - 80);
+                    const y = h - 60 - ((d.score - minY) / rangeY) * (h - 80);
+                    ctx.beginPath();
+                    ctx.arc(x, y, showAverages ? 4 : 3, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            });
+        }
+
+        function drawWinsChart() {
+            const canvas = document.getElementById('wins-chart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            let data = [];
+            if (winsTypeFilter === 'both') data = [...progressData.selfplay, ...progressData.arena];
+            else if (winsTypeFilter === 'selfplay') data = progressData.selfplay;
+            else data = progressData.arena;
+
+            // Filter by runs
+            data = data.filter(d => winsRunsFilter.includes(d.run));
+
+            if (!data.length) {
+                ctx.fillStyle = '#888';
+                ctx.font = '16px sans-serif';
+                ctx.fillText('No data', w/2 - 30, h/2);
+                return;
+            }
+
+            // Aggregate by (run, iter) - count wins
+            const iterMap = new Map();
+            data.forEach(d => {
+                const key = `${d.run}_I${String(d.iter).padStart(2, '0')}`;
+                if (!iterMap.has(key)) {
+                    iterMap.set(key, {run: d.run, iter: d.iter, wins: 0, total: 0});
+                }
+                const entry = iterMap.get(key);
+                entry.total++;
+                // Check if this game was a win (FINAL_SCORE = 1.0 or very close)
+                if (d.score >= 0.99) entry.wins++;
+            });
+
+            const iterData = Array.from(iterMap.values()).sort((a, b) => {
+                if (a.run !== b.run) return a.run.localeCompare(b.run);
+                return a.iter - b.iter;
+            });
+
+            if (!iterData.length) {
+                ctx.fillStyle = '#888';
+                ctx.font = '16px sans-serif';
+                ctx.fillText('No iterations with data', w/2 - 60, h/2);
+                return;
+            }
+
+            // Fixed Y-axis range
+            const minY = 0;
+            const maxY = 20;
+            const rangeY = maxY - minY;
+
+            // Map iterations to evenly-spaced X positions
+            const rangeX = Math.max(1, iterData.length - 1);
+
+            // Axes
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(60, 20);
+            ctx.lineTo(60, h-60);
+            ctx.lineTo(w-20, h-60);
+            ctx.stroke();
+
+            // Horizontal gridlines (every 5 wins)
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 2]);
+            for (let wins = 5; wins < maxY; wins += 5) {
+                const y = h - 60 - ((wins - minY) / rangeY) * (h - 80);
+                ctx.beginPath();
+                ctx.moveTo(60, y);
+                ctx.lineTo(w - 20, y);
+                ctx.stroke();
+                ctx.fillStyle = '#666';
+                ctx.font = '9px sans-serif';
+                ctx.fillText(wins.toString(), 35, y + 3);
+            }
+            ctx.setLineDash([]);
+
+            // Y-axis labels
+            ctx.fillStyle = '#888';
+            ctx.font = '11px sans-serif';
+            ctx.fillText('Wins', 20, 15);
+            ctx.font = '9px sans-serif';
+            ctx.fillText(maxY.toString(), 35, 30);
+            ctx.fillText(minY.toString(), 35, h-65);
+
+            // X-axis labels - ensure no overlap
+            const labelStep = Math.max(1, Math.ceil(iterData.length / 15));
+            ctx.fillStyle = '#888';
+            ctx.font = '8px sans-serif';
+            iterData.filter((_, i) => i % labelStep === 0).forEach((d, idx) => {
+                const realIdx = idx * labelStep;
+                const x = 60 + (realIdx / rangeX) * (w - 80);
+                const label = `${d.run} I${String(d.iter).padStart(2, '0')}`;
+                ctx.save();
+                ctx.translate(x, h-42);
+                ctx.rotate(-Math.PI/4);
+                ctx.fillText(label, 0, 0);
+                ctx.restore();
+            });
+
+            // Draw bars
+            const colors = ['#4ade80', '#e94560', '#60a5fa', '#facc15', '#f97316', '#8b5cf6', '#ec4899', '#14b8a6'];
+            const runColors = {};
+            const uniqueRuns = [...new Set(iterData.map(d => d.run))];
+            uniqueRuns.forEach((run, idx) => {
+                runColors[run] = colors[idx % colors.length];
+            });
+
+            iterData.forEach((d, idx) => {
+                const x = 60 + (idx / rangeX) * (w - 80);
+                const barWidth = Math.max(3, ((w - 80) / rangeX) * 0.6);
+                const y = h - 60 - ((d.wins - minY) / rangeY) * (h - 80);
+                const barHeight = ((d.wins - minY) / rangeY) * (h - 80);
+
+                ctx.fillStyle = runColors[d.run];
+                ctx.fillRect(x - barWidth/2, y, barWidth, barHeight);
+
+                // Draw outline
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x - barWidth/2, y, barWidth, barHeight);
+            });
+
+            // Legend
+            uniqueRuns.forEach((run, idx) => {
+                if (idx < 10) {
+                    const ly = 40 + idx * 15;
+                    ctx.fillStyle = runColors[run];
+                    ctx.fillRect(w - 200, ly - 5, 10, 10);
+                    ctx.fillStyle = '#888';
+                    ctx.font = '9px sans-serif';
+                    ctx.fillText(run, w - 185, ly + 3);
+                }
+            });
+        }
+
+        let corpusInitialized = false;
+
+        async function initCorpus() {
+            if (corpusInitialized) {
+                loadCorpus();
+                return;
+            }
+
+            try {
+                // Fetch enough games to get all R39 iterations (R39 has ~1000 games across 12 iterations)
+                // Using 500 games should cover most/all iterations
+                const r39Res = await fetch('/api/games?run=R39&page=1&per_page=500');
+                const r39Data = await r39Res.json();
+                const r39Iters = [...new Set(r39Data.games.map(g => g.iter))].sort((a,b) => b-a);
+
+                // Populate iteration dropdown with R39 iterations found
+                const iterSelect = document.getElementById('corpus-iter-select');
+                if (r39Iters.length > 0) {
+                    iterSelect.innerHTML = r39Iters.map(i =>
+                        `<option value="${i}">${i}${i === r39Iters[0] ? ' (most recent)' : ''}</option>`
+                    ).join('');
+                } else {
+                    // Fallback if no games found
+                    iterSelect.innerHTML = '<option value="11">11 (most recent)</option><option value="10">10</option>';
+                }
+
+                corpusInitialized = true;
+                loadCorpus();
+            } catch (e) {
+                console.error('Failed to initialize corpus:', e);
+                // Fallback to default
+                const iterSelect = document.getElementById('corpus-iter-select');
+                iterSelect.innerHTML = '<option value="11">11 (most recent)</option><option value="10">10</option>';
+                loadCorpus();
+            }
+        }
+
+        async function loadCorpus() {
+            const run = document.getElementById('corpus-run-select').value;
+            const iter = document.getElementById('corpus-iter-select').value;
+            const faction = document.getElementById('corpus-faction-select').value;
+
+            const countDiv = document.getElementById('corpus-count');
+            const tbody = document.querySelector('#corpus-table tbody');
+
+            countDiv.textContent = 'Loading...';
+            tbody.innerHTML = '';
+
+            try {
+                const res = await fetch(`/api/training-corpus?run=${run}&iter=${iter}&faction=${faction}`);
+                const data = await res.json();
+
+                if (data.games && data.games.length > 0) {
+                    countDiv.textContent = `${data.games.length} games used for training (${data.selected_count} selected from ${data.total_played} played)`;
+
+                    data.games.forEach(g => {
+                        const row = tbody.insertRow();
+                        const usedText = g.used_for_training ? 'Yes' : 'No';
+                        const usedColor = g.used_for_training ? '#4ade80' : '#888';
+                        row.innerHTML = `
+                            <td>Game ${g.game_num}</td>
+                            <td>${g.faction}</td>
+                            <td>${g.result}</td>
+                            <td>${g.doom}</td>
+                            <td>${g.score.toFixed(3)}</td>
+                            <td style="color:${usedColor};">${usedText}</td>
+                        `;
+                    });
+                } else {
+                    countDiv.textContent = 'No training data found for this iteration/faction';
+                }
+            } catch (e) {
+                countDiv.textContent = 'Error loading corpus data';
+                console.error('Failed to load corpus:', e);
+            }
+        }
+
+        function initPage() {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                showTab(hash);
+            }
+            updateStatus();
+            setInterval(updateStatus, 30000);
+        }
+
+        // Run immediately AND on DOMContentLoaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPage);
+        } else {
+            initPage();
+        }
     </script>
 </body>
 </html>

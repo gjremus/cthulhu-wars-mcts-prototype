@@ -76,12 +76,46 @@ object Checkpoint {
         } finally pw.close()
     }
 
-    /** Save both nets + a human-readable meta line (which run/iter/score produced them). */
-    def save(policy : PolicyModel, value : MLPModel, iter : Int, score : Double, tag : String) : Unit = {
+    /** Save both nets + a human-readable meta line (which run/iter/score produced them).
+     *  Score here is the win rate (0.0-1.0 fraction of arena wins). */
+    def save(policy : PolicyModel, value : MLPModel, iter : Int, winRate : Double, bestGameScore : Double, tag : String) : Unit = {
         savePolicy(policy); saveValue(value)
         val pw = new PrintWriter(metaFile)
-        try pw.println(s"tag=$tag iter=$iter score=$score dinS=${policy.dinS} dinA=${policy.dinA} hidden=${policy.hidden}")
+        try pw.println(s"tag=$tag iter=$iter winrate=$winRate bestgame=$bestGameScore dinS=${policy.dinS} dinA=${policy.dinA} hidden=${policy.hidden}")
         finally pw.close()
+    }
+
+    /** Save both nets to a custom directory (for per-iteration archives). */
+    def saveToDir(dirPath : String, policy : PolicyModel, value : MLPModel, iter : Int, winRate : Double, bestGameScore : Double, tag : String) : Unit = {
+        val dir = new File(dirPath)
+        dir.mkdirs()
+        val (r, f, u) = curCaps
+
+        // Save policy
+        val policyOut = new File(dir, "best.policy")
+        val pwP = new PrintWriter(policyOut)
+        try {
+            pwP.println("POLICY 2")
+            pwP.println(s"${policy.dinS} ${policy.dinA} ${policy.hidden} $r $f $u")
+            pwP.println(policy.b2.toString)
+            writeDoubles(pwP, policy.w1s); writeDoubles(pwP, policy.w1a); writeDoubles(pwP, policy.b1); writeDoubles(pwP, policy.w2)
+        } finally pwP.close()
+
+        // Save value
+        val valueOut = new File(dir, "best.value")
+        val pwV = new PrintWriter(valueOut)
+        try {
+            pwV.println("VALUE 2")
+            pwV.println(s"${value.din} ${value.hidden} $r $f $u")
+            pwV.println(value.b2.toString)
+            writeDoubles(pwV, value.w1); writeDoubles(pwV, value.b1); writeDoubles(pwV, value.w2)
+        } finally pwV.close()
+
+        // Save meta
+        val metaOut = new File(dir, "best.meta")
+        val pwM = new PrintWriter(metaOut)
+        try pwM.println(s"tag=$tag iter=$iter winrate=$winRate bestgame=$bestGameScore dinS=${policy.dinS} dinA=${policy.dinA} hidden=${policy.hidden}")
+        finally pwM.close()
     }
 
     // ---- SAVE EVERY ITERATION (2026-08-08) ------------------------------------
@@ -94,7 +128,7 @@ object Checkpoint {
     private def currentMetaFile   = new File(Dir, "current.meta")
 
     /** Save current (possibly not best) weights. Called every iteration. */
-    def saveCurrent(policy : PolicyModel, value : MLPModel, iter : Int, score : Double, tag : String) : Unit = {
+    def saveCurrent(policy : PolicyModel, value : MLPModel, iter : Int, winRate : Double, bestGameScore : Double, tag : String) : Unit = {
         new File(Dir).mkdirs()
         // Save policy
         val pwP = new PrintWriter(currentPolicyFile)
@@ -115,7 +149,7 @@ object Checkpoint {
         } finally pwV.close()
         // Save meta
         val pwM = new PrintWriter(currentMetaFile)
-        try pwM.println(s"tag=$tag iter=$iter score=$score dinS=${policy.dinS} dinA=${policy.dinA} hidden=${policy.hidden} time=${System.currentTimeMillis()}")
+        try pwM.println(s"tag=$tag iter=$iter winrate=$winRate bestgame=$bestGameScore dinS=${policy.dinS} dinA=${policy.dinA} hidden=${policy.hidden} time=${System.currentTimeMillis()}")
         finally pwM.close()
     }
 

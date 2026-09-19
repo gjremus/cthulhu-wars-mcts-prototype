@@ -155,6 +155,12 @@ class MCTSPolicy(
     // safe under parallel self-play (each game builds its own MCTSPolicy).
     var recorder : scala.collection.mutable.ArrayBuffer[PolicyTarget] = null
 
+    // ---- Q-VALUE EXTRACTION for policy gradient advantages --------------------------
+    // After each decide(), stores the root node so caller can extract Q-values (childW/childN)
+    // for advantage calculation: Q(chosen) - mean(Q) measures the improvement from that decision
+    // based on MCTS evaluation, not just final game outcome.
+    var lastRootNode : Node = null
+
     // True when a policy net supplies move priors — selection then uses PUCT.
     private val usePUCT : Boolean = leaf.isInstanceOf[PolicyValueEval]
 
@@ -231,13 +237,16 @@ class MCTSPolicy(
     def decide(game : Game, faction : Faction, actionsIn : $[Action]) : Action = {
         val kept = actionsIn.%!(a => isDegenerate(game, a))
         val actions = if (kept.any) kept else actionsIn
-        if (actions.num == 1) return actions.head
+        if (actions.num == 1) { lastRootNode = null; return actions.head }
         val rootContinue : Continue = Ask(faction, actions)
         // Root prior from the policy net (null in value-only/rollout mode). Read-only.
         val root = new Node(faction, actions.num, priorFor(game, faction, actions))
 
         var s = 0
         while (s < sims) { simulateOnce(game, rootContinue, root); s += 1 }
+
+        // Store root node for Q-value extraction
+        lastRootNode = root
 
         // Self-play recording: capture the improved move-distribution (normalized root
         // visit counts) as a training target, alongside the state and every candidate's
@@ -270,6 +279,10 @@ class MCTSPolicy(
     private def simulateOnce(rootGame : Game, rootContinue : Continue, root : Node) : Unit = {
         // Fork the position once. All mutation below happens on this clone.
         val (g, c0) = Cloning.copy(rootGame, rootContinue)
+
+        // TRAJECTORY TRACKING: Track game events to compute shaped 0-1 scores at terminals.
+        // This ensures MCTS uses the SAME reward calculation as training labels.
+        val traj = new Trajectory(g.setup)
 
         val path = scala.collection.mutable.ArrayBuffer[(Node, Int)]()
         var node = root
@@ -327,13 +340,15 @@ class MCTSPolicy(
             } else {
                 // Apply the chosen move on the clone and advance to next decision.
                 val (_, next) = g.perform(choices(childIdx).unwrap)
+                // Track game state for shaped score calculation
+                traj.observe(g)
                 val sit = Engine.advanceToDecision(g, next)
 
                 if (node.children(childIdx) == null) {
                     // EXPANSION — first descent down this edge.
                     sit match {
                         case Ended(w) =>
-                            val tv = terminalStanding(g, w)
+                            val tv = terminalStandingWithTrajectory(g, w, traj)
                             node.terminalValue(childIdx) = tv
                             leafValue = f => tv.getOrElse(f, 0.0)
                         case d @ Decision(f2, acts2, c2) =>
@@ -346,7 +361,7 @@ class MCTSPolicy(
                     sit match {
                         case Decision(_, acts2, _) => node = node.children(childIdx); choices = acts2
                         case Ended(w) =>
-                            val tv = terminalStanding(g, w)
+                            val tv = terminalStandingWithTrajectory(g, w, traj)
                             node.terminalValue(childIdx) = tv
                             leafValue = f => tv.getOrElse(f, 0.0)
                     }
@@ -398,4 +413,13 @@ class MCTSPolicy(
     /** Dense terminal value per faction, captured from the finished game state. */
     private def terminalStanding(g : Game, winners : $[Faction]) : Map[Faction, Double] =
         g.setup.map(f => f -> Outcome.value(g, winners, f)).toMap
+
+    /** Dense terminal value per faction, using trajectory-based shaped scores.
+     *  This ensures MCTS uses the SAME 0-1 score calculation as training labels. */
+    private def terminalStandingWithTrajectory(g : Game, winners : $[Faction], traj : Trajectory) : Map[Faction, Double] = {
+        val shapingScores = traj.score(g)  // Full trajectory-based shaped scores
+        g.setup.map { f =>
+            f -> Outcome.valueShaped(g, winners, f, shapingScores.getOrElse(f, 0.0))
+        }.toMap
+    }
 }
