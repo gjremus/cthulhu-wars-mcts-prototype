@@ -140,6 +140,16 @@ def parse_trace_file(trace_file):
         # Parse game length (count ActionPhaseAction occurrences)
         game_length = content.count('ActionPhaseAction')
 
+        # Check if game was killed (early termination)
+        is_killed = 'KILLED' in stem
+        result = "killed" if is_killed else ("won" if won else "lost")
+        kill_ap = None
+        if is_killed:
+            # Parse kill reason to get AP number: "Doom too low at AP~15"
+            kill_reason_match = re.search(r'at AP~(\d+)', content)
+            if kill_reason_match:
+                kill_ap = int(kill_reason_match.group(1))
+
         return {
             "filename": stem,
             "filepath": str(trace_file),
@@ -150,7 +160,9 @@ def parse_trace_file(trace_file):
             "doom": doom,
             "score": score,
             "won": won,
+            "result": result,
             "game_length": game_length,
+            "kill_ap": kill_ap,
             "timestamp": int(file_time)
         }
 

@@ -1,0 +1,21 @@
+Foremost version 1.5.7 by Jesse Kornblum, Kris Kendall, and Nick Mikus
+Audit File
+
+Foremost started at Sat Sep 19 11:06:04 2026
+Invocation: foremost -t all -i /dev/rdisk1s2 -o ./foremost_output 
+Output directory: /Users/gremus/cthulhu-wars-mcts-prototype/recovery/foremost_output
+Configuration file: /usr/local/etc/foremost.conf
+------------------------------------------------------------------
+File: /dev/rdisk1s2
+Start: Sat Sep 19 11:06:04 2026
+Length: Unknown
+ 
+Num	 Name (bs=512)	       Size	 File Offset	 Comment 
+
+Finish: Sat Sep 19 11:06:04 2026
+
+0 FILES EXTRACTED
+	
+------------------------------------------------------------------
+
+Foremost finished at Sat Sep 19 11:06:04 2026

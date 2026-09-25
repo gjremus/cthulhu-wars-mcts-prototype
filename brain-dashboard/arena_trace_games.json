@@ -1,0 +1,5882 @@
+{
+  "generated": "2026-09-05 14:27:55",
+  "total_games": 732,
+  "games": [
+    {
+      "game_num": 1,
+      "timestamp": "13:05:33",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 2,
+      "timestamp": "13:09:58",
+      "winners": [
+        "BG",
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 3,
+      "timestamp": "13:13:14",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 4,
+      "timestamp": "13:16:08",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 5,
+      "timestamp": "13:19:32",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 6,
+      "timestamp": "13:23:08",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 7,
+      "timestamp": "13:29:01",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 8,
+      "timestamp": "13:34:26",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 9,
+      "timestamp": "13:39:53",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 10,
+      "timestamp": "13:46:46",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 11,
+      "timestamp": "13:52:32",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 12,
+      "timestamp": "13:55:38",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 13,
+      "timestamp": "13:59:35",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 14,
+      "timestamp": "14:03:00",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 15,
+      "timestamp": "14:05:33",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 16,
+      "timestamp": "14:09:35",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 17,
+      "timestamp": "14:11:02",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 18,
+      "timestamp": "14:14:43",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 19,
+      "timestamp": "14:17:09",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 20,
+      "timestamp": "14:18:51",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 21,
+      "timestamp": "14:21:37",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 22,
+      "timestamp": "14:21:38",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 23,
+      "timestamp": "14:21:40",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 24,
+      "timestamp": "14:21:41",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 25,
+      "timestamp": "14:21:41",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 26,
+      "timestamp": "14:21:42",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 27,
+      "timestamp": "14:21:43",
+      "winners": [
+        "BG",
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 28,
+      "timestamp": "14:21:44",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 29,
+      "timestamp": "14:21:45",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 30,
+      "timestamp": "14:21:45",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 31,
+      "timestamp": "14:21:46",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 32,
+      "timestamp": "14:21:47",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 33,
+      "timestamp": "14:21:47",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 34,
+      "timestamp": "14:21:48",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 35,
+      "timestamp": "14:21:49",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 36,
+      "timestamp": "14:21:50",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 37,
+      "timestamp": "14:21:51",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 38,
+      "timestamp": "14:21:52",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 39,
+      "timestamp": "14:21:53",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 40,
+      "timestamp": "14:21:54",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 41,
+      "timestamp": "14:21:54",
+      "winners": [
+        "BG",
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 42,
+      "timestamp": "14:25:44",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 43,
+      "timestamp": "14:27:40",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 44,
+      "timestamp": "14:31:39",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 45,
+      "timestamp": "14:34:33",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 46,
+      "timestamp": "14:37:37",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 47,
+      "timestamp": "14:44:35",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 48,
+      "timestamp": "14:52:03",
+      "winners": [
+        "YS",
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 49,
+      "timestamp": "14:55:15",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 50,
+      "timestamp": "14:59:14",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 51,
+      "timestamp": "15:05:20",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 52,
+      "timestamp": "15:09:00",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 53,
+      "timestamp": "15:12:02",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 54,
+      "timestamp": "15:15:59",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 55,
+      "timestamp": "15:19:08",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 56,
+      "timestamp": "15:22:38",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 57,
+      "timestamp": "15:26:41",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 58,
+      "timestamp": "15:28:36",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 59,
+      "timestamp": "15:29:54",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 60,
+      "timestamp": "15:32:01",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 61,
+      "timestamp": "15:45:26",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 62,
+      "timestamp": "15:45:27",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 63,
+      "timestamp": "15:45:29",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 64,
+      "timestamp": "15:45:30",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 65,
+      "timestamp": "15:45:31",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 66,
+      "timestamp": "15:45:32",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 67,
+      "timestamp": "15:45:33",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 68,
+      "timestamp": "15:45:35",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 69,
+      "timestamp": "15:45:35",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 70,
+      "timestamp": "15:45:37",
+      "winners": [
+        "YS",
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 71,
+      "timestamp": "15:45:38",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 72,
+      "timestamp": "15:45:39",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 73,
+      "timestamp": "15:45:40",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 74,
+      "timestamp": "15:45:41",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 75,
+      "timestamp": "15:45:42",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 76,
+      "timestamp": "15:45:43",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 77,
+      "timestamp": "15:45:43",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 78,
+      "timestamp": "15:45:44",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 79,
+      "timestamp": "15:45:45",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 80,
+      "timestamp": "15:45:46",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 81,
+      "timestamp": "15:45:47",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 82,
+      "timestamp": "15:48:27",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 83,
+      "timestamp": "15:51:02",
+      "winners": [
+        "YS",
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 84,
+      "timestamp": "15:53:18",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 85,
+      "timestamp": "15:56:35",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 86,
+      "timestamp": "15:59:28",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 87,
+      "timestamp": "16:04:55",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 88,
+      "timestamp": "16:07:45",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 89,
+      "timestamp": "16:14:31",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 90,
+      "timestamp": "16:18:49",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 91,
+      "timestamp": "16:23:46",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 92,
+      "timestamp": "16:27:36",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 93,
+      "timestamp": "16:31:33",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 94,
+      "timestamp": "16:34:39",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 95,
+      "timestamp": "16:38:03",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 96,
+      "timestamp": "16:40:31",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 97,
+      "timestamp": "16:43:42",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 98,
+      "timestamp": "16:44:53",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 99,
+      "timestamp": "16:46:56",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 100,
+      "timestamp": "16:49:39",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 101,
+      "timestamp": "17:03:51",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 102,
+      "timestamp": "17:03:52",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 103,
+      "timestamp": "17:03:56",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 104,
+      "timestamp": "17:03:57",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 105,
+      "timestamp": "17:03:57",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 106,
+      "timestamp": "17:03:58",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 107,
+      "timestamp": "17:03:59",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 108,
+      "timestamp": "17:04:01",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 109,
+      "timestamp": "17:04:01",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 110,
+      "timestamp": "17:04:03",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 111,
+      "timestamp": "17:04:03",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 112,
+      "timestamp": "17:04:04",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 113,
+      "timestamp": "17:04:05",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 114,
+      "timestamp": "17:04:05",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 115,
+      "timestamp": "17:04:07",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 116,
+      "timestamp": "17:04:08",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 117,
+      "timestamp": "17:04:08",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 118,
+      "timestamp": "17:04:10",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 119,
+      "timestamp": "17:04:10",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 120,
+      "timestamp": "17:04:11",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 121,
+      "timestamp": "17:04:12",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 122,
+      "timestamp": "17:06:24",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 123,
+      "timestamp": "17:09:23",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 124,
+      "timestamp": "17:12:36",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 125,
+      "timestamp": "17:14:48",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 126,
+      "timestamp": "17:16:53",
+      "winners": [
+        "CC",
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 127,
+      "timestamp": "17:23:05",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 128,
+      "timestamp": "17:27:58",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 129,
+      "timestamp": "17:33:46",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 130,
+      "timestamp": "17:38:36",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 131,
+      "timestamp": "17:41:45",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 132,
+      "timestamp": "17:44:57",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 133,
+      "timestamp": "17:48:00",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 134,
+      "timestamp": "17:51:35",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 135,
+      "timestamp": "17:55:06",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 136,
+      "timestamp": "17:58:53",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 137,
+      "timestamp": "18:00:27",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 138,
+      "timestamp": "18:01:55",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 139,
+      "timestamp": "18:03:40",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 140,
+      "timestamp": "18:06:13",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 141,
+      "timestamp": "18:20:19",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 142,
+      "timestamp": "18:20:19",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 143,
+      "timestamp": "18:20:21",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 144,
+      "timestamp": "18:20:22",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 145,
+      "timestamp": "18:20:23",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 146,
+      "timestamp": "18:20:24",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 147,
+      "timestamp": "18:20:25",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 148,
+      "timestamp": "18:20:25",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 149,
+      "timestamp": "18:20:26",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 150,
+      "timestamp": "18:20:27",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 151,
+      "timestamp": "18:20:28",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 152,
+      "timestamp": "18:20:29",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 153,
+      "timestamp": "18:20:30",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 154,
+      "timestamp": "18:20:31",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 155,
+      "timestamp": "18:20:32",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 156,
+      "timestamp": "18:20:33",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 157,
+      "timestamp": "18:20:34",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 158,
+      "timestamp": "18:20:35",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 159,
+      "timestamp": "18:20:36",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 160,
+      "timestamp": "18:20:37",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 161,
+      "timestamp": "18:20:38",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 162,
+      "timestamp": "18:23:26",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 163,
+      "timestamp": "18:26:47",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 164,
+      "timestamp": "18:29:29",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 165,
+      "timestamp": "18:32:16",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 166,
+      "timestamp": "18:36:37",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 167,
+      "timestamp": "18:41:05",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 168,
+      "timestamp": "18:45:59",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 169,
+      "timestamp": "18:49:31",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 170,
+      "timestamp": "18:55:39",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 171,
+      "timestamp": "18:59:53",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 172,
+      "timestamp": "19:02:51",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 173,
+      "timestamp": "19:07:10",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 174,
+      "timestamp": "19:10:43",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 175,
+      "timestamp": "19:14:17",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 176,
+      "timestamp": "19:18:14",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 177,
+      "timestamp": "19:20:24",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 178,
+      "timestamp": "19:21:45",
+      "winners": [
+        "BG",
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 179,
+      "timestamp": "19:23:47",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 180,
+      "timestamp": "19:25:26",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 181,
+      "timestamp": "19:38:49",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 182,
+      "timestamp": "19:38:50",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 183,
+      "timestamp": "19:38:51",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 184,
+      "timestamp": "19:38:52",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 185,
+      "timestamp": "19:38:52",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 186,
+      "timestamp": "19:38:53",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 187,
+      "timestamp": "19:38:55",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 188,
+      "timestamp": "19:38:56",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 189,
+      "timestamp": "19:38:57",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 190,
+      "timestamp": "19:38:58",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 191,
+      "timestamp": "19:38:59",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 192,
+      "timestamp": "19:39:00",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 193,
+      "timestamp": "19:39:00",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 194,
+      "timestamp": "19:39:01",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 195,
+      "timestamp": "19:39:02",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 196,
+      "timestamp": "19:39:03",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 197,
+      "timestamp": "19:39:03",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 198,
+      "timestamp": "19:39:05",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 199,
+      "timestamp": "19:39:06",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 200,
+      "timestamp": "19:39:07",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 201,
+      "timestamp": "19:39:08",
+      "winners": [
+        "YS",
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 202,
+      "timestamp": "19:42:49",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 203,
+      "timestamp": "19:46:21",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 204,
+      "timestamp": "19:48:44",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 205,
+      "timestamp": "19:51:23",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 206,
+      "timestamp": "19:53:55",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 207,
+      "timestamp": "19:58:27",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 208,
+      "timestamp": "20:03:01",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 209,
+      "timestamp": "20:09:27",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 210,
+      "timestamp": "20:14:04",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 211,
+      "timestamp": "20:18:14",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 212,
+      "timestamp": "20:22:33",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 213,
+      "timestamp": "20:25:50",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 214,
+      "timestamp": "20:28:50",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 215,
+      "timestamp": "20:32:22",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 216,
+      "timestamp": "20:34:57",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 217,
+      "timestamp": "20:38:25",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 218,
+      "timestamp": "20:40:41",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 219,
+      "timestamp": "20:43:00",
+      "winners": [
+        "BG",
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 220,
+      "timestamp": "20:44:33",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 221,
+      "timestamp": "20:57:14",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 222,
+      "timestamp": "20:57:15",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 223,
+      "timestamp": "20:57:16",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 224,
+      "timestamp": "20:57:17",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 225,
+      "timestamp": "20:57:18",
+      "winners": [
+        "BG",
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 226,
+      "timestamp": "20:57:19",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 227,
+      "timestamp": "20:57:20",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 228,
+      "timestamp": "20:57:21",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 229,
+      "timestamp": "20:57:21",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 230,
+      "timestamp": "20:57:23",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 231,
+      "timestamp": "20:57:25",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 232,
+      "timestamp": "20:57:25",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 233,
+      "timestamp": "20:57:26",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 234,
+      "timestamp": "20:57:27",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 235,
+      "timestamp": "20:57:28",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 236,
+      "timestamp": "20:57:29",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 237,
+      "timestamp": "20:57:30",
+      "winners": [
+        "CC",
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 238,
+      "timestamp": "20:57:31",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 239,
+      "timestamp": "20:57:33",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 240,
+      "timestamp": "20:57:33",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 241,
+      "timestamp": "20:57:58",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 242,
+      "timestamp": "21:01:33",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 243,
+      "timestamp": "21:04:53",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 244,
+      "timestamp": "21:09:11",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 245,
+      "timestamp": "21:12:28",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 246,
+      "timestamp": "21:15:49",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 247,
+      "timestamp": "21:21:45",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 248,
+      "timestamp": "21:30:22",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 249,
+      "timestamp": "21:35:39",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 250,
+      "timestamp": "21:42:38",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 251,
+      "timestamp": "21:48:48",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 252,
+      "timestamp": "21:52:45",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 253,
+      "timestamp": "21:57:18",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 254,
+      "timestamp": "22:01:34",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 255,
+      "timestamp": "22:03:57",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 256,
+      "timestamp": "22:06:47",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 257,
+      "timestamp": "22:09:21",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 258,
+      "timestamp": "22:12:10",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 259,
+      "timestamp": "22:15:02",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 260,
+      "timestamp": "22:16:17",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 261,
+      "timestamp": "22:29:30",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 262,
+      "timestamp": "22:29:31",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 263,
+      "timestamp": "22:29:32",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 264,
+      "timestamp": "22:29:33",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 265,
+      "timestamp": "22:29:34",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 266,
+      "timestamp": "22:29:35",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 267,
+      "timestamp": "22:29:36",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 268,
+      "timestamp": "22:29:37",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 269,
+      "timestamp": "22:29:37",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 270,
+      "timestamp": "22:29:38",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 271,
+      "timestamp": "22:29:40",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 272,
+      "timestamp": "22:29:41",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 273,
+      "timestamp": "22:29:42",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 274,
+      "timestamp": "22:29:43",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 275,
+      "timestamp": "22:29:44",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 276,
+      "timestamp": "22:29:45",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 277,
+      "timestamp": "22:29:46",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 278,
+      "timestamp": "22:29:48",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 279,
+      "timestamp": "22:29:50",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 280,
+      "timestamp": "22:29:51",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 281,
+      "timestamp": "22:29:52",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 282,
+      "timestamp": "22:31:21",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 283,
+      "timestamp": "22:35:12",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 284,
+      "timestamp": "22:39:42",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 285,
+      "timestamp": "22:42:48",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 286,
+      "timestamp": "22:48:22",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 287,
+      "timestamp": "22:52:38",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 288,
+      "timestamp": "22:57:22",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 289,
+      "timestamp": "23:05:58",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 290,
+      "timestamp": "23:13:58",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 291,
+      "timestamp": "23:18:39",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 292,
+      "timestamp": "23:22:05",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 293,
+      "timestamp": "23:25:38",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 294,
+      "timestamp": "23:28:50",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 295,
+      "timestamp": "23:31:34",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 296,
+      "timestamp": "23:36:15",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 297,
+      "timestamp": "23:38:44",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 298,
+      "timestamp": "23:42:51",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 299,
+      "timestamp": "23:45:14",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 300,
+      "timestamp": "23:50:10",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 301,
+      "timestamp": "00:03:19",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 302,
+      "timestamp": "00:03:19",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 303,
+      "timestamp": "00:03:21",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 304,
+      "timestamp": "00:03:22",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 305,
+      "timestamp": "00:03:22",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 306,
+      "timestamp": "00:03:23",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 307,
+      "timestamp": "00:03:24",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 308,
+      "timestamp": "00:03:25",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 309,
+      "timestamp": "00:03:26",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 310,
+      "timestamp": "00:03:27",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 311,
+      "timestamp": "00:03:28",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 312,
+      "timestamp": "00:03:29",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 313,
+      "timestamp": "00:03:29",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 314,
+      "timestamp": "00:03:30",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 315,
+      "timestamp": "00:03:31",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 316,
+      "timestamp": "00:03:32",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 317,
+      "timestamp": "00:03:33",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 318,
+      "timestamp": "00:03:35",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 319,
+      "timestamp": "00:03:36",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 320,
+      "timestamp": "00:03:37",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 321,
+      "timestamp": "00:03:53",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 322,
+      "timestamp": "00:06:55",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 323,
+      "timestamp": "00:10:54",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 324,
+      "timestamp": "00:13:40",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 325,
+      "timestamp": "00:17:52",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 326,
+      "timestamp": "00:20:25",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 327,
+      "timestamp": "00:27:25",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 328,
+      "timestamp": "00:32:10",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 329,
+      "timestamp": "00:37:51",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 330,
+      "timestamp": "00:43:46",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 331,
+      "timestamp": "00:51:54",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 332,
+      "timestamp": "00:55:49",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 333,
+      "timestamp": "00:59:52",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 334,
+      "timestamp": "01:03:27",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 335,
+      "timestamp": "01:07:39",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 336,
+      "timestamp": "01:12:14",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 337,
+      "timestamp": "01:14:22",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 338,
+      "timestamp": "01:16:43",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 339,
+      "timestamp": "01:19:13",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 340,
+      "timestamp": "01:21:13",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 341,
+      "timestamp": "01:33:38",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 342,
+      "timestamp": "01:33:41",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 343,
+      "timestamp": "01:33:43",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 344,
+      "timestamp": "01:33:44",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 345,
+      "timestamp": "01:33:45",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 346,
+      "timestamp": "01:33:46",
+      "winners": [
+        "YS",
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 347,
+      "timestamp": "01:33:47",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 348,
+      "timestamp": "01:33:48",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 349,
+      "timestamp": "01:33:49",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 350,
+      "timestamp": "01:33:50",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 351,
+      "timestamp": "01:33:51",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 352,
+      "timestamp": "01:33:52",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 353,
+      "timestamp": "01:33:53",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 354,
+      "timestamp": "01:33:54",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 355,
+      "timestamp": "01:33:55",
+      "winners": [
+        "GC",
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 356,
+      "timestamp": "01:33:56",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 357,
+      "timestamp": "01:33:57",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 358,
+      "timestamp": "01:33:58",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 359,
+      "timestamp": "01:34:00",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 360,
+      "timestamp": "01:34:01",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 361,
+      "timestamp": "01:34:02",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 362,
+      "timestamp": "01:37:24",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 363,
+      "timestamp": "01:39:32",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 364,
+      "timestamp": "01:42:36",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 365,
+      "timestamp": "01:44:56",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 366,
+      "timestamp": "01:46:52",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 367,
+      "timestamp": "01:51:22",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 368,
+      "timestamp": "01:54:48",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 369,
+      "timestamp": "01:58:20",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 370,
+      "timestamp": "02:04:09",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 371,
+      "timestamp": "02:07:41",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 372,
+      "timestamp": "02:10:40",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 373,
+      "timestamp": "02:14:19",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 374,
+      "timestamp": "02:19:26",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 375,
+      "timestamp": "02:22:58",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 376,
+      "timestamp": "02:25:38",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 377,
+      "timestamp": "02:28:10",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 378,
+      "timestamp": "02:30:09",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 379,
+      "timestamp": "02:32:33",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 380,
+      "timestamp": "02:34:33",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 381,
+      "timestamp": "02:46:44",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 382,
+      "timestamp": "02:46:45",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 383,
+      "timestamp": "02:46:46",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 384,
+      "timestamp": "02:46:47",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 385,
+      "timestamp": "02:46:48",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 386,
+      "timestamp": "02:46:50",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 387,
+      "timestamp": "02:46:51",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 388,
+      "timestamp": "02:46:52",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 389,
+      "timestamp": "02:46:53",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 390,
+      "timestamp": "02:46:54",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 391,
+      "timestamp": "02:46:55",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 392,
+      "timestamp": "02:46:56",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 393,
+      "timestamp": "02:46:57",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 394,
+      "timestamp": "02:46:58",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 395,
+      "timestamp": "02:46:59",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 396,
+      "timestamp": "02:47:00",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 397,
+      "timestamp": "02:47:01",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 398,
+      "timestamp": "02:47:02",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 399,
+      "timestamp": "02:47:04",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 400,
+      "timestamp": "02:47:05",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 401,
+      "timestamp": "02:47:05",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 402,
+      "timestamp": "02:49:37",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 403,
+      "timestamp": "02:52:05",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 404,
+      "timestamp": "02:54:40",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 405,
+      "timestamp": "02:59:33",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 406,
+      "timestamp": "03:03:59",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 407,
+      "timestamp": "03:10:08",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 408,
+      "timestamp": "03:15:02",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 409,
+      "timestamp": "03:20:10",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 410,
+      "timestamp": "03:26:02",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 411,
+      "timestamp": "03:31:35",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 412,
+      "timestamp": "03:35:28",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 413,
+      "timestamp": "03:39:30",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 414,
+      "timestamp": "03:43:45",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 415,
+      "timestamp": "03:47:24",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 416,
+      "timestamp": "03:50:56",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 417,
+      "timestamp": "03:53:26",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 418,
+      "timestamp": "03:55:16",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 419,
+      "timestamp": "03:57:33",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 420,
+      "timestamp": "03:59:32",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 421,
+      "timestamp": "04:13:26",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 422,
+      "timestamp": "04:13:27",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 423,
+      "timestamp": "04:13:28",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 424,
+      "timestamp": "04:13:29",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 425,
+      "timestamp": "04:13:30",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 426,
+      "timestamp": "04:13:31",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 427,
+      "timestamp": "04:13:33",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 428,
+      "timestamp": "04:13:33",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 429,
+      "timestamp": "04:13:34",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 430,
+      "timestamp": "04:13:35",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 431,
+      "timestamp": "04:13:37",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 432,
+      "timestamp": "04:13:38",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 433,
+      "timestamp": "04:13:38",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 434,
+      "timestamp": "04:13:39",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 435,
+      "timestamp": "04:13:40",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 436,
+      "timestamp": "04:13:42",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 437,
+      "timestamp": "04:13:42",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 438,
+      "timestamp": "04:13:43",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 439,
+      "timestamp": "04:13:44",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 440,
+      "timestamp": "04:13:45",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 442,
+      "timestamp": "04:15:39",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 443,
+      "timestamp": "04:18:14",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 444,
+      "timestamp": "04:20:59",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 445,
+      "timestamp": "04:22:40",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 446,
+      "timestamp": "04:26:15",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 447,
+      "timestamp": "04:30:34",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 448,
+      "timestamp": "04:36:09",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 449,
+      "timestamp": "04:41:27",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 450,
+      "timestamp": "04:46:51",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 451,
+      "timestamp": "04:52:25",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 452,
+      "timestamp": "04:56:13",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 453,
+      "timestamp": "04:59:16",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 454,
+      "timestamp": "05:02:13",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 455,
+      "timestamp": "05:06:09",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 456,
+      "timestamp": "05:09:24",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 457,
+      "timestamp": "05:11:49",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 458,
+      "timestamp": "05:14:12",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 459,
+      "timestamp": "05:16:24",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 460,
+      "timestamp": "05:18:56",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 461,
+      "timestamp": "05:31:53",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 462,
+      "timestamp": "05:31:54",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 463,
+      "timestamp": "05:31:56",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 464,
+      "timestamp": "05:31:57",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 465,
+      "timestamp": "05:31:58",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 466,
+      "timestamp": "05:31:59",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 467,
+      "timestamp": "05:32:00",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 468,
+      "timestamp": "05:32:01",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 469,
+      "timestamp": "05:32:02",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 470,
+      "timestamp": "05:32:03",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 471,
+      "timestamp": "05:32:04",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 472,
+      "timestamp": "05:32:05",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 473,
+      "timestamp": "05:32:05",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 474,
+      "timestamp": "05:32:06",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 475,
+      "timestamp": "05:32:07",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 476,
+      "timestamp": "05:32:08",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 477,
+      "timestamp": "05:32:09",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 478,
+      "timestamp": "05:32:10",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 479,
+      "timestamp": "05:32:11",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 480,
+      "timestamp": "05:32:12",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 481,
+      "timestamp": "05:32:12",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 482,
+      "timestamp": "05:35:50",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 483,
+      "timestamp": "05:39:28",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 484,
+      "timestamp": "05:41:47",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 485,
+      "timestamp": "05:45:40",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 486,
+      "timestamp": "05:49:50",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 487,
+      "timestamp": "05:55:21",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 488,
+      "timestamp": "05:59:53",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 489,
+      "timestamp": "06:04:06",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 490,
+      "timestamp": "06:08:39",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 491,
+      "timestamp": "06:16:37",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 492,
+      "timestamp": "06:18:51",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 493,
+      "timestamp": "06:21:02",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 494,
+      "timestamp": "06:24:29",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 495,
+      "timestamp": "06:28:35",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 496,
+      "timestamp": "06:32:58",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 497,
+      "timestamp": "06:34:41",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 498,
+      "timestamp": "06:36:15",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 499,
+      "timestamp": "06:38:33",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 500,
+      "timestamp": "06:40:40",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 501,
+      "timestamp": "06:54:39",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 502,
+      "timestamp": "06:54:39",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 503,
+      "timestamp": "06:54:41",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 504,
+      "timestamp": "06:54:41",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 505,
+      "timestamp": "06:54:42",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 506,
+      "timestamp": "06:54:43",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 507,
+      "timestamp": "06:54:44",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 508,
+      "timestamp": "06:54:45",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 509,
+      "timestamp": "06:54:45",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 510,
+      "timestamp": "06:54:47",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 511,
+      "timestamp": "06:54:48",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 512,
+      "timestamp": "06:54:49",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 513,
+      "timestamp": "06:54:50",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 514,
+      "timestamp": "06:54:51",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 515,
+      "timestamp": "06:54:52",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 516,
+      "timestamp": "06:54:53",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 517,
+      "timestamp": "06:54:53",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 518,
+      "timestamp": "06:54:54",
+      "winners": [
+        "GC",
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 519,
+      "timestamp": "06:54:55",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 520,
+      "timestamp": "06:54:55",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 521,
+      "timestamp": "06:54:56",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 522,
+      "timestamp": "06:58:22",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 523,
+      "timestamp": "06:59:50",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 524,
+      "timestamp": "07:03:16",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 525,
+      "timestamp": "07:05:56",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 526,
+      "timestamp": "07:10:27",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 527,
+      "timestamp": "07:18:27",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 528,
+      "timestamp": "07:24:30",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 529,
+      "timestamp": "07:27:37",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 530,
+      "timestamp": "07:34:26",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 531,
+      "timestamp": "07:38:46",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 532,
+      "timestamp": "07:40:51",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 533,
+      "timestamp": "07:45:10",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 534,
+      "timestamp": "07:48:30",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 535,
+      "timestamp": "07:51:27",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 536,
+      "timestamp": "07:54:29",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 537,
+      "timestamp": "07:57:22",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 538,
+      "timestamp": "07:59:36",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 539,
+      "timestamp": "08:01:07",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 540,
+      "timestamp": "08:02:49",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 541,
+      "timestamp": "08:16:12",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 542,
+      "timestamp": "08:16:14",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 543,
+      "timestamp": "08:16:16",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 544,
+      "timestamp": "08:16:17",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 545,
+      "timestamp": "08:16:18",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 546,
+      "timestamp": "08:16:18",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 547,
+      "timestamp": "08:16:20",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 548,
+      "timestamp": "08:16:21",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 549,
+      "timestamp": "08:16:22",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 550,
+      "timestamp": "08:16:23",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 551,
+      "timestamp": "08:16:24",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 552,
+      "timestamp": "08:16:25",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 553,
+      "timestamp": "08:16:26",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 554,
+      "timestamp": "08:16:26",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 555,
+      "timestamp": "08:16:28",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 556,
+      "timestamp": "08:16:28",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 557,
+      "timestamp": "08:16:29",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 558,
+      "timestamp": "08:16:30",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 559,
+      "timestamp": "08:16:32",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 560,
+      "timestamp": "08:16:33",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 561,
+      "timestamp": "08:16:41",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 562,
+      "timestamp": "08:20:19",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 563,
+      "timestamp": "08:22:48",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 564,
+      "timestamp": "08:27:09",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 565,
+      "timestamp": "08:29:18",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 566,
+      "timestamp": "08:33:13",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 567,
+      "timestamp": "08:39:28",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 568,
+      "timestamp": "08:44:31",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 569,
+      "timestamp": "08:49:33",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 570,
+      "timestamp": "08:55:25",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 571,
+      "timestamp": "09:00:16",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 572,
+      "timestamp": "09:03:23",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 573,
+      "timestamp": "09:05:52",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 574,
+      "timestamp": "09:10:01",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 575,
+      "timestamp": "09:13:15",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 576,
+      "timestamp": "09:16:24",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 577,
+      "timestamp": "09:19:06",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 578,
+      "timestamp": "09:22:19",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 579,
+      "timestamp": "09:25:29",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 580,
+      "timestamp": "09:29:14",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 581,
+      "timestamp": "09:42:45",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 582,
+      "timestamp": "09:42:45",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 583,
+      "timestamp": "09:42:47",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 584,
+      "timestamp": "09:42:48",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 585,
+      "timestamp": "09:42:48",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 586,
+      "timestamp": "09:42:49",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 587,
+      "timestamp": "09:42:51",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 588,
+      "timestamp": "09:42:52",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 589,
+      "timestamp": "09:42:52",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 590,
+      "timestamp": "09:42:53",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 591,
+      "timestamp": "09:42:55",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 592,
+      "timestamp": "09:42:56",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 593,
+      "timestamp": "09:42:56",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 594,
+      "timestamp": "09:42:58",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 595,
+      "timestamp": "09:42:59",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 596,
+      "timestamp": "09:43:00",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 597,
+      "timestamp": "09:43:00",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 598,
+      "timestamp": "09:43:01",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 599,
+      "timestamp": "09:43:03",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 600,
+      "timestamp": "09:43:04",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 601,
+      "timestamp": "09:43:04",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 602,
+      "timestamp": "09:44:32",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 603,
+      "timestamp": "09:48:22",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 604,
+      "timestamp": "09:50:21",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 605,
+      "timestamp": "09:53:49",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 606,
+      "timestamp": "09:57:02",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 607,
+      "timestamp": "10:03:05",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 608,
+      "timestamp": "10:06:52",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 609,
+      "timestamp": "10:11:46",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 610,
+      "timestamp": "10:18:24",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 611,
+      "timestamp": "10:23:04",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 612,
+      "timestamp": "10:27:02",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 613,
+      "timestamp": "10:30:31",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 614,
+      "timestamp": "10:32:52",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 615,
+      "timestamp": "10:36:58",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 616,
+      "timestamp": "10:39:36",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 617,
+      "timestamp": "10:41:29",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 618,
+      "timestamp": "10:43:40",
+      "winners": [
+        "YS",
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 619,
+      "timestamp": "10:45:23",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 620,
+      "timestamp": "10:48:07",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 621,
+      "timestamp": "11:01:32",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 622,
+      "timestamp": "11:01:33",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 623,
+      "timestamp": "11:01:34",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 624,
+      "timestamp": "11:01:36",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 625,
+      "timestamp": "11:01:36",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 626,
+      "timestamp": "11:01:38",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 627,
+      "timestamp": "11:01:40",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 628,
+      "timestamp": "11:01:41",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 629,
+      "timestamp": "11:01:42",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 630,
+      "timestamp": "11:01:43",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 631,
+      "timestamp": "11:01:44",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 632,
+      "timestamp": "11:01:45",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 633,
+      "timestamp": "11:01:46",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 634,
+      "timestamp": "11:01:47",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 635,
+      "timestamp": "11:01:48",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 636,
+      "timestamp": "11:01:49",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 637,
+      "timestamp": "11:01:49",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 638,
+      "timestamp": "11:01:50",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 639,
+      "timestamp": "11:01:52",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 640,
+      "timestamp": "11:01:53",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 641,
+      "timestamp": "11:01:54",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 642,
+      "timestamp": "11:03:48",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 643,
+      "timestamp": "11:06:04",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 644,
+      "timestamp": "11:08:13",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 645,
+      "timestamp": "11:10:13",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 646,
+      "timestamp": "11:12:48",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 647,
+      "timestamp": "11:17:02",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 648,
+      "timestamp": "11:22:37",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 649,
+      "timestamp": "11:26:31",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 650,
+      "timestamp": "11:33:43",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 651,
+      "timestamp": "11:40:36",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 652,
+      "timestamp": "11:44:33",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 653,
+      "timestamp": "11:47:53",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 654,
+      "timestamp": "11:50:55",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 655,
+      "timestamp": "11:54:19",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 656,
+      "timestamp": "11:57:34",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 657,
+      "timestamp": "12:00:12",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 658,
+      "timestamp": "12:02:06",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 659,
+      "timestamp": "12:04:03",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 660,
+      "timestamp": "12:06:40",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 661,
+      "timestamp": "12:20:37",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 662,
+      "timestamp": "12:20:38",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 663,
+      "timestamp": "12:20:40",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 664,
+      "timestamp": "12:20:41",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 665,
+      "timestamp": "12:20:41",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 666,
+      "timestamp": "12:20:43",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 667,
+      "timestamp": "12:20:44",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 668,
+      "timestamp": "12:20:45",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 669,
+      "timestamp": "12:20:46",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 670,
+      "timestamp": "12:20:47",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 671,
+      "timestamp": "12:20:48",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 672,
+      "timestamp": "12:20:49",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 673,
+      "timestamp": "12:20:50",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 674,
+      "timestamp": "12:20:51",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 675,
+      "timestamp": "12:20:53",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 676,
+      "timestamp": "12:20:54",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 677,
+      "timestamp": "12:20:54",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 678,
+      "timestamp": "12:20:56",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 679,
+      "timestamp": "12:20:57",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 680,
+      "timestamp": "12:20:58",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 681,
+      "timestamp": "12:20:58",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 682,
+      "timestamp": "12:24:09",
+      "winners": [
+        "YS",
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 683,
+      "timestamp": "12:27:38",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 684,
+      "timestamp": "12:29:47",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 685,
+      "timestamp": "12:32:35",
+      "winners": [
+        "BG",
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 686,
+      "timestamp": "12:35:07",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 687,
+      "timestamp": "12:39:03",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 688,
+      "timestamp": "12:45:24",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 689,
+      "timestamp": "12:48:51",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 690,
+      "timestamp": "12:54:40",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 691,
+      "timestamp": "12:57:28",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 692,
+      "timestamp": "13:00:40",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 693,
+      "timestamp": "13:03:32",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 694,
+      "timestamp": "13:06:24",
+      "winners": [
+        "CC",
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 695,
+      "timestamp": "13:10:13",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 696,
+      "timestamp": "13:12:52",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 697,
+      "timestamp": "13:14:51",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 698,
+      "timestamp": "13:16:45",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 699,
+      "timestamp": "13:18:36",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 700,
+      "timestamp": "13:20:07",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 701,
+      "timestamp": "13:32:56",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 702,
+      "timestamp": "13:32:58",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 703,
+      "timestamp": "13:33:00",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 704,
+      "timestamp": "13:33:01",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 705,
+      "timestamp": "13:33:02",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 706,
+      "timestamp": "13:33:04",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 707,
+      "timestamp": "13:33:06",
+      "winners": [
+        "GC",
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 708,
+      "timestamp": "13:33:07",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 709,
+      "timestamp": "13:33:08",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 710,
+      "timestamp": "13:33:10",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 711,
+      "timestamp": "13:33:12",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 712,
+      "timestamp": "13:33:12",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 713,
+      "timestamp": "13:33:13",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 714,
+      "timestamp": "13:33:14",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 715,
+      "timestamp": "13:33:14",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 716,
+      "timestamp": "13:33:15",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 717,
+      "timestamp": "13:33:16",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 718,
+      "timestamp": "13:33:17",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 719,
+      "timestamp": "13:33:19",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 720,
+      "timestamp": "13:33:19",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 721,
+      "timestamp": "13:33:20",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 722,
+      "timestamp": "13:37:32",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 723,
+      "timestamp": "13:40:34",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 724,
+      "timestamp": "13:43:52",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 725,
+      "timestamp": "13:47:26",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 726,
+      "timestamp": "13:49:31",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 727,
+      "timestamp": "13:56:16",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 728,
+      "timestamp": "13:59:39",
+      "winners": [
+        "YS"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 729,
+      "timestamp": "14:04:34",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 730,
+      "timestamp": "14:12:43",
+      "winners": [
+        "GC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 731,
+      "timestamp": "14:17:03",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 732,
+      "timestamp": "14:20:18",
+      "winners": [
+        "CC"
+      ],
+      "complete": true
+    },
+    {
+      "game_num": 733,
+      "timestamp": "14:24:09",
+      "winners": [
+        "BG"
+      ],
+      "complete": true
+    }
+  ]
+}

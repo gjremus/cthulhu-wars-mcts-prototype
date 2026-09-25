@@ -95,10 +95,27 @@ object PolicyRun {
         //   combined   <games> <epochs> <hidden> [par] [lr] [sims] [perSeat]    — train BOTH heads, then PUCT (policy prior + value net) vs bots
         //   iterarena  <games> <epochs> <hidden> [par] [lr] [sims] [perSeat] [iters] [gamesPerIter] — iterative training on arena games
         println(s"DEBUG RAW ARGS: ${args.mkString(" ")}")
-        val modes = Set("clone", "arena", "combined", "selfplay", "stalltrace", "replaygame", "iterarena")
+        val modes = Set("clone", "arena", "combined", "selfplay", "stalltrace", "replaygame", "iterarena", "traintrace")
         val mode = if (args.nonEmpty && modes(args(0))) args(0) else "clone"
         val a    = if (args.nonEmpty && modes(args(0))) args.drop(1) else args
         println(s"DEBUG PARSED: mode=$mode a=${a.mkString(" ")}")
+
+        // traintrace mode handles its own args, don't parse them here
+        if (mode == "traintrace") {
+            val t0 = System.nanoTime()
+            val traceDir = if (a.nonEmpty) a(0) else "/tmp/training_corpus_iter14_75pct"
+            val ckptDir  = if (a.length > 1) a(1) else "/Users/gremus/cthulhu-wars-mcts-prototype/checkpoints/R39_iter11_20260916_155201"
+            val trainEpochs = if (a.length > 2) a(2).toInt else 12
+            val hiddenArg = if (a.length > 3) a(3).toInt else 256
+            val lrArg = if (a.length > 4) a(4).toDouble else 0.0001
+            println(f"=== TRAIN ON TRACES (mode=$mode) ===")
+            println(f"trace dir: $traceDir")
+            println(f"checkpoint: $ckptDir")
+            println(f"epochs: $trainEpochs, hidden: $hiddenArg, lr: $lrArg\n")
+            TrainTrace.run(traceDir, ckptDir, trainEpochs, hiddenArg, lrArg)
+            println(f"\ntotal time ${(System.nanoTime() - t0) / 1e9}%.0fs")
+            return
+        }
 
         val nGames   = intArg(a, 0, 200)
         val epochs   = intArg(a, 1, 6)
@@ -431,14 +448,15 @@ object PolicyRun {
             }
 
             val s0 = Engine.start(g)
-            val (winners, wasKilled, killReason, actionCount) = EarlyTermination.rolloutWithTerminationCheck(
-                g, s0, recording, brainSeat, traj, earlyTermThresholds, 8000)
+            val adaptiveConfig = AdaptiveRollout.loadConfig()
+            val (winners, wasKilled, killReason, actionCount, actions, undoCount) = AdaptiveRollout.rolloutWithAdaptiveUndo(
+                g, s0, recording, brainSeat, traj, earlyTermThresholds, adaptiveConfig, 8000)
 
             // Handle killed games
             if (wasKilled) {
                 traceDir.foreach { dir =>
                     EarlyTermination.writeKilledTrace(dir, runTag, iterNum, brainSeat, i+1, g, actionCount,
-                        killReason.getOrElse("Unknown reason"), traj)
+                        killReason.getOrElse("Unknown reason"), traj, actions)
                 }
 
                 val elapsed = (System.nanoTime() - t0) / 1e9
@@ -475,12 +493,14 @@ object PolicyRun {
                 pw.println(f"Result: ${if (brainWon) "WIN" else "LOSS"}")
                 pw.println(f"Doom: $brainDoom")
                 pw.println(f"Score (0-1): $gameScore%.3f")
+                pw.println(f"Adaptive undos: $undoCount")
                 pw.println(f"Shaping breakdown: ${shaping.map { case (f, v) => f"${f.short}=$v%.2f" }.mkString(", ")}")
                 pw.close()
             }
 
             val elapsed = (System.nanoTime() - t0) / 1e9
-            println(f"  game ${i+1}/$nGames complete: ${brainSeat.short} game#$factionGameNumber score=$gameScore%.3f doom=${g.players(brainSeat).doom} (${elapsed}%.0fs)")
+            val undoStr = if (undoCount > 0) f" undos=$undoCount" else ""
+            println(f"  game ${i+1}/$nGames complete: ${brainSeat.short} game#$factionGameNumber score=$gameScore%.3f doom=${g.players(brainSeat).doom}$undoStr (${elapsed}%.0fs)")
 
             (pol.toSeq, vals.toSeq, gameScore, brainSeat)
         }

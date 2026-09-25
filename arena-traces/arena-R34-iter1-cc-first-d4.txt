@@ -1,0 +1,2861 @@
+StartAction
+StartingRegionAction(GC, SouthPacific)
+StartingRegionAction(BG, WestAfrica)
+StartingRegionAction(YS, Europe)
+StartingRegionAction(CC, Arabia)
+PlayDirectionAction(GC, [GC, CC, YS, BG])
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+MoveAction(GC, GC/Acolyte/5, SouthPacific, NorthPacific, 1)
+MoveDoneAction(GC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+PassAction(CC)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+Provide3DoomAction(YS, CC)
+SpellbookAction(YS, Passion, PreMainAction(YS))
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EliminateTwoCultistsAction(BG, BG/Acolyte/2, BG/Acolyte/3)
+SpellbookAction(BG, RedSign, PreMainAction(BG))
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+BuildGateAction(GC, NorthPacific)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+MoveAction(YS, YS/Acolyte/5, Europe, NorthAsia, 1)
+MoveDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+SummonAction(BG, DarkYoung, WestAfrica)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+SummonAction(GC, Shoggoth, SouthPacific)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+AwakenAction(YS, KingInYellow, NorthAsia, 4)
+SpellbookAction(YS, ScreamingDead, PreMainAction(YS))
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+ControlGateAction(BG, WestAfrica, BG/DarkYoung/1, MainAction(BG))
+MainAction(BG)
+MoveAction(BG, BG/DarkYoung/1, WestAfrica, Arabia, 1)
+MoveDoneAction(BG)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+SummonAction(GC, DeepOne, NorthPacific)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+BuildGateAction(YS, NorthAsia)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+CaptureAction(BG, Arabia, CC, None)
+CaptureTargetAction(CC, Arabia, BG, CC/Acolyte/2, None)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+SummonAction(GC, DeepOne, SouthPacific)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+MainAction(YS)
+NextPlayerAction(YS)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+CaptureAction(BG, Arabia, CC, None)
+CaptureTargetAction(CC, Arabia, BG, CC/Acolyte/3, None)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+MainAction(YS)
+NextPlayerAction(YS)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+CaptureAction(BG, Arabia, CC, None)
+CaptureTargetAction(CC, Arabia, BG, CC/Acolyte/4, None)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+MainAction(YS)
+NextPlayerAction(YS)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+CaptureAction(BG, Arabia, CC, None)
+CaptureTargetAction(CC, Arabia, BG, CC/Acolyte/5, None)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+DragonAscendingInstantAction(DragonAscendingUpAction("power gather", EndPhasePromptsAction(GC, [GC, CC, YS, BG])))
+PowerGatherAction(GC)
+PlayDirectionAction(BG, [BG, YS, CC, GC])
+SpellbookAction(GC, Devolve, DoomPhaseAction)
+ElderSignAction(GC, 1, 3, false, DevolveCommandsAction(GC, DoomPhaseAction))
+DevolveCommandsAction(GC, DoomPhaseAction)
+DoomNextPlayerAction(BG)
+DoomDoneAction(BG)
+DoomDoneAction(YS)
+DoomDoneAction(CC)
+DoomDoneAction(GC)
+ActionPhaseAction
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+CaptureAction(BG, Arabia, CC, None)
+CaptureTargetAction(CC, Arabia, BG, CC/Acolyte/6, None)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+PreActionPromptsAction(YS, [CC, BG])
+MainGatesAction(YS)
+MainAction(YS)
+AwakenAction(YS, Hastur, NorthAsia, 10)
+SpellbookAction(YS, ThirdEye, PreMainAction(YS))
+ElderSignAction(YS, 1, 1, false, PreMainAction(YS))
+PreMainAction(YS)
+PreActionPromptsAction(YS, [CC, BG])
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+PreActionPromptsAction(CC, [BG, YS])
+MainGatesAction(CC)
+MainAction(CC)
+PassAction(CC)
+PreMainAction(CC)
+PreActionPromptsAction(CC, [BG, YS])
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+MoveAction(GC, GC/Acolyte/1, SouthPacific, IndianOcean, 1)
+MoveDoneAction(GC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+CaptureAction(BG, Arabia, CC, None)
+CaptureTargetAction(CC, Arabia, BG, CC/Acolyte/1, None)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainAction(YS)
+NextPlayerAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+BuildGateAction(GC, IndianOcean)
+SpellbookAction(GC, Submerge, PreMainAction(GC))
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+SummonAction(BG, Ghoul, WestAfrica)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainAction(YS)
+NextPlayerAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+MoveAction(GC, GC/Acolyte/2, SouthPacific, SouthAtlantic, 1)
+MoveDoneAction(GC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+MoveAction(BG, BG/Ghoul/1, WestAfrica, SouthAtlantic, 1)
+MoveDoneAction(BG)
+PreMainAction(BG)
+DevolveAction(GC, SouthAtlantic, PreMainAction(BG))
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainAction(YS)
+NextPlayerAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+SummonAction(GC, DeepOne, IndianOcean)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+SummonAction(BG, DarkYoung, WestAfrica)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainAction(YS)
+NextPlayerAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+SummonAction(GC, Starspawn, SouthPacific)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+ControlGateAction(BG, WestAfrica, BG/DarkYoung/2, MainAction(BG))
+MainAction(BG)
+MoveAction(BG, BG/Ghoul/1, SouthAtlantic, SouthPacific, 1)
+MoveDoneAction(BG)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainAction(YS)
+NextPlayerAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+AttackAction(GC, SouthPacific, BG, None)
+PreBattleDoneAction(GC, DefenderPreBattle)
+PreBattleDoneAction(BG, PreRoll)
+BattleRollAction(GC, [Miss, Pain, Miss, Kill, Miss, Pain], RollDefenders)
+BattleRollAction(BG, [], ChannelPowerPhase)
+BattleProceedAction(AssignAttackerKills)
+BattleProceedAction(AssignAttackerPains)
+SpellbookAction(GC, Regenerate, PreMainAction(GC))
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+SummonAction(BG, Ghoul, Arabia)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainAction(YS)
+NextPlayerAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+MoveAction(BG, BG/Ghoul/1, Arabia, Europe, 1)
+MoveDoneAction(BG)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainAction(YS)
+NextPlayerAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+CaptureAction(BG, Europe, YS, None)
+CaptureTargetAction(YS, Europe, BG, YS/Acolyte/2, None)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+DesecrateMainAction(YS, NorthAsia, true)
+DesecrateRollAction(YS, NorthAsia, true, 6)
+DesecratePlaceAction(YS, NorthAsia, Undead)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+DragonAscendingInstantAction(DragonAscendingUpAction("power gather", EndPhasePromptsAction(CC, [CC, GC, BG, YS])))
+PowerGatherAction(CC)
+PlayDirectionAction(BG, [BG, YS, CC, GC])
+DoomPhaseAction
+DoomNextPlayerAction(BG)
+DoomDoneAction(BG)
+DoomDoneAction(YS)
+DoomDoneAction(CC)
+DoomDoneAction(GC)
+ActionPhaseAction
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+CaptureAction(BG, Europe, YS, None)
+CaptureTargetAction(YS, Europe, BG, YS/Acolyte/3, None)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+SummonAction(YS, Undead, Europe)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+PassAction(CC)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+AwakenAction(GC, Cthulhu, SouthPacific, 10)
+SpellbookAction(GC, Absorb, PreMainAction(GC))
+ElderSignAction(GC, 1, 2, false, PreMainAction(GC))
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+AwakenEliminateTwoCultistsAction(BG, ShubNiggurath, [Arabia, WestAfrica], BG/Acolyte/1, BG/Acolyte/4)
+AwakenAction(BG, ShubNiggurath, Arabia, 8)
+SpellbookAction(BG, ThousandYoung, PreMainAction(BG))
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+DesecrateMainAction(YS, NorthAsia, true)
+DesecrateRollAction(YS, NorthAsia, true, 5)
+DesecratePlaceAction(YS, NorthAsia, Undead)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+RecruitAction(GC, Acolyte, SouthPacific)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+SummonAction(BG, Ghoul, Arabia)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+DesecrateMainAction(YS, NorthAsia, true)
+DesecrateRollAction(YS, NorthAsia, true, 1)
+DesecratePlaceAction(YS, NorthAsia, Undead)
+SpellbookAction(YS, HWINTBN, PreMainAction(YS))
+ElderSignAction(YS, 1, 1, false, PreMainAction(YS))
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+AvatarAction(BG, Arabia, Europe, YS)
+AvatarReplacementAction(YS, BG, Europe, Arabia, YS/Undead/2)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+ScreamingDeadAction(YS, NorthAsia, NorthPacific)
+ScreamingDeadFollowAction(YS, NorthAsia, NorthPacific, Undead)
+ScreamingDeadFollowAction(YS, NorthAsia, NorthPacific, Undead)
+ScreamingDeadFollowAction(YS, NorthAsia, NorthPacific, Undead)
+ScreamingDeadDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+CaptureAction(BG, Europe, YS, None)
+CaptureTargetAction(YS, Europe, BG, YS/Acolyte/4, None)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+CaptureAction(YS, NorthPacific, GC, None)
+CaptureTargetAction(GC, NorthPacific, YS, GC/Acolyte/5, None)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+CaptureAction(BG, Europe, YS, None)
+CaptureTargetAction(YS, Europe, BG, YS/Acolyte/6, None)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+DesecrateMainAction(YS, NorthPacific, true)
+DesecrateRollAction(YS, NorthPacific, true, 4)
+DesecratePlaceAction(YS, NorthPacific, Acolyte)
+ElderSignAction(YS, 1, 3, false, PreMainAction(YS))
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+CaptureAction(BG, Europe, YS, None)
+CaptureTargetAction(YS, Europe, BG, YS/Acolyte/1, None)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+ScreamingDeadAction(YS, NorthPacific, IndianOcean)
+ScreamingDeadFollowAction(YS, NorthPacific, IndianOcean, Undead)
+ScreamingDeadFollowAction(YS, NorthPacific, IndianOcean, Undead)
+ScreamingDeadFollowAction(YS, NorthPacific, IndianOcean, Undead)
+ScreamingDeadDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainAction(BG)
+NextPlayerAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+CaptureAction(YS, IndianOcean, GC, None)
+CaptureTargetAction(GC, IndianOcean, YS, GC/Acolyte/1, None)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainAction(BG)
+NextPlayerAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+DesecrateMainAction(YS, IndianOcean, true)
+DesecrateRollAction(YS, IndianOcean, true, 6)
+DesecratePlaceAction(YS, IndianOcean, Byakhee)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainAction(BG)
+NextPlayerAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+DesecrateMainAction(YS, IndianOcean, true)
+DesecrateRollAction(YS, IndianOcean, true, 5)
+DesecratePlaceAction(YS, IndianOcean, Undead)
+ElderSignAction(YS, 1, 3, false, PreMainAction(YS))
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainAction(BG)
+NextPlayerAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+ScreamingDeadAction(YS, IndianOcean, EastAfrica)
+ScreamingDeadFollowAction(YS, IndianOcean, EastAfrica, Undead)
+ScreamingDeadFollowAction(YS, IndianOcean, EastAfrica, Undead)
+ScreamingDeadFollowAction(YS, IndianOcean, EastAfrica, Undead)
+ScreamingDeadFollowAction(YS, IndianOcean, EastAfrica, Undead)
+ScreamingDeadDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainAction(BG)
+NextPlayerAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+DesecrateMainAction(YS, EastAfrica, true)
+DesecrateRollAction(YS, EastAfrica, true, 5)
+DesecratePlaceAction(YS, EastAfrica, Byakhee)
+SpellbookAction(YS, Shriek, PreMainAction(YS))
+ElderSignAction(YS, 1, 2, false, PreMainAction(YS))
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainAction(BG)
+NextPlayerAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+ScreamingDeadAction(YS, EastAfrica, WestAfrica)
+ScreamingDeadFollowAction(YS, EastAfrica, WestAfrica, Undead)
+ScreamingDeadFollowAction(YS, EastAfrica, WestAfrica, Undead)
+ScreamingDeadFollowAction(YS, EastAfrica, WestAfrica, Undead)
+ScreamingDeadFollowAction(YS, EastAfrica, WestAfrica, Undead)
+ScreamingDeadDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+DragonAscendingInstantAction(DragonAscendingUpAction("power gather", EndPhasePromptsAction(CC, [CC, GC, BG, YS])))
+PowerGatherAction(CC)
+FirstPlayerAction(BG, BG)
+PlayDirectionAction(BG, [BG, GC, CC, YS])
+DoomPhaseAction
+DoomNextPlayerAction(BG)
+DoomDoneAction(BG)
+DoomDoneAction(GC)
+DoomDoneAction(CC)
+DoomDoneAction(YS)
+ActionPhaseAction
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+RecruitAction(BG, Acolyte, Europe)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+RecruitAction(GC, Acolyte, IndianOcean)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+PassAction(CC)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+SummonAction(YS, Undead, NorthPacific)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+AvatarAction(BG, Europe, IndianOcean, GC)
+AvatarReplacementAction(GC, BG, IndianOcean, Europe, GC/Acolyte/1)
+SpellbookAction(BG, BloodSacrifice, PreMainAction(BG))
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+SubmergeMainAction(GC, SouthPacific)
+SubmergeAction(GC, SouthPacific, Starspawn)
+SubmergeAction(GC, SouthPacific, Shoggoth)
+SubmergeAction(GC, SouthPacific, Acolyte)
+SubmergeAction(GC, SouthPacific, Acolyte)
+SubmergeAction(GC, SouthPacific, Acolyte)
+SubmergeAction(GC, SouthPacific, DeepOne)
+SubmergeAction(GC, SouthPacific, Acolyte)
+SubmergeDoneAction(GC, SouthPacific)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+CaptureAction(YS, WestAfrica, BG, None)
+CaptureTargetAction(BG, WestAfrica, YS, BG/Acolyte/5, None)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+RecruitAction(BG, Acolyte, IndianOcean)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+UnsubmergeAction(GC, SouthPacific)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+CaptureAction(YS, WestAfrica, BG, None)
+CaptureTargetAction(BG, WestAfrica, YS, BG/Acolyte/6, None)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+SummonAction(BG, DarkYoung, Europe)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+SubmergeMainAction(GC, SouthPacific)
+SubmergeAction(GC, SouthPacific, Shoggoth)
+SubmergeAction(GC, SouthPacific, DeepOne)
+SubmergeAction(GC, SouthPacific, Acolyte)
+SubmergeAction(GC, SouthPacific, Acolyte)
+SubmergeAction(GC, SouthPacific, Acolyte)
+SubmergeAction(GC, SouthPacific, Starspawn)
+SubmergeAction(GC, SouthPacific, Acolyte)
+SubmergeDoneAction(GC, SouthPacific)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+ScreamingDeadAction(YS, WestAfrica, Arabia)
+ScreamingDeadFollowAction(YS, WestAfrica, Arabia, Undead)
+ScreamingDeadFollowAction(YS, WestAfrica, Arabia, Undead)
+ScreamingDeadFollowAction(YS, WestAfrica, Arabia, Undead)
+ScreamingDeadFollowAction(YS, WestAfrica, Arabia, Undead)
+ScreamingDeadDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+ControlGateAction(BG, Europe, BG/DarkYoung/3, MainAction(BG))
+MainAction(BG)
+CaptureAction(BG, Europe, GC, None)
+CaptureTargetAction(GC, Europe, BG, GC/Acolyte/1, None)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+UnsubmergeAction(GC, Europe)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+DesecrateMainAction(YS, Arabia, true)
+DesecrateRollAction(YS, Arabia, true, 3)
+DesecratePlaceAction(YS, Arabia, Acolyte)
+ElderSignAction(YS, 1, 2, false, PreMainAction(YS))
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+SummonAction(BG, Fungi, IndianOcean)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+AttackAction(GC, Europe, BG, None)
+DevourPreBattleAction(GC)
+DevourAction(BG, BG/Ghoul/1)
+AbsorberAction(GC, GC/Shoggoth/1)
+AbsorbeeAction(GC, GC/Shoggoth/1, GC/DeepOne/2)
+PreBattleDoneAction(GC, DefenderPreBattle)
+PreBattleDoneAction(BG, PreRoll)
+BattleRollAction(GC, [Kill, Pain, Miss, Miss, Kill, Pain, Miss, Miss, Miss, Pain, Miss, Pain, Pain, Miss], RollDefenders)
+BattleRollAction(BG, [Kill, Pain], ChannelPowerPhase)
+BattleProceedAction(AssignAttackerKills)
+AssignKillAction(GC, 1, GC, GC/Starspawn/1)
+BattleProceedAction(AssignAttackerPains)
+AssignPainAction(GC, 1, GC, GC/Cthulhu/1)
+RetreatUnitAction(GC, GC/Cthulhu/1, NorthAtlantic)
+RetreatUnitAction(GC, GC/Starspawn/1, NorthAtlantic)
+SpellbookAction(GC, YhaNthlei, PreMainAction(GC))
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+PreActionPromptsAction(YS, [BG, CC])
+MainGatesAction(YS)
+MainAction(YS)
+ScreamingDeadAction(YS, Arabia, Europe)
+ScreamingDeadFollowAction(YS, Arabia, Europe, Undead)
+ScreamingDeadFollowAction(YS, Arabia, Europe, Undead)
+ScreamingDeadFollowAction(YS, Arabia, Europe, Undead)
+ScreamingDeadFollowAction(YS, Arabia, Europe, Undead)
+ScreamingDeadFollowAction(YS, Arabia, Europe, Undead)
+ScreamingDeadDoneAction(YS)
+PreMainAction(YS)
+PreActionPromptsAction(YS, [BG, CC])
+MainGatesAction(YS)
+MainAction(YS)
+CaptureAction(YS, Europe, GC, None)
+CaptureTargetAction(GC, Europe, YS, GC/Acolyte/3, None)
+PreMainAction(YS)
+PreActionPromptsAction(YS, [BG, CC])
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [CC, YS])
+MainGatesAction(BG)
+MainAction(BG)
+SummonAction(BG, Ghoul, Arabia)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [CC, YS])
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+MoveAction(GC, GC/Cthulhu/1, NorthAtlantic, Europe, 1)
+MoveDoneAction(GC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+PreActionPromptsAction(YS, [BG, CC])
+MainGatesAction(YS)
+MainAction(YS)
+MoveAction(YS, YS/Hastur/1, NorthAsia, Europe, 1)
+MoveDoneAction(YS)
+PreMainAction(YS)
+PreActionPromptsAction(YS, [BG, CC])
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [CC, YS])
+MainGatesAction(BG)
+MainAction(BG)
+CaptureAction(BG, Arabia, YS, None)
+CaptureTargetAction(YS, Arabia, BG, YS/Acolyte/1, None)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [CC, YS])
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+MoveAction(GC, GC/Cthulhu/1, Europe, NorthAsia, 1)
+MoveDoneAction(GC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+PreActionPromptsAction(YS, [BG, CC])
+MainGatesAction(YS)
+MainAction(YS)
+CaptureAction(YS, Europe, GC, None)
+CaptureTargetAction(GC, Europe, YS, GC/Acolyte/4, None)
+PreMainAction(YS)
+PreActionPromptsAction(YS, [BG, CC])
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [CC, YS])
+MainGatesAction(BG)
+MainAction(BG)
+AvatarAction(BG, IndianOcean, NorthPacific, YS)
+AvatarReplacementAction(YS, BG, NorthPacific, IndianOcean, YS/Acolyte/2)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [CC, YS])
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+CaptureAction(GC, NorthAsia, YS, None)
+CaptureTargetAction(YS, NorthAsia, GC, YS/Acolyte/5, None)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+PreActionPromptsAction(YS, [BG, CC])
+MainGatesAction(YS)
+MainAction(YS)
+CaptureAction(YS, Europe, GC, None)
+CaptureTargetAction(GC, Europe, YS, GC/Acolyte/6, None)
+PreMainAction(YS)
+DevolveAction(GC, Europe, PreMainAction(YS))
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+RecruitAction(BG, Acolyte, NorthPacific)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+RecruitAction(GC, Acolyte, NorthAsia)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+DesecrateMainAction(YS, Europe, true)
+DesecrateRollAction(YS, Europe, true, 2)
+DesecratePlaceAction(YS, Europe, Acolyte)
+ElderSignAction(YS, 1, 2, false, PreMainAction(YS))
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+SummonAction(BG, DarkYoung, NorthPacific)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+MoveAction(YS, YS/Acolyte/2, IndianOcean, SouthPacific, 1)
+MoveDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+ControlGateAction(BG, NorthPacific, BG/DarkYoung/3, MainAction(BG))
+MainAction(BG)
+RecruitAction(BG, Acolyte, IndianOcean)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+ScreamingDeadAction(YS, Europe, NorthAtlantic)
+ScreamingDeadFollowAction(YS, Europe, NorthAtlantic, Undead)
+ScreamingDeadFollowAction(YS, Europe, NorthAtlantic, Undead)
+ScreamingDeadFollowAction(YS, Europe, NorthAtlantic, Undead)
+ScreamingDeadFollowAction(YS, Europe, NorthAtlantic, Undead)
+ScreamingDeadFollowAction(YS, Europe, NorthAtlantic, Undead)
+ScreamingDeadDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+RecruitAction(BG, Acolyte, NorthPacific)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+DesecrateMainAction(YS, NorthAtlantic, true)
+DesecrateRollAction(YS, NorthAtlantic, true, 5)
+DesecratePlaceAction(YS, NorthAtlantic, Acolyte)
+ElderSignAction(YS, 1, 1, false, PreMainAction(YS))
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+MainAction(BG)
+NextPlayerAction(BG)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+RecruitAction(YS, Acolyte, NorthAtlantic)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(BG)
+MainAction(BG)
+NextPlayerAction(BG)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+MoveAction(YS, YS/Hastur/1, Europe, NorthAtlantic, 1)
+MoveDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+DragonAscendingInstantAction(DragonAscendingUpAction("power gather", EndPhasePromptsAction(BG, [BG, GC, CC, YS])))
+PowerGatherAction(BG)
+PlayDirectionAction(YS, [YS, CC, GC, BG])
+SpellbookAction(GC, Dreams, DoomPhaseAction)
+ElderSignAction(GC, 1, 2, false, DoomPhaseAction)
+DoomPhaseAction
+DoomNextPlayerAction(YS)
+DoomDoneAction(YS)
+DoomDoneAction(CC)
+DoomDoneAction(GC)
+RitualAction(BG, 5, 1)
+ElderSignAction(BG, 1, 1, false, DoomAction(BG))
+DoomAction(BG)
+BloodSacrificeAction(BG, NorthPacific, BG/Acolyte/1)
+ElderSignAction(BG, 1, 1, false, DoomAction(BG))
+DoomAction(BG)
+DoomDoneAction(BG)
+ActionPhaseAction
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+ScreamingDeadAction(YS, NorthAtlantic, NorthAmerica)
+ScreamingDeadFollowAction(YS, NorthAtlantic, NorthAmerica, Undead)
+ScreamingDeadFollowAction(YS, NorthAtlantic, NorthAmerica, Undead)
+ScreamingDeadFollowAction(YS, NorthAtlantic, NorthAmerica, Undead)
+ScreamingDeadFollowAction(YS, NorthAtlantic, NorthAmerica, Undead)
+ScreamingDeadFollowAction(YS, NorthAtlantic, NorthAmerica, Undead)
+ScreamingDeadDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+MoveAction(YS, YS/Hastur/1, NorthAtlantic, NorthAmerica, 1)
+MoveDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+PassAction(CC)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+CaptureAction(GC, Europe, YS, None)
+CaptureTargetAction(YS, Europe, GC, YS/Acolyte/3, None)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+MoveAction(BG, BG/Ghoul/2, Arabia, Europe, 1)
+MoveAction(BG, BG/Ghoul/1, Arabia, NorthAtlantic, 1)
+MoveDoneAction(BG)
+SpellbookAction(BG, Necrophagy, PreMainAction(BG))
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+DesecrateMainAction(YS, NorthAmerica, true)
+DesecrateRollAction(YS, NorthAmerica, true, 6)
+DesecratePlaceAction(YS, NorthAmerica, Acolyte)
+SpellbookAction(YS, Zingaya, PreMainAction(YS))
+ElderSignAction(YS, 1, 2, false, PreMainAction(YS))
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+RecruitAction(GC, Acolyte, Europe)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+CaptureAction(BG, NorthAtlantic, YS, None)
+CaptureTargetAction(YS, NorthAtlantic, BG, YS/Acolyte/4, None)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+ScreamingDeadAction(YS, NorthAmerica, ArcticOcean)
+ScreamingDeadFollowAction(YS, NorthAmerica, ArcticOcean, Undead)
+ScreamingDeadFollowAction(YS, NorthAmerica, ArcticOcean, Undead)
+ScreamingDeadFollowAction(YS, NorthAmerica, ArcticOcean, Undead)
+ScreamingDeadFollowAction(YS, NorthAmerica, ArcticOcean, Undead)
+ScreamingDeadFollowAction(YS, NorthAmerica, ArcticOcean, Undead)
+ScreamingDeadDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+MoveAction(YS, YS/Hastur/1, NorthAmerica, ArcticOcean, 1)
+MoveDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+MoveAction(GC, GC/Cthulhu/1, NorthAsia, ArcticOcean, 1)
+MoveDoneAction(GC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+AttackAction(GC, ArcticOcean, YS, None)
+DevourPreBattleAction(GC)
+DevourAction(YS, YS/Undead/4)
+PreBattleDoneAction(GC, DefenderPreBattle)
+PreBattleDoneAction(YS, PreRoll)
+BattleRollAction(GC, [Pain, Pain, Pain, Miss, Miss, Miss], RollDefenders)
+BattleRollAction(YS, [Miss, Miss, Pain, Pain, Pain, Miss, Pain, Miss, Pain], ChannelPowerPhase)
+NecrophagyAction(BG, BG/Ghoul/1, NorthAtlantic)
+NecrophagyAction(BG, BG/Ghoul/2, Europe)
+BattleDoneAction(BG)
+AssignPainAction(YS, 5, YS, YS/Undead/5)
+AssignPainAction(YS, 4, YS, YS/Undead/1)
+AssignPainAction(YS, 3, YS, YS/Undead/2)
+AssignPainAction(YS, 2, YS, YS/Undead/3)
+AssignPainAction(YS, 1, YS, YS/KingInYellow/1)
+BattleProceedAction(AllPainsAssignedPhase)
+RetreatUnitAction(GC, GC/Cthulhu/1, NorthAsia)
+RetreatUnitAction(YS, YS/KingInYellow/1, NorthAmerica)
+RetreatUnitAction(YS, YS/Undead/1, NorthAmerica)
+RetreatUnitAction(YS, YS/Undead/2, NorthAmerica)
+RetreatUnitAction(YS, YS/Undead/3, NorthAmerica)
+RetreatUnitAction(YS, YS/Undead/5, NorthAmerica)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+AvatarAction(BG, NorthPacific, SouthPacific, YS)
+AvatarReplacementAction(YS, BG, SouthPacific, NorthPacific, YS/Acolyte/2)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+HWINTBNAction(YS, ArcticOcean, NorthAmerica)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+CaptureAction(GC, NorthAtlantic, YS, None)
+CaptureTargetAction(YS, NorthAtlantic, GC, YS/Acolyte/6, None)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+RecruitAction(BG, Acolyte, SouthPacific)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+ScreamingDeadAction(YS, NorthAmerica, SouthAmerica)
+ScreamingDeadFollowAction(YS, NorthAmerica, SouthAmerica, Undead)
+ScreamingDeadFollowAction(YS, NorthAmerica, SouthAmerica, Undead)
+ScreamingDeadFollowAction(YS, NorthAmerica, SouthAmerica, Undead)
+ScreamingDeadFollowAction(YS, NorthAmerica, SouthAmerica, Undead)
+ScreamingDeadDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+MoveAction(YS, YS/Hastur/1, NorthAmerica, SouthAmerica, 1)
+MoveDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+MoveAction(GC, GC/Cthulhu/1, NorthAsia, NorthPacific, 1)
+MoveDoneAction(GC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+MoveAction(BG, BG/ShubNiggurath/1, SouthPacific, NorthPacific, 1)
+MoveAction(BG, BG/Ghoul/2, ArcticOcean, NorthAsia, 1)
+MoveAction(BG, BG/Ghoul/1, ArcticOcean, NorthAmerica, 1)
+MoveDoneAction(BG)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+DesecrateMainAction(YS, SouthAmerica, true)
+DesecrateRollAction(YS, SouthAmerica, true, 5)
+DesecratePlaceAction(YS, SouthAmerica, Acolyte)
+ElderSignAction(YS, 1, 1, false, PreMainAction(YS))
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+SubmergeMainAction(GC, NorthPacific)
+SubmergeAction(GC, NorthPacific, DeepOne)
+SubmergeDoneAction(GC, NorthPacific)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+CaptureAction(BG, NorthAsia, GC, None)
+CaptureTargetAction(GC, NorthAsia, BG, GC/Acolyte/2, None)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+ScreamingDeadAction(YS, SouthAmerica, SouthPacific)
+ScreamingDeadFollowAction(YS, SouthAmerica, SouthPacific, Undead)
+ScreamingDeadFollowAction(YS, SouthAmerica, SouthPacific, Undead)
+ScreamingDeadFollowAction(YS, SouthAmerica, SouthPacific, Undead)
+ScreamingDeadFollowAction(YS, SouthAmerica, SouthPacific, Undead)
+ScreamingDeadDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+MoveAction(YS, YS/Hastur/1, SouthAmerica, SouthPacific, 1)
+MoveDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+UnsubmergeAction(GC, IndianOcean)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+MoveAction(BG, BG/ShubNiggurath/1, NorthPacific, SouthPacific, 1)
+MoveAction(BG, BG/Acolyte/4, NorthPacific, NorthAsia, 1)
+MoveAction(BG, BG/Ghoul/1, NorthAmerica, SouthAmerica, 1)
+MoveDoneAction(BG)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+AttackAction(YS, SouthPacific, BG, None)
+PreBattleDoneAction(YS, DefenderPreBattle)
+PreBattleDoneAction(BG, PreRoll)
+BattleRollAction(YS, [Pain, Pain, Pain, Miss, Miss, Miss, Pain, Pain, Miss], RollDefenders)
+BattleRollAction(BG, [Pain, Pain, Pain, Pain, Kill, Miss, Kill, Miss, Kill, Pain, Miss, Pain, Pain], ChannelPowerPhase)
+AssignKillAction(YS, 3, YS, YS/Undead/2)
+AssignKillAction(YS, 2, YS, YS/Undead/1)
+AssignKillAction(YS, 1, YS, YS/Undead/3)
+NecrophagyAction(BG, BG/Ghoul/1, SouthAmerica)
+NecrophagyAction(BG, BG/Ghoul/2, NorthAsia)
+BattleDoneAction(BG)
+BattleProceedAction(AssignAttackerPains)
+BattleProceedAction(AllPainsAssignedPhase)
+RetreatUnitAction(YS, YS/Hastur/1, SouthAmerica)
+RetreatUnitAction(YS, YS/KingInYellow/1, SouthAmerica)
+RetreatUnitAction(YS, YS/Undead/5, SouthAmerica)
+RetreatUnitAction(BG, BG/ShubNiggurath/1, Antarctica)
+RetreatUnitAction(BG, BG/Acolyte/1, Antarctica)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+MoveAction(YS, YS/Acolyte/2, NorthPacific, SouthPacific, 1)
+MoveDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+SubmergeMainAction(GC, IndianOcean)
+SubmergeAction(GC, IndianOcean, DeepOne)
+SubmergeAction(GC, IndianOcean, DeepOne)
+SubmergeDoneAction(GC, IndianOcean)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+MainAction(BG)
+NextPlayerAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+SummonAction(YS, Undead, SouthPacific)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+UnsubmergeAction(GC, SouthPacific)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+MainAction(BG)
+NextPlayerAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+ScreamingDeadAction(YS, SouthAmerica, SouthAtlantic)
+ScreamingDeadFollowAction(YS, SouthAmerica, SouthAtlantic, Undead)
+ScreamingDeadDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+MoveAction(YS, YS/Hastur/1, SouthAmerica, SouthAtlantic, 1)
+MoveDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+CaptureAction(GC, SouthPacific, YS, None)
+CaptureTargetAction(YS, SouthPacific, GC, YS/Acolyte/2, None)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+MainAction(BG)
+NextPlayerAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+ShriekAction(YS, SouthAtlantic)
+ShriekFromAction(YS, EastAfrica, SouthAtlantic)
+ShriekFromAction(YS, IndianOcean, SouthAtlantic)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainAction(BG)
+NextPlayerAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+MoveAction(YS, YS/Acolyte/5, SouthAmerica, SouthPacific, 1)
+MoveDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainAction(BG)
+NextPlayerAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+ScreamingDeadAction(YS, SouthAtlantic, NorthAtlantic)
+ScreamingDeadFollowAction(YS, SouthAtlantic, NorthAtlantic, Undead)
+ScreamingDeadDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainAction(BG)
+NextPlayerAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+ScreamingDeadAction(YS, NorthAtlantic, Europe)
+ScreamingDeadFollowAction(YS, NorthAtlantic, Europe, Undead)
+ScreamingDeadDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainAction(BG)
+NextPlayerAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+CaptureAction(YS, Europe, GC, None)
+CaptureTargetAction(GC, Europe, YS, GC/Acolyte/1, None)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainAction(BG)
+NextPlayerAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+MoveAction(YS, YS/Undead/1, SouthPacific, SouthAmerica, 1)
+MoveDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+DragonAscendingInstantAction(DragonAscendingUpAction("power gather", EndPhasePromptsAction(CC, [CC, GC, BG, YS])))
+PowerGatherAction(CC)
+PlayDirectionAction(BG, [BG, YS, CC, GC])
+DoomPhaseAction
+DoomNextPlayerAction(BG)
+RitualAction(BG, 6, 1)
+ElderSignAction(BG, 1, 2, false, DoomAction(BG))
+DoomAction(BG)
+BloodSacrificeAction(BG, IndianOcean, BG/Acolyte/2)
+ElderSignAction(BG, 1, 1, false, DoomAction(BG))
+DoomAction(BG)
+DoomDoneAction(BG)
+RitualAction(YS, 7, 1)
+ElderSignAction(YS, 2, 2, false, DoomAction(YS))
+ElderSignAction(YS, 1, 1, false, DoomAction(YS))
+DoomAction(YS)
+DoomDoneAction(YS)
+DoomDoneAction(CC)
+DoomDoneAction(GC)
+ActionPhaseAction
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+CaptureAction(BG, SouthPacific, YS, None)
+CaptureTargetAction(YS, SouthPacific, BG, YS/Acolyte/5, None)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+ScreamingDeadAction(YS, Europe, Scandinavia)
+ScreamingDeadFollowAction(YS, Europe, Scandinavia, Undead)
+ScreamingDeadDoneAction(YS)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+DesecrateMainAction(YS, Scandinavia, true)
+DesecrateRollAction(YS, Scandinavia, true, 5)
+DesecratePlaceAction(YS, Scandinavia, Acolyte)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+PassAction(CC)
+PreMainAction(CC)
+MainGatesAction(CC)
+MainAction(CC)
+EndTurnAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+MoveAction(GC, GC/Cthulhu/1, SouthPacific, SouthAtlantic, 1)
+MoveAction(GC, GC/DeepOne/1, SouthPacific, SouthAmerica, 1)
+MoveDoneAction(GC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+AttackAction(GC, SouthAtlantic, YS, None)
+DevourPreBattleAction(GC)
+DevourAction(YS, YS/Byakhee/1)
+PreBattleDoneAction(GC, DefenderPreBattle)
+PreBattleDoneAction(YS, PreRoll)
+BattleRollAction(GC, [Kill, Pain, Miss, Miss, Pain, Pain, Miss], RollDefenders)
+BattleRollAction(YS, [Miss, Miss, Miss, Miss, Kill, Miss, Kill, Pain, Kill], ChannelPowerPhase)
+AssignKillAction(YS, 1, YS, YS/Byakhee/2)
+BattleProceedAction(AllKillsAssignedPhase)
+NecrophagyAction(BG, BG/Ghoul/2, SouthPacific)
+BattleDoneAction(BG)
+BattleProceedAction(AssignAttackerPains)
+BattleProceedAction(AllPainsAssignedPhase)
+RetreatUnitAction(YS, YS/Hastur/1, IndianOcean)
+SpellbookAction(BG, Ghroth, PreMainAction(GC))
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+RecruitAction(BG, Acolyte, SouthPacific)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+DesecrateMainAction(YS, Scandinavia, true)
+DesecrateRollAction(YS, Scandinavia, true, 6)
+DesecratePlaceAction(YS, Scandinavia, Acolyte)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+RecruitAction(GC, Acolyte, Europe)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+MoveAction(BG, BG/ShubNiggurath/1, Antarctica, IndianOcean, 1)
+MoveDoneAction(BG)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+PreActionPromptsAction(YS, [CC, BG])
+MainGatesAction(YS)
+MainAction(YS)
+RecruitAction(YS, Acolyte, IndianOcean)
+PreMainAction(YS)
+PreActionPromptsAction(YS, [CC, BG])
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+AwakenAction(GC, Cthulhu, SouthPacific, 4)
+ElderSignAction(GC, 1, 2, false, PreMainAction(GC))
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+MoveAction(BG, BG/ShubNiggurath/1, IndianOcean, SouthPacific, 1)
+MoveDoneAction(BG)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainAction(YS)
+NextPlayerAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+SubmergeMainAction(GC, SouthPacific)
+SubmergeAction(GC, SouthPacific, DeepOne)
+SubmergeDoneAction(GC, SouthPacific)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+MoveAction(BG, BG/ShubNiggurath/1, SouthPacific, SouthAmerica, 1)
+MoveDoneAction(BG)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainAction(YS)
+NextPlayerAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+UnsubmergeAction(GC, Scandinavia)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+AttackAction(GC, Scandinavia, YS, None)
+DevourPreBattleAction(GC)
+DevourAction(YS, YS/Acolyte/2)
+PreBattleDoneAction(GC, DefenderPreBattle)
+PreBattleDoneAction(YS, PreRoll)
+BattleRollAction(GC, [Kill, Kill, Miss, Pain, Pain, Miss, Miss], RollDefenders)
+BattleRollAction(YS, [], ChannelPowerPhase)
+AssignKillAction(YS, 2, YS, YS/Undead/5)
+AssignKillAction(YS, 1, YS, YS/Acolyte/3)
+NecrophagyAction(BG, BG/Ghoul/1, SouthPacific)
+NecrophagyAction(BG, BG/Ghoul/2, SouthAtlantic)
+BattleDoneAction(BG)
+BattleProceedAction(AssignAttackerPains)
+BattleProceedAction(AllPainsAssignedPhase)
+RetreatUnitAction(GC, GC/Cthulhu/1, NorthAtlantic)
+RetreatUnitAction(GC, GC/DeepOne/4, NorthAsia)
+PreMainAction(GC)
+MainGatesAction(GC)
+MainAction(GC)
+EndTurnAction(GC)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+BuildGateAction(BG, Antarctica)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+PreActionPromptsAction(YS, [CC, BG])
+MainGatesAction(YS)
+MainAction(YS)
+DesecrateMainAction(YS, ArcticOcean, true)
+DesecrateRollAction(YS, ArcticOcean, true, 5)
+DesecratePlaceAction(YS, ArcticOcean, Acolyte)
+PreMainAction(YS)
+PreActionPromptsAction(YS, [CC, BG])
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+SummonAction(BG, Fungi, NorthAsia)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainAction(YS)
+NextPlayerAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+SummonAction(BG, Fungi, SouthPacific)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainAction(YS)
+NextPlayerAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+SummonAction(BG, Fungi, Antarctica)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainAction(YS)
+NextPlayerAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+PreActionPromptsAction(BG, [YS, CC])
+MainGatesAction(BG)
+MainAction(BG)
+GhrothMainAction(BG)
+GhrothRollAction(BG, 4)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+DesecrateMainAction(YS, ArcticOcean, true)
+DesecrateRollAction(YS, ArcticOcean, true, 6)
+DesecratePlaceAction(YS, ArcticOcean, Acolyte)
+PreMainAction(YS)
+MainGatesAction(YS)
+MainAction(YS)
+EndTurnAction(YS)
+PreMainAction(CC)
+MainAction(CC)
+NextPlayerAction(CC)
+PreMainAction(GC)
+MainAction(GC)
+NextPlayerAction(GC)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+RecruitAction(BG, Acolyte, SouthPacific)
+PreMainAction(BG)
+MainGatesAction(BG)
+MainAction(BG)
+EndTurnAction(BG)
+DragonAscendingInstantAction(DragonAscendingUpAction("power gather", EndPhasePromptsAction(YS, [YS, CC, GC, BG])))
+PowerGatherAction(YS)
+PlayDirectionAction(BG, [BG, YS, CC, GC])
+SpellbookAction(CC, ThousandForms, DoomPhaseAction)
+DoomPhaseAction
+DoomNextPlayerAction(BG)
+BloodSacrificeAction(BG, SouthPacific, BG/Acolyte/5)
+ElderSignAction(BG, 1, 3, false, DoomAction(BG))
+DoomAction(BG)
+RitualAction(BG, 7, 1)
+ElderSignAction(BG, 1, 3, false, DoomAction(BG))
+DoomAction(BG)
+DoomDoneAction(BG)
+RitualAction(YS, 8, 1)
+ElderSignAction(YS, 2, 1, false, DoomAction(YS))
+ElderSignAction(YS, 1, 2, false, DoomAction(YS))
+DoomAction(YS)
+RevealESAction(YS, [$3], false, DoomAction(YS))
+DoomDoneAction(YS)
+DoomDoneAction(CC)
+RitualAction(GC, 8, 1)
+ElderSignAction(GC, 1, 1, false, DoomAction(GC))
+DoomAction(GC)
+DoomDoneAction(GC)
+ActionPhaseAction
+
+<div class='p'>Cthulhu Wars HRF 0.1 Build lace49</div>
+<div class='p'>Options <span class='halfhigh'>MapEarth35</span> <span class='halfhigh'>PlayerCount(4)</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> started in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> started in <span class='region'>West Africa</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> started in <span class='region'>Europe</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> started in <span class='region'>Arabia</span></div>
+<div class='p'>Play order <span class='gc inline-block'>Great Cthulhu</span>, <span class='cc inline-block'>Crawling Chaos</span>, <span class='ys inline-block'>Yellow Sign</span>, <span class='bg inline-block'>Black Goat</span></div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>Turn 1</div>
+<div class='p'>ACTIONS</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> moved <span class='gc'>Acolyte</span> from <span class='sea'>South Pacific</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> passed and forfeited <span class='power'>8 Power</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> supplied <span class='cc inline-block'>Crawling Chaos</span> with <span class='doom'>3 Doom</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> achieved <span class='ys'>Provide 3 Doom</span> </div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> received <span class='ys'>Passion</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg'>Acolyte</span> in <span class='region'>West Africa</span> was sacrificed</div>
+<div class='p'><span class='bg'>Acolyte</span> in <span class='region'>West Africa</span> was sacrificed</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> achieved <span class='bg'>Eliminate two Cultists</span> </div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> received <span class='bg'>The Red Sign</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> built a gate in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> moved <span class='ys'>Acolyte</span> from <span class='region'>Europe</span> to <span class='region'>North Asia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> summoned <span class='bg'>Dark Young</span> in <span class='region'>West Africa</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> summoned <span class='gc'>Shoggoth</span> in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> awakened <span class='ys'>King in Yellow</span> in <span class='region'>North Asia</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> achieved <span class='ys'>Awaken King in Yellow</span> </div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> received <span class='ys'>The Screaming Dead</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> changed control of the gate in <span class='region'>West Africa</span> to <span class='bg'>Dark Young</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> moved <span class='bg'>Dark Young</span> from <span class='region'>West Africa</span> to <span class='region'>Arabia</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> lost control of the gate in <span class='region'>West Africa</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> gained control of the gate in <span class='region'>West Africa</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> summoned <span class='gc'>Deep One</span> in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> built a gate in <span class='region'>North Asia</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> captured <span class='cc'>Acolyte</span> in <span class='region'>Arabia</span> </div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> summoned <span class='gc'>Deep One</span> in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> captured <span class='cc'>Acolyte</span> in <span class='region'>Arabia</span> </div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> captured <span class='cc'>Acolyte</span> in <span class='region'>Arabia</span> </div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> captured <span class='cc'>Acolyte</span> in <span class='region'>Arabia</span> </div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> ran out of power</div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>POWER GATHER</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> got <span class='power'>10 Power</span> (<span class='region'>2 x 2</span> gates + <span class='region'>6</span> cultists)</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='power'>4 Power</span> (<span class='region'>2 x 1</span> gate + <span class='region'>2</span> cultists)</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>10 Power</span> (<span class='region'>2 x 2</span> gates + <span class='region'>6</span> cultists)</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> got <span class='power'>11 Power</span> (<span class='region'>2 x 1</span> gate + <span class='region'>4</span> cultists + <span class='region'>4</span> captured + <span class='region'>1</span> Dark Young)</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> released <span class='cc'>Acolyte</span>, <span class='cc'>Acolyte</span>, <span class='cc'>Acolyte</span>, <span class='cc'>Acolyte</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> power increased to <span class='power'>6 Power</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> became the first player</div>
+<div class='p'>Play order <span class='bg inline-block'>Black Goat</span>, <span class='ys inline-block'>Yellow Sign</span>, <span class='cc inline-block'>Crawling Chaos</span>, <span class='gc inline-block'>Great Cthulhu</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'>DOOM PHASE</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> achieved <span class='gc'>The first Doom phase</span> and gained an <span class='es'>Elder Sign</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> received <span class='gc'>Devolve</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> got <span class='doom'>1 Doom</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='doom'>2 Doom</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='doom'>1 Doom</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> got <span class='doom'>2 Doom</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='str'>[5]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>6<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>Turn 2</div>
+<div class='p'>ACTIONS</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> captured <span class='cc'>Acolyte</span> in <span class='region'>Arabia</span> </div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> awakened <span class='ys'>Hastur</span> in <span class='region'>North Asia</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> achieved <span class='ys'>Awaken Hastur</span> and gained an <span class='es'>Elder Sign</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> ran out of power</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> received <span class='ys'>The Third Eye</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> passed and forfeited <span class='power'>6 Power</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> moved <span class='gc'>Acolyte</span> from <span class='sea'>South Pacific</span> to <span class='sea'>Indian Ocean</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> lost control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> gained control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> captured <span class='cc'>Acolyte</span> in <span class='region'>Arabia</span> </div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> lost control of the gate in <span class='region'>Arabia</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> gained control of the gate in <span class='region'>Arabia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> built a gate in <span class='sea'>Indian Ocean</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> achieved <span class='gc'>Control three Gates in Ocean areas</span> </div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> received <span class='gc'>Submerge</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> summoned <span class='bg'>Ghoul</span> in <span class='region'>West Africa</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> moved <span class='gc'>Acolyte</span> from <span class='sea'>South Pacific</span> to <span class='sea'>South Atlantic</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> lost control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> gained control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> moved <span class='bg'>Ghoul</span> from <span class='region'>West Africa</span> to <span class='sea'>South Atlantic</span></div>
+<div class='p'><span class='gc'>Acolyte</span> in <span class='sea'>South Atlantic</span> devolved into <span class='gc'>Deep One</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> summoned <span class='gc'>Deep One</span> in <span class='sea'>Indian Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> summoned <span class='bg'>Dark Young</span> in <span class='region'>West Africa</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> summoned <span class='gc'>Starspawn</span> in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> changed control of the gate in <span class='region'>West Africa</span> to <span class='bg'>Dark Young</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> moved <span class='bg'>Ghoul</span> from <span class='sea'>South Atlantic</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> battled <span class='bg inline-block'>Black Goat</span> in <span class='sea'>South Pacific</span> </div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> attacked with <span class='gc'>Starspawn</span>, <span class='gc'>Shoggoth</span>, <span class='gc'>Deep One</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span> <span class='str'>[6]</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> defended with <span class='bg'>Ghoul</span> <span class='str'>[0]</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> rolled <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='kill'>Kill</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span></div>
+<div class='p'><span class='bg'>Ghoul</span> was <span class='kill'>killed</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> achieved <span class='gc'>Kill an enemy unit in a battle</span> </div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> ran out of power</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> received <span class='gc'>Regenerate</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> summoned <span class='bg'>Ghoul</span> in <span class='region'>Arabia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> moved <span class='bg'>Ghoul</span> from <span class='region'>Arabia</span> to <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> captured <span class='ys'>Acolyte</span> in <span class='region'>Europe</span> </div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> ran out of power</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>1 Power</span> from <span class='ys'>Passion</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> failed <span class='region'>North Asia</span> desecration with roll [<span class='power'>6</span>]</div>
+<div class='p'><span class='ys'>Undead</span> appeared in <span class='region'>North Asia</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> ran out of power</div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>POWER GATHER</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='power'>0 Power</span> ()</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> got <span class='power'>11 Power</span> (<span class='region'>2 x 3</span> gates + <span class='region'>5</span> cultists)</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> got <span class='power'>13 Power</span> (<span class='region'>2 x 2</span> gates + <span class='region'>4</span> cultists + <span class='region'>3</span> captured + <span class='region'>2</span> Dark Youngs)</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>9 Power</span> (<span class='region'>2 x 2</span> gates + <span class='region'>5</span> cultists)</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> released <span class='cc'>Acolyte</span>, <span class='cc'>Acolyte</span>, <span class='ys'>Acolyte</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> power increased to <span class='power'>7 Power</span></div>
+<div class='p'>Play order <span class='bg inline-block'>Black Goat</span>, <span class='ys inline-block'>Yellow Sign</span>, <span class='cc inline-block'>Crawling Chaos</span>, <span class='gc inline-block'>Great Cthulhu</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'>DOOM PHASE</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> got <span class='doom'>2 Doom</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='doom'>2 Doom</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='doom'>0 Doom</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> got <span class='doom'>3 Doom</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='str'>[5]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>6<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>Turn 3</div>
+<div class='p'>ACTIONS</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> captured <span class='ys'>Acolyte</span> in <span class='region'>Europe</span> </div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>1 Power</span> from <span class='ys'>Passion</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> summoned <span class='ys'>Undead</span> in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> passed and forfeited <span class='power'>7 Power</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> awakened <span class='gc'>Cthulhu</span> in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> gained an <span class='es'>Elder Sign</span> as <span class='gc'>Immortal</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> achieved <span class='gc'>Awaken Cthulhu</span> </div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> received <span class='gc'>Absorb</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg'>Acolyte</span> in <span class='region'>West Africa</span> was sacrificed</div>
+<div class='p'><span class='bg'>Acolyte</span> in <span class='region'>West Africa</span> was sacrificed</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> awakened <span class='bg'>Shub-Niggurath</span> in <span class='region'>Arabia</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> achieved <span class='bg'>Awaken Shub-Niggurath</span> </div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> received <span class='bg'>The Thousand Young</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> failed <span class='region'>North Asia</span> desecration with roll [<span class='power'>5</span>]</div>
+<div class='p'><span class='ys'>Undead</span> appeared in <span class='region'>North Asia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> recruited <span class='gc'>Acolyte</span> in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> summoned <span class='bg'>Ghoul</span> in <span class='region'>Arabia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> desecrated <span class='region'>North Asia</span> with roll [<span class='power'>1</span>]</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> gained an <span class='es'>Elder Sign</span> using <span class='ys'>The Third Eye</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> achieved <span class='ys'>Desecrated |||</span> </div>
+<div class='p'><span class='ys'>Undead</span> appeared in <span class='region'>North Asia</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> received <span class='ys'>He Who is Not to be Named</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg'>Shub-Niggurath</span> avatared to <span class='region'>Europe</span></div>
+<div class='p'><span class='ys'>Undead</span> was sent back to <span class='region'>Arabia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> screamed from <span class='region'>North Asia</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> captured <span class='ys'>Acolyte</span> in <span class='region'>Europe</span> </div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>1 Power</span> from <span class='ys'>Passion</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> captured <span class='gc'>Acolyte</span> in <span class='sea'>North Pacific</span> </div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> lost control of the gate in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> captured <span class='ys'>Acolyte</span> in <span class='region'>Europe</span> </div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>1 Power</span> from <span class='ys'>Passion</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> desecrated <span class='sea'>North Pacific</span> with roll [<span class='power'>4</span>]</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> gained an <span class='es'>Elder Sign</span> using <span class='ys'>The Third Eye</span></div>
+<div class='p'><span class='ys'>Acolyte</span> appeared in <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> gained control of the gate in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> captured <span class='ys'>Acolyte</span> in <span class='region'>Europe</span> </div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> lost control of the gate in <span class='region'>Europe</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> ran out of power</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>1 Power</span> from <span class='ys'>Passion</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> screamed from <span class='sea'>North Pacific</span> to <span class='sea'>Indian Ocean</span></div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> captured <span class='gc'>Acolyte</span> in <span class='sea'>Indian Ocean</span> </div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> lost control of the gate in <span class='sea'>Indian Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> failed <span class='sea'>Indian Ocean</span> desecration with roll [<span class='power'>6</span>]</div>
+<div class='p'><span class='ys'>Byakhee</span> appeared in <span class='sea'>Indian Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> desecrated <span class='sea'>Indian Ocean</span> with roll [<span class='power'>5</span>]</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> gained an <span class='es'>Elder Sign</span> using <span class='ys'>The Third Eye</span></div>
+<div class='p'><span class='ys'>Undead</span> appeared in <span class='sea'>Indian Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> screamed from <span class='sea'>Indian Ocean</span> to <span class='region'>East Africa</span></div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> desecrated <span class='region'>East Africa</span> with roll [<span class='power'>5</span>]</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> gained an <span class='es'>Elder Sign</span> using <span class='ys'>The Third Eye</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> achieved <span class='ys'>Desecrated /^\</span> </div>
+<div class='p'><span class='ys'>Byakhee</span> appeared in <span class='region'>East Africa</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> received <span class='ys'>Shriek of the Byakhee</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> screamed from <span class='region'>East Africa</span> to <span class='region'>West Africa</span></div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> ran out of power</div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>POWER GATHER</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='power'>2 Power</span> (<span class='region'>2</span> abandoned)</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> got <span class='power'>8 Power</span> (<span class='region'>2 x 1</span> gate + <span class='region'>2</span> abandoned + <span class='region'>4</span> cultists)</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> got <span class='power'>14 Power</span> (<span class='region'>2 x 2</span> gates + <span class='region'>2</span> abandoned + <span class='region'>2</span> cultists + <span class='region'>4</span> captured + <span class='region'>2</span> Dark Youngs)</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>14 Power</span> (<span class='region'>2 x 2</span> gates + <span class='region'>2</span> abandoned + <span class='region'>2</span> cultists + <span class='region'>2</span> captured + <span class='region'>4</span> desecrated)</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> released <span class='ys'>Acolyte</span>, <span class='ys'>Acolyte</span>, <span class='ys'>Acolyte</span>, <span class='ys'>Acolyte</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> released <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> power increased to <span class='power'>7 Power</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> decided to remain the first player</div>
+<div class='p'>Play order <span class='bg inline-block'>Black Goat</span>, <span class='gc inline-block'>Great Cthulhu</span>, <span class='cc inline-block'>Crawling Chaos</span>, <span class='ys inline-block'>Yellow Sign</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'>DOOM PHASE</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> got <span class='doom'>2 Doom</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> got <span class='doom'>1 Doom</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='doom'>0 Doom</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='doom'>2 Doom</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='str'>[5]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>6<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>Turn 4</div>
+<div class='p'>ACTIONS</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> recruited <span class='bg'>Acolyte</span> in <span class='region'>Europe</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> gained control of the gate in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> recruited <span class='gc'>Acolyte</span> in <span class='sea'>Indian Ocean</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> gained control of the gate in <span class='sea'>Indian Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> passed and forfeited <span class='power'>7 Power</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> summoned <span class='ys'>Undead</span> in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg'>Shub-Niggurath</span> avatared to <span class='sea'>Indian Ocean</span></div>
+<div class='p'><span class='gc'>Acolyte</span> was sent back to <span class='region'>Europe</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> lost control of the gate in <span class='sea'>Indian Ocean</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> achieved <span class='bg'>Have Units in four Areas</span> </div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> received <span class='bg'>Blood Sacrifice</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc'>Cthulhu</span> submerged in <span class='sea'>South Pacific</span> with <span class='gc'>Starspawn</span>, <span class='gc'>Shoggoth</span>, <span class='gc'>Deep One</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> lost control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> captured <span class='bg'>Acolyte</span> in <span class='region'>West Africa</span> </div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> recruited <span class='bg'>Acolyte</span> in <span class='sea'>Indian Ocean</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> gained control of the gate in <span class='sea'>Indian Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc'>Cthulhu</span> unsubmerged in <span class='sea'>South Pacific</span> with <span class='gc'>Starspawn</span>, <span class='gc'>Shoggoth</span>, <span class='gc'>Deep One</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> gained control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> captured <span class='bg'>Acolyte</span> in <span class='region'>West Africa</span> </div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> summoned <span class='bg'>Dark Young</span> in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc'>Cthulhu</span> submerged in <span class='sea'>South Pacific</span> with <span class='gc'>Starspawn</span>, <span class='gc'>Shoggoth</span>, <span class='gc'>Deep One</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> lost control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> screamed from <span class='region'>West Africa</span> to <span class='region'>Arabia</span></div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> changed control of the gate in <span class='region'>Europe</span> to <span class='bg'>Dark Young</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> captured <span class='gc'>Acolyte</span> in <span class='region'>Europe</span> </div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc'>Cthulhu</span> unsubmerged in <span class='region'>Europe</span> with <span class='gc'>Starspawn</span>, <span class='gc'>Shoggoth</span>, <span class='gc'>Deep One</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> desecrated <span class='region'>Arabia</span> with roll [<span class='power'>3</span>]</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> gained an <span class='es'>Elder Sign</span> using <span class='ys'>The Third Eye</span></div>
+<div class='p'><span class='ys'>Acolyte</span> appeared in <span class='region'>Arabia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> summoned <span class='bg'>Fungi from Yuggoth</span> in <span class='sea'>Indian Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> battled <span class='bg inline-block'>Black Goat</span> in <span class='region'>Europe</span> </div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> attacked with <span class='gc'>Cthulhu</span>, <span class='gc'>Starspawn</span>, <span class='gc'>Shoggoth</span>, <span class='gc'>Deep One</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span> <span class='str'>[12]</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> defended with <span class='bg'>Dark Young</span>, <span class='bg'>Ghoul</span>, <span class='bg'>Acolyte</span> <span class='str'>[2]</span></div>
+<div class='p'><span class='bg'>Ghoul</span> was devoured by <span class='gc inline-block'>Great Cthulhu</span></div>
+<div class='p'><span class='gc'>Shoggoth</span> absorbed <span class='gc'>Deep One</span> and increased its strength by <span class='str'>[3]</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> strength increased to <span class='str'>[14]</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> rolled <span class='kill'>Kill</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='kill'>Kill</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> rolled <span class='kill'>Kill</span> <span class='pain'>Pain</span></div>
+<div class='p'><span class='bg'>Dark Young</span>, <span class='bg'>Acolyte</span> were <span class='kill'>killed</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> achieved <span class='gc'>Kill two enemy units in a battle</span> </div>
+<div class='p'><span class='gc'>Starspawn</span> was assigned <span class='kill'>Kill</span> and was <span class='pain'>pained</span></div>
+<div class='p'><span class='gc'>Cthulhu</span>, <span class='gc'>Starspawn</span> were <span class='pain'>pained</span></div>
+<div class='p'><span class='gc'>Cthulhu</span> retreated to <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='gc'>Starspawn</span> retreated to <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> lost control of the gate in <span class='region'>Europe</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> gained control of the gate in <span class='region'>Europe</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> received <span class='gc'>Y'ha Nthlei</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> screamed from <span class='region'>Arabia</span> to <span class='region'>Europe</span></div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> captured <span class='gc'>Acolyte</span> in <span class='region'>Europe</span> </div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> summoned <span class='bg'>Ghoul</span> in <span class='region'>Arabia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> moved <span class='gc'>Cthulhu</span> from <span class='sea'>North Atlantic</span> to <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> moved <span class='ys'>Hastur</span> from <span class='region'>North Asia</span> to <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> captured <span class='ys'>Acolyte</span> in <span class='region'>Arabia</span> </div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>1 Power</span> from <span class='ys'>Passion</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> moved <span class='gc'>Cthulhu</span> from <span class='region'>Europe</span> to <span class='region'>North Asia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> captured <span class='gc'>Acolyte</span> in <span class='region'>Europe</span> </div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg'>Shub-Niggurath</span> avatared to <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ys'>Acolyte</span> was sent back to <span class='sea'>Indian Ocean</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> lost control of the gate in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> captured <span class='ys'>Acolyte</span> in <span class='region'>North Asia</span> </div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> lost control of the gate in <span class='region'>North Asia</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>1 Power</span> from <span class='ys'>Passion</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> captured <span class='gc'>Acolyte</span> in <span class='region'>Europe</span> </div>
+<div class='p'><span class='gc'>Acolyte</span> in <span class='region'>Europe</span> devolved into <span class='gc'>Deep One</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> lost control of the gate in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> recruited <span class='bg'>Acolyte</span> in <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> gained control of the gate in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> recruited <span class='gc'>Acolyte</span> in <span class='region'>North Asia</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> gained control of the gate in <span class='region'>North Asia</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> desecrated <span class='region'>Europe</span> with roll [<span class='power'>2</span>]</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> gained an <span class='es'>Elder Sign</span> using <span class='ys'>The Third Eye</span></div>
+<div class='p'><span class='ys'>Acolyte</span> appeared in <span class='region'>Europe</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> gained control of the gate in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> summoned <span class='bg'>Dark Young</span> in <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> moved <span class='ys'>Acolyte</span> from <span class='sea'>Indian Ocean</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> gained control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> changed control of the gate in <span class='sea'>North Pacific</span> to <span class='bg'>Dark Young</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> recruited <span class='bg'>Acolyte</span> in <span class='sea'>Indian Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> screamed from <span class='region'>Europe</span> to <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> recruited <span class='bg'>Acolyte</span> in <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> desecrated <span class='sea'>North Atlantic</span> with roll [<span class='power'>5</span>]</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> gained an <span class='es'>Elder Sign</span> using <span class='ys'>The Third Eye</span></div>
+<div class='p'><span class='ys'>Acolyte</span> appeared in <span class='sea'>North Atlantic</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> recruited <span class='ys'>Acolyte</span> in <span class='sea'>North Atlantic</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> moved <span class='ys'>Hastur</span> from <span class='region'>Europe</span> to <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> ran out of power</div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>POWER GATHER</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> got <span class='power'>17 Power</span> (<span class='region'>2 x 4</span> gates + <span class='region'>4</span> cultists + <span class='region'>2</span> captured + <span class='region'>3</span> Dark Youngs)</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> got <span class='power'>7 Power</span> (<span class='region'>2 x 1</span> gate + <span class='region'>1</span> cultist + <span class='region'>1</span> captured + <span class='region'>3</span> enemy controlled ocean gates)</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='power'>0 Power</span> ()</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>18 Power</span> (<span class='region'>2 x 2</span> gates + <span class='region'>4</span> cultists + <span class='region'>5</span> captured + <span class='region'>5</span> desecrated)</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> released <span class='gc'>Acolyte</span>, <span class='ys'>Acolyte</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> released <span class='ys'>Acolyte</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> released <span class='bg'>Acolyte</span>, <span class='bg'>Acolyte</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span>, <span class='gc'>Acolyte</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> power increased to <span class='power'>9 Power</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> power increased to <span class='power'>9 Power</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> became the first player</div>
+<div class='p'>Play order <span class='ys inline-block'>Yellow Sign</span>, <span class='cc inline-block'>Crawling Chaos</span>, <span class='gc inline-block'>Great Cthulhu</span>, <span class='bg inline-block'>Black Goat</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'>DOOM PHASE</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> achieved <span class='gc'>Have five spellbooks</span> and gained an <span class='es'>Elder Sign</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> received <span class='gc'>Dreams</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='doom'>2 Doom</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='doom'>0 Doom</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> got <span class='doom'>1 Doom</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> got <span class='doom'>4 Doom</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='str'>[5]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>6<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> performed the ritual for <span class='power'>5 Power</span> and gained <span class='doom'>4 Doom</span> and an <span class='es'>Elder Sign</span></div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='xxxhighlight'>[</span>5<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='str'>[6]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> sacrificed <span class='bg'>Acolyte</span> in <span class='sea'>North Pacific</span> for an <span class='es'>Elder Sign</span></div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>Turn 5</div>
+<div class='p'>ACTIONS</div>
+<div class='p'><span class='ys'>King in Yellow</span> screamed from <span class='sea'>North Atlantic</span> to <span class='region'>North America</span></div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> moved <span class='ys'>Hastur</span> from <span class='sea'>North Atlantic</span> to <span class='region'>North America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> passed and forfeited <span class='power'>9 Power</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> captured <span class='ys'>Acolyte</span> in <span class='region'>Europe</span> </div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> lost control of the gate in <span class='region'>Europe</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>1 Power</span> from <span class='ys'>Passion</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> moved <span class='bg'>Ghoul</span> from <span class='region'>Arabia</span> to <span class='region'>Europe</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> moved <span class='bg'>Ghoul</span> from <span class='region'>Arabia</span> to <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> achieved <span class='bg'>Have Units in six Areas</span> </div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> received <span class='bg'>Necrophagy</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> desecrated <span class='region'>North America</span> with roll [<span class='power'>6</span>]</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> gained an <span class='es'>Elder Sign</span> using <span class='ys'>The Third Eye</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> achieved <span class='ys'>Desecrated (*)</span> </div>
+<div class='p'><span class='ys'>Acolyte</span> appeared in <span class='region'>North America</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> received <span class='ys'>Zingaya</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> recruited <span class='gc'>Acolyte</span> in <span class='region'>Europe</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> gained control of the gate in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> captured <span class='ys'>Acolyte</span> in <span class='sea'>North Atlantic</span> </div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>1 Power</span> from <span class='ys'>Passion</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> screamed from <span class='region'>North America</span> to <span class='sea'>Arctic Ocean</span></div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> moved <span class='ys'>Hastur</span> from <span class='region'>North America</span> to <span class='sea'>Arctic Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> moved <span class='gc'>Cthulhu</span> from <span class='region'>North Asia</span> to <span class='sea'>Arctic Ocean</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> battled <span class='ys inline-block'>Yellow Sign</span> in <span class='sea'>Arctic Ocean</span> </div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> attacked with <span class='gc'>Cthulhu</span> <span class='str'>[6]</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> defended with <span class='ys'>Hastur</span>, <span class='ys'>King in Yellow</span>, <span class='ys'>Undead</span>, <span class='ys'>Undead</span>, <span class='ys'>Undead</span>, <span class='ys'>Undead</span>, <span class='ys'>Undead</span> <span class='str'>[10]</span></div>
+<div class='p'><span class='ys'>Undead</span> was devoured by <span class='gc inline-block'>Great Cthulhu</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> strength decreased to <span class='str'>[9]</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> rolled <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> rolled <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span></div>
+<div class='p'><span class='bg'>Ghoul</span> came from <span class='sea'>North Atlantic</span>, causing additonal <span class='pain'>Pain</span> to both sides</div>
+<div class='p'><span class='bg'>Ghoul</span> came from <span class='region'>Europe</span>, causing additonal <span class='pain'>Pain</span> to both sides</div>
+<div class='p'><span class='gc'>Cthulhu</span> was <span class='pain'>pained</span></div>
+<div class='p'><span class='ys'>King in Yellow</span>, <span class='ys'>Undead</span>, <span class='ys'>Undead</span>, <span class='ys'>Undead</span>, <span class='ys'>Undead</span> were <span class='pain'>pained</span></div>
+<div class='p'><span class='gc'>Cthulhu</span> retreated to <span class='region'>North Asia</span></div>
+<div class='p'><span class='ys'>King in Yellow</span> retreated to <span class='region'>North America</span></div>
+<div class='p'><span class='ys'>Undead</span> retreated to <span class='region'>North America</span></div>
+<div class='p'><span class='ys'>Undead</span> retreated to <span class='region'>North America</span></div>
+<div class='p'><span class='ys'>Undead</span> retreated to <span class='region'>North America</span></div>
+<div class='p'><span class='ys'>Undead</span> retreated to <span class='region'>North America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg'>Shub-Niggurath</span> avatared to <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='ys'>Acolyte</span> was sent back to <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> lost control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>Hastur</span> heard his name in <span class='region'>North America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> captured <span class='ys'>Acolyte</span> in <span class='sea'>North Atlantic</span> </div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>1 Power</span> from <span class='ys'>Passion</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> recruited <span class='bg'>Acolyte</span> in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> gained control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> screamed from <span class='region'>North America</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> moved <span class='ys'>Hastur</span> from <span class='region'>North America</span> to <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> moved <span class='gc'>Cthulhu</span> from <span class='region'>North Asia</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> moved <span class='bg'>Shub-Niggurath</span> from <span class='sea'>South Pacific</span> to <span class='sea'>North Pacific</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> moved <span class='bg'>Ghoul</span> from <span class='sea'>Arctic Ocean</span> to <span class='region'>North Asia</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> moved <span class='bg'>Ghoul</span> from <span class='sea'>Arctic Ocean</span> to <span class='region'>North America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> desecrated <span class='region'>South America</span> with roll [<span class='power'>5</span>]</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> gained an <span class='es'>Elder Sign</span> using <span class='ys'>The Third Eye</span></div>
+<div class='p'><span class='ys'>Acolyte</span> appeared in <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc'>Cthulhu</span> submerged in <span class='sea'>North Pacific</span> with <span class='gc'>Deep One</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> captured <span class='gc'>Acolyte</span> in <span class='region'>North Asia</span> </div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> lost control of the gate in <span class='region'>North Asia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> screamed from <span class='region'>South America</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> moved <span class='ys'>Hastur</span> from <span class='region'>South America</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc'>Cthulhu</span> unsubmerged in <span class='sea'>Indian Ocean</span> with <span class='gc'>Deep One</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> moved <span class='bg'>Shub-Niggurath</span> from <span class='sea'>North Pacific</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> moved <span class='bg'>Acolyte</span> from <span class='sea'>North Pacific</span> to <span class='region'>North Asia</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> moved <span class='bg'>Ghoul</span> from <span class='region'>North America</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> gained control of the gate in <span class='region'>North Asia</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> battled <span class='bg inline-block'>Black Goat</span> in <span class='sea'>South Pacific</span> </div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> attacked with <span class='ys'>Hastur</span>, <span class='ys'>King in Yellow</span>, <span class='ys'>Undead</span>, <span class='ys'>Undead</span>, <span class='ys'>Undead</span>, <span class='ys'>Undead</span> <span class='str'>[9]</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> defended with <span class='bg'>Shub-Niggurath</span>, <span class='bg'>Acolyte</span> <span class='str'>[13]</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> rolled <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> rolled <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='kill'>Kill</span> <span class='miss'>Miss</span> <span class='kill'>Kill</span> <span class='miss'>Miss</span> <span class='kill'>Kill</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='pain'>Pain</span></div>
+<div class='p'><span class='ys'>Undead</span>, <span class='ys'>Undead</span>, <span class='ys'>Undead</span> were <span class='kill'>killed</span></div>
+<div class='p'><span class='bg'>Ghoul</span> came from <span class='region'>South America</span>, causing additonal <span class='pain'>Pain</span> to both sides</div>
+<div class='p'><span class='bg'>Ghoul</span> came from <span class='region'>North Asia</span>, causing additonal <span class='pain'>Pain</span> to both sides</div>
+<div class='p'><span class='ys'>Hastur</span>, <span class='ys'>King in Yellow</span>, <span class='ys'>Undead</span> were <span class='pain'>pained</span></div>
+<div class='p'><span class='bg'>Shub-Niggurath</span>, <span class='bg'>Acolyte</span> were <span class='pain'>pained</span></div>
+<div class='p'><span class='ys'>Hastur</span> retreated to <span class='region'>South America</span></div>
+<div class='p'><span class='ys'>King in Yellow</span> retreated to <span class='region'>South America</span></div>
+<div class='p'><span class='ys'>Undead</span> retreated to <span class='region'>South America</span></div>
+<div class='p'><span class='bg'>Shub-Niggurath</span> retreated to <span class='region'>Antarctica</span></div>
+<div class='p'><span class='bg'>Acolyte</span> retreated to <span class='region'>Antarctica</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> lost control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> moved <span class='ys'>Acolyte</span> from <span class='sea'>North Pacific</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> gained control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc'>Cthulhu</span> submerged in <span class='sea'>Indian Ocean</span> with <span class='gc'>Deep One</span>, <span class='gc'>Deep One</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> summoned <span class='ys'>Undead</span> in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc'>Cthulhu</span> unsubmerged in <span class='sea'>South Pacific</span> with <span class='gc'>Deep One</span>, <span class='gc'>Deep One</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> screamed from <span class='region'>South America</span> to <span class='sea'>South Atlantic</span></div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> moved <span class='ys'>Hastur</span> from <span class='region'>South America</span> to <span class='sea'>South Atlantic</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> captured <span class='ys'>Acolyte</span> in <span class='sea'>South Pacific</span> </div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> lost control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> ran out of power</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>1 Power</span> from <span class='ys'>Passion</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>Byakhee</span> flew to <span class='sea'>South Atlantic</span> from <span class='region'>East Africa</span></div>
+<div class='p'><span class='ys'>Byakhee</span> flew to <span class='sea'>South Atlantic</span> from <span class='sea'>Indian Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> moved <span class='ys'>Acolyte</span> from <span class='region'>South America</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> gained control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> screamed from <span class='sea'>South Atlantic</span> to <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> screamed from <span class='sea'>North Atlantic</span> to <span class='region'>Europe</span></div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> captured <span class='gc'>Acolyte</span> in <span class='region'>Europe</span> </div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> lost control of the gate in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> moved <span class='ys'>Undead</span> from <span class='sea'>South Pacific</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> ran out of power</div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>POWER GATHER</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='power'>1 Power</span> (<span class='region'>1</span> abandoned)</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> got <span class='power'>7 Power</span> (<span class='region'>1</span> abandoned + <span class='region'>3</span> captured + <span class='region'>3</span> enemy controlled ocean gates)</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> got <span class='power'>20 Power</span> (<span class='region'>2 x 5</span> gates + <span class='region'>1</span> abandoned + <span class='region'>4</span> cultists + <span class='region'>2</span> captured + <span class='region'>3</span> Dark Youngs)</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>10 Power</span> (<span class='region'>2 x 1</span> gate + <span class='region'>1</span> abandoned + <span class='region'>2</span> cultists + <span class='region'>1</span> captured + <span class='region'>4</span> desecrated)</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> released <span class='ys'>Acolyte</span>, <span class='ys'>Acolyte</span>, <span class='ys'>Acolyte</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> released <span class='gc'>Acolyte</span>, <span class='ys'>Acolyte</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> released <span class='gc'>Acolyte</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> power increased to <span class='power'>10 Power</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> power increased to <span class='power'>10 Power</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> became the first player</div>
+<div class='p'>Play order <span class='bg inline-block'>Black Goat</span>, <span class='ys inline-block'>Yellow Sign</span>, <span class='cc inline-block'>Crawling Chaos</span>, <span class='gc inline-block'>Great Cthulhu</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'>DOOM PHASE</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> got <span class='doom'>5 Doom</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='doom'>1 Doom</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='doom'>0 Doom</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> got <span class='doom'>0 Doom</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='xxxhighlight'>[</span>5<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='str'>[6]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> performed the ritual for <span class='power'>6 Power</span> and gained <span class='doom'>5 Doom</span> and an <span class='es'>Elder Sign</span></div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='xxxhighlight'>[</span>5<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>6<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='str'>[7]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> sacrificed <span class='bg'>Acolyte</span> in <span class='sea'>Indian Ocean</span> for an <span class='es'>Elder Sign</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> lost control of the gate in <span class='sea'>Indian Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> performed the ritual for <span class='power'>7 Power</span> and gained <span class='doom'>1 Doom</span> and <span class='es'>2 Elder Signs</span></div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='xxxhighlight'>[</span>5<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>6<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='str'>[7]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>Turn 6</div>
+<div class='p'>ACTIONS</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> gained control of the gate in <span class='sea'>Indian Ocean</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> captured <span class='ys'>Acolyte</span> in <span class='sea'>South Pacific</span> </div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> lost control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>1 Power</span> from <span class='ys'>Passion</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> screamed from <span class='region'>Europe</span> to <span class='region'>Scandinavia</span></div>
+<div class='p'><span class='ys'>Undead</span> followed along</div>
+<div class='p'><span class='ys'>King in Yellow</span> failed <span class='region'>Scandinavia</span> desecration with roll [<span class='power'>5</span>]</div>
+<div class='p'><span class='ys'>Acolyte</span> appeared in <span class='region'>Scandinavia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> passed and forfeited <span class='power'>10 Power</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> moved <span class='gc'>Cthulhu</span> from <span class='sea'>South Pacific</span> to <span class='sea'>South Atlantic</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> moved <span class='gc'>Deep One</span> from <span class='sea'>South Pacific</span> to <span class='region'>South America</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> battled <span class='ys inline-block'>Yellow Sign</span> in <span class='sea'>South Atlantic</span> </div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> attacked with <span class='gc'>Cthulhu</span>, <span class='gc'>Deep One</span> <span class='str'>[7]</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> defended with <span class='ys'>Hastur</span>, <span class='ys'>Byakhee</span>, <span class='ys'>Byakhee</span> <span class='str'>[10]</span></div>
+<div class='p'><span class='ys'>Byakhee</span> was devoured by <span class='gc inline-block'>Great Cthulhu</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> strength decreased to <span class='str'>[9]</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> rolled <span class='kill'>Kill</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> rolled <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span> <span class='kill'>Kill</span> <span class='miss'>Miss</span> <span class='kill'>Kill</span> <span class='pain'>Pain</span> <span class='kill'>Kill</span></div>
+<div class='p'><span class='gc'>Cthulhu</span>, <span class='gc'>Deep One</span> were <span class='kill'>killed</span></div>
+<div class='p'><span class='ys'>Byakhee</span> was <span class='kill'>killed</span></div>
+<div class='p'><span class='bg'>Ghoul</span> came from <span class='sea'>South Pacific</span>, causing additonal <span class='pain'>Pain</span> to both sides</div>
+<div class='p'><span class='ys'>Hastur</span> was <span class='pain'>pained</span></div>
+<div class='p'><span class='ys'>Hastur</span> retreated to <span class='sea'>Indian Ocean</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> achieved <span class='bg'>Have Units in eight Areas</span> </div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> received <span class='bg'>Ghroth</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> recruited <span class='bg'>Acolyte</span> in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> gained control of the gate in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> failed <span class='region'>Scandinavia</span> desecration with roll [<span class='power'>6</span>]</div>
+<div class='p'><span class='ys'>Acolyte</span> appeared in <span class='region'>Scandinavia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> recruited <span class='gc'>Acolyte</span> in <span class='region'>Europe</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> gained control of the gate in <span class='region'>Europe</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> moved <span class='bg'>Shub-Niggurath</span> from <span class='region'>Antarctica</span> to <span class='sea'>Indian Ocean</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> recruited <span class='ys'>Acolyte</span> in <span class='sea'>Indian Ocean</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> awakened <span class='gc'>Cthulhu</span> in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> gained an <span class='es'>Elder Sign</span> as <span class='gc'>Immortal</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> moved <span class='bg'>Shub-Niggurath</span> from <span class='sea'>Indian Ocean</span> to <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc'>Cthulhu</span> submerged in <span class='sea'>South Pacific</span> with <span class='gc'>Deep One</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> moved <span class='bg'>Shub-Niggurath</span> from <span class='sea'>South Pacific</span> to <span class='region'>South America</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc'>Cthulhu</span> unsubmerged in <span class='region'>Scandinavia</span> with <span class='gc'>Deep One</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> battled <span class='ys inline-block'>Yellow Sign</span> in <span class='region'>Scandinavia</span> </div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> attacked with <span class='gc'>Cthulhu</span>, <span class='gc'>Deep One</span> <span class='str'>[7]</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> defended with <span class='ys'>King in Yellow</span>, <span class='ys'>Undead</span>, <span class='ys'>Acolyte</span>, <span class='ys'>Acolyte</span> <span class='str'>[0]</span></div>
+<div class='p'><span class='ys'>Acolyte</span> was devoured by <span class='gc inline-block'>Great Cthulhu</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> rolled <span class='kill'>Kill</span> <span class='kill'>Kill</span> <span class='miss'>Miss</span> <span class='pain'>Pain</span> <span class='pain'>Pain</span> <span class='miss'>Miss</span> <span class='miss'>Miss</span></div>
+<div class='p'><span class='ys'>Undead</span>, <span class='ys'>Acolyte</span> were <span class='kill'>killed</span></div>
+<div class='p'><span class='bg'>Ghoul</span> came from <span class='sea'>South Pacific</span>, causing additonal <span class='pain'>Pain</span> to both sides</div>
+<div class='p'><span class='bg'>Ghoul</span> came from <span class='sea'>South Atlantic</span>, causing additonal <span class='pain'>Pain</span> to both sides</div>
+<div class='p'><span class='gc'>Cthulhu</span>, <span class='gc'>Deep One</span> were <span class='pain'>pained</span></div>
+<div class='p'><span class='ys'>King in Yellow</span> was <span class='pain'>pained</span></div>
+<div class='p'><span class='gc'>Cthulhu</span> retreated to <span class='sea'>North Atlantic</span></div>
+<div class='p'><span class='gc'>Deep One</span> retreated to <span class='region'>North Asia</span></div>
+<div class='p'><span class='ys'>King in Yellow</span> retreated to <span class='sea'>Arctic Ocean</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> ran out of power</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>1 Power</span> from <span class='ys'>Passion</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> built a gate in <span class='region'>Antarctica</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> failed <span class='sea'>Arctic Ocean</span> desecration with roll [<span class='power'>5</span>]</div>
+<div class='p'><span class='ys'>Acolyte</span> appeared in <span class='sea'>Arctic Ocean</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> summoned <span class='bg'>Fungi from Yuggoth</span> in <span class='region'>North Asia</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> summoned <span class='bg'>Fungi from Yuggoth</span> in <span class='sea'>South Pacific</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> summoned <span class='bg'>Fungi from Yuggoth</span> in <span class='region'>Antarctica</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> used <span class='bg'>Ghroth</span> and rolled [<span class='power'>4</span>]</div>
+<div class='p'><span class='ys'>Acolyte</span> was eliminated in <span class='region'>North America</span></div>
+<div class='p'><span class='ys'>Acolyte</span> was eliminated in <span class='sea'>Arctic Ocean</span></div>
+<div class='p'><span class='ys'>Acolyte</span> was eliminated in <span class='sea'>Indian Ocean</span></div>
+<div class='p'><span class='gc'>Acolyte</span> was eliminated in <span class='region'>Europe</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> lost control of the gate in <span class='region'>Europe</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>1 Power</span> from <span class='ys'>Passion</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys'>King in Yellow</span> failed <span class='sea'>Arctic Ocean</span> desecration with roll [<span class='power'>6</span>]</div>
+<div class='p'><span class='ys'>Acolyte</span> appeared in <span class='sea'>Arctic Ocean</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> ran out of power</div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> recruited <span class='bg'>Acolyte</span> in <span class='sea'>South Pacific</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> ran out of power</div>
+<div class='p'>=======================================================================================================================</div>
+<div class='p'>POWER GATHER</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='power'>5 Power</span> (<span class='region'>1</span> abandoned + <span class='region'>1</span> cultist + <span class='region'>3</span> desecrated)</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='power'>1 Power</span> (<span class='region'>1</span> abandoned)</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> got <span class='power'>4 Power</span> (<span class='region'>1</span> abandoned + <span class='region'>3</span> enemy controlled ocean gates)</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> got <span class='power'>24 Power</span> (<span class='region'>2 x 7</span> gates + <span class='region'>1</span> abandoned + <span class='region'>5</span> cultists + <span class='region'>1</span> captured + <span class='region'>3</span> Dark Youngs)</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> released <span class='ys'>Acolyte</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> power increased to <span class='power'>12 Power</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> power increased to <span class='power'>12 Power</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> power increased to <span class='power'>12 Power</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> achieved <span class='cc'>Have 12 Power</span> </div>
+<div class='p'>Play order <span class='bg inline-block'>Black Goat</span>, <span class='ys inline-block'>Yellow Sign</span>, <span class='cc inline-block'>Crawling Chaos</span>, <span class='gc inline-block'>Great Cthulhu</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'>DOOM PHASE</div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> received <span class='cc'>The Thousand Forms</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> got <span class='doom'>7 Doom</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> got <span class='doom'>0 Doom</span></div>
+<div class='p'><span class='cc inline-block'>Crawling Chaos</span> got <span class='doom'>0 Doom</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> got <span class='doom'>0 Doom</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='xxxhighlight'>[</span>5<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>6<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='str'>[7]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> sacrificed <span class='bg'>Acolyte</span> in <span class='sea'>South Pacific</span> for an <span class='es'>Elder Sign</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> performed the ritual for <span class='power'>7 Power</span> and gained <span class='doom'>7 Doom</span> and an <span class='es'>Elder Sign</span></div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='xxxhighlight'>[</span>5<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>6<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='str'>[8]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> performed the ritual for <span class='power'>8 Power</span> and gained <span class='doom'>0 Doom</span> and <span class='es'>2 Elder Signs</span></div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='xxxhighlight'>[</span>5<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>6<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='str'>[8]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>9<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> revealed [<span class='es'>3</span>] for <span class='doom'>3 Doom</span> </div>
+<div class='p'>............................................................................................................................................................................................................................................</div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> performed the ritual for <span class='power'>8 Power</span> and gained <span class='doom'>0 Doom</span> and an <span class='es'>Elder Sign</span></div>
+<div class='p'><span class='doom'>Ritual of Annihilation</span> track <span class='xxxhighlight'>[</span>5<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>6<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>7<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>8<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='str'>[9]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>10<span class='xxxhighlight'>]</span><span class='highlight'>-</span><span class='xxxhighlight'>[</span>Instant Death<span class='xxxhighlight'>]</span></div>
+<div class='p'><span class='bg inline-block'>Black Goat</span> revealed [<span class='es'>1</span>] [<span class='es'>1</span>] [<span class='es'>2</span>] [<span class='es'>1</span>] [<span class='es'>3</span>] [<span class='es'>3</span>] for <span class='doom'>11 Doom</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> revealed [<span class='es'>1</span>] [<span class='es'>1</span>] [<span class='es'>3</span>] [<span class='es'>2</span>] [<span class='es'>2</span>] [<span class='es'>2</span>] [<span class='es'>1</span>] [<span class='es'>2</span>] [<span class='es'>1</span>] [<span class='es'>2</span>] [<span class='es'>1</span>] [<span class='es'>1</span>] [<span class='es'>2</span>] for <span class='doom'>21 Doom</span></div>
+<div class='p'><span class='gc inline-block'>Great Cthulhu</span> revealed [<span class='es'>3</span>] [<span class='es'>2</span>] [<span class='es'>2</span>] [<span class='es'>2</span>] [<span class='es'>1</span>] for <span class='doom'>10 Doom</span></div>
+<div class='p'><span class='ys inline-block'>Yellow Sign</span> won</div>
+
+FINAL_SCORE=0.04777499999999999
+BREAKDOWN=spellbooks=+0.040 doomEarned=+0.020 elderSigns=+0.000 ritualValue=+0.000 ownGOO=+0.000 b:goodRitual=+0.000 gateTaken=+0.000 b:emptyGate=+0.000 gateDefended=+0.000 endAP1Gates=+0.005 preDoomPower=+0.004 unitsOnMap=+0.000 b:sbUse=+0.000 b:powerUse=+0.000 p:unitLoss=-0.003 p:lostGate=-0.003 p:abandon=-0.000 p:capture=-0.010 p:gooLost=-0.000 p:cultistUnprot=-0.002 r:killEnemy=+0.000 r:powerBlock=+0.005 r:apPowerOrder=-0.004 r:enemyGooKill=+0.000 b:captureEnemy=+0.000 r:buildGate=+0.000 r:EndAPGates=+0.016 z:slot10=+0.000 z:slot11=+0.000 z:slot12=+0.000
+ALL_DOOM=BG=48 YS=34 GC=17 CC=4

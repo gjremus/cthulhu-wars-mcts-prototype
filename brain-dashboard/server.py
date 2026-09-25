@@ -182,14 +182,10 @@ def get_current_run_status():
         run_mode = "unknown"  # "arena", "selfplay", or "unknown"
 
         # Parse actual iteration from command line args (more reliable than log labels)
+        # cmd_iter extraction removed - for iterarena mode, iteration comes from checkpoint load,
+        # not command line. The first arg after mode (e.g. 2000 in "iterarena 2000...") is bootGames,
+        # not iteration number.
         cmd_iter = None
-        for line in lines:
-            if 'DEBUG PARSED:' in line and 'mode=iterarena' in line:
-                # Format: DEBUG PARSED: mode=iterarena a=12 10 256 false 0.0001 640 400 1000 400
-                match = re.search(r'mode=iterarena a=(\d+)', line)
-                if match:
-                    cmd_iter = int(match.group(1))
-                    break
 
         # Try to parse perSeat from DEBUG ARGS line OR game completion lines
         per_seat = None
@@ -214,79 +210,109 @@ def get_current_run_status():
             total_games = per_seat * 4
 
         # Check for arena evaluation in progress
+        # Distinguish between training arena (1600 games) and evaluation arena (20 games)
         arena_start_lines = [i for i, l in enumerate(lines) if '-- arena @ iter' in l or 'arena 20 games' in l or 'iter ' in l and '| arena ' in l]
         if arena_start_lines:
             last_arena_start_idx = arena_start_lines[-1]
-            # Count game completions after arena start:
-            # NEW format: "game X/Y complete: YS score=0.211 doom=12 (177s)"
-            # OLD format: "game X/Y saved:" (one line per game per faction)
-            lines_after = lines[last_arena_start_idx:]
+            arena_line = lines[last_arena_start_idx]
 
-            # Count from canonical store (source of truth for deduplicated games)
-            # Determine which iteration we're looking at
-            temp_iter = None
-            if cmd_iter is not None:
-                temp_iter = cmd_iter
-            else:
-                arena_line = lines[last_arena_start_idx]
+            # Parse game count from arena line to determine if training or evaluation
+            arena_game_count = None
+            game_count_match = re.search(r'arena (\d+) games', arena_line)
+            if game_count_match:
+                arena_game_count = int(game_count_match.group(1))
+
+            # If > 100 games, this is a training phase, not evaluation
+            # Parse game X/Y lines directly from log for training
+            if arena_game_count and arena_game_count > 100:
+                # Training mode - parse from game lines
+                run_mode = "training"
+                lines_after = lines[last_arena_start_idx:]
+                game_lines = [l for l in lines_after if re.search(r'game (\d+)/(\d+)', l)]
+                if game_lines:
+                    last_game_line = game_lines[-1]
+                    game_progress_match = re.search(r'game (\d+)/(\d+)', last_game_line)
+                    if game_progress_match:
+                        current_game = int(game_progress_match.group(1))
+                        total_games = int(game_progress_match.group(2))
+
+                # Parse iteration from arena line
                 iter_match = re.search(r'iter (\d+)', arena_line)
                 if iter_match:
-                    temp_iter = int(iter_match.group(1))
-
-            # Load canonical store and count games for this run/iteration
-            if temp_iter is not None:
-                canonical_path = Path('/Users/gremus/cthulhu-wars-mcts-prototype/brain-dashboard/canonical_games.json')
-                if canonical_path.exists():
-                    try:
-                        with open(canonical_path) as f:
-                            canonical = json.load(f)
-                        # Extract run tag
-                        run_tag = "R39"  # default
-                        for line in reversed(lines[-100:]):
-                            run_match = re.search(r'R(\d+)', line)
-                            if run_match:
-                                run_tag = f"R{run_match.group(1)}"
-                                break
-
-                        # Count games matching this run and iteration
-                        matching_games = [g for g in canonical['games']
-                                        if g.get('run') == run_tag and g.get('iteration') == temp_iter]
-                        current_game = len(matching_games)
-                    except:
-                        # Fallback to log line counting if canonical store fails
-                        game_saved_lines = [l for l in lines_after if 'game ' in l and 'saved:' in l and 'arena-' in l]
-                        current_game = len(game_saved_lines)
-                else:
-                    # Fallback if canonical store doesn't exist - count from log
-                    game_saved_lines = [l for l in lines_after if 'game ' in l and 'saved:' in l and 'arena-' in l and re.search(r'game \d+/\d+ saved:', l)]
-                    game_complete_lines = [l for l in lines_after if re.search(r'game (\d+)/(\d+) complete:', l)]
-
-                    if game_saved_lines:
-                        current_game = len(game_saved_lines)
-                        saved_match = re.search(r'game \d+/(\d+) saved:', game_saved_lines[-1])
-                        if saved_match:
-                            per_faction_total = int(saved_match.group(1))
-                            total_games = per_faction_total * 4
-                    elif game_complete_lines:
-                        current_game = len(game_complete_lines)
-                        completion_match = re.search(r'game \d+/(\d+) complete:', game_complete_lines[0])
-                        if completion_match:
-                            per_faction_total = int(completion_match.group(1))
-                            total_games = per_faction_total * 4
-
-            # Determine which iter this arena belongs to
-            if cmd_iter is not None:
-                # Use command-line iteration (most reliable)
-                current_iter = cmd_iter
+                    current_iter = int(iter_match.group(1))
             else:
-                # Fallback to parsing from log label
-                arena_line = lines[last_arena_start_idx]
-                if 'iter 0' in arena_line:
-                    current_iter = 0
+                # Evaluation arena mode - use canonical store
+                run_mode = "arena"
+                # Count game completions after arena start:
+                # NEW format: "game X/Y complete: YS score=0.211 doom=12 (177s)"
+                # OLD format: "game X/Y saved:" (one line per game per faction)
+                lines_after = lines[last_arena_start_idx:]
+
+                # Count from canonical store (source of truth for deduplicated games)
+                # Determine which iteration we're looking at
+                temp_iter = None
+                if cmd_iter is not None:
+                    temp_iter = cmd_iter
                 else:
-                    arena_iter_match = re.search(r'iter (\d+)', arena_line)
-                    if arena_iter_match:
-                        current_iter = int(arena_iter_match.group(1))
+                    arena_line = lines[last_arena_start_idx]
+                    iter_match = re.search(r'iter (\d+)', arena_line)
+                    if iter_match:
+                        temp_iter = int(iter_match.group(1))
+
+                # Load canonical store and count games for this run/iteration
+                if temp_iter is not None:
+                    canonical_path = Path('/Users/gremus/cthulhu-wars-mcts-prototype/brain-dashboard/canonical_games.json')
+                    if canonical_path.exists():
+                        try:
+                            with open(canonical_path) as f:
+                                canonical = json.load(f)
+                            # Extract run tag
+                            run_tag = "R39"  # default
+                            for line in reversed(lines[-100:]):
+                                run_match = re.search(r'R(\d+)', line)
+                                if run_match:
+                                    run_tag = f"R{run_match.group(1)}"
+                                    break
+
+                            # Count games matching this run and iteration
+                            matching_games = [g for g in canonical['games']
+                                            if g.get('run') == run_tag and g.get('iteration') == temp_iter]
+                            current_game = len(matching_games)
+                        except:
+                            # Fallback to log line counting if canonical store fails
+                            game_saved_lines = [l for l in lines_after if 'game ' in l and 'saved:' in l and 'arena-' in l]
+                            current_game = len(game_saved_lines)
+                    else:
+                        # Fallback if canonical store doesn't exist - count from log
+                        game_saved_lines = [l for l in lines_after if 'game ' in l and 'saved:' in l and 'arena-' in l and re.search(r'game \d+/\d+ saved:', l)]
+                        game_complete_lines = [l for l in lines_after if re.search(r'game (\d+)/(\d+) complete:', l)]
+
+                        if game_saved_lines:
+                            current_game = len(game_saved_lines)
+                            saved_match = re.search(r'game \d+/(\d+) saved:', game_saved_lines[-1])
+                            if saved_match:
+                                per_faction_total = int(saved_match.group(1))
+                                total_games = per_faction_total * 4
+                        elif game_complete_lines:
+                            current_game = len(game_complete_lines)
+                            completion_match = re.search(r'game \d+/(\d+) complete:', game_complete_lines[0])
+                            if completion_match:
+                                per_faction_total = int(completion_match.group(1))
+                                total_games = per_faction_total * 4
+
+                # Determine which iter this arena belongs to (evaluation mode only)
+                if cmd_iter is not None:
+                    # Use command-line iteration (most reliable)
+                    current_iter = cmd_iter
+                else:
+                    # Fallback to parsing from log label
+                    arena_line = lines[last_arena_start_idx]
+                    if 'iter 0' in arena_line:
+                        current_iter = 0
+                    else:
+                        arena_iter_match = re.search(r'iter (\d+)', arena_line)
+                        if arena_iter_match:
+                            current_iter = int(arena_iter_match.group(1))
 
             # Do NOT use arena_trace.log - it's never cleared and contains old runs
             # Use >>> overall lines as source of truth for completed iterations
@@ -582,11 +608,13 @@ def get_current_run_status():
 
             if current_run_games:
                 # Canonical store has trace files - use them
+                # EXCLUDE killed games from averages
+                completed_games = [g for g in current_run_games if g.get("result") != "killed"]
                 total = len(current_run_games)
-                wins = sum(1 for g in current_run_games if g.get("won", False))
-                win_rate = wins / total if total > 0 else 0
-                avg_doom = sum(g.get("doom", 0) for g in current_run_games) / total if total > 0 else 0
-                best_score = max((g.get("score", 0) for g in current_run_games), default=0)
+                wins = sum(1 for g in completed_games if g.get("won", False))
+                win_rate = wins / len(completed_games) if completed_games else 0
+                avg_doom = sum(g.get("doom", 0) for g in completed_games) / len(completed_games) if completed_games else 0
+                best_score = max((g.get("score", 0) for g in completed_games), default=0)
             # Note: wins, total, avg_doom already calculated correctly at lines 196-221
             # Just ensure best_score is set
             if 'best_score' not in locals():
@@ -704,10 +732,12 @@ def get_saved_checkpoints():
                                    and g.get("iteration") == iter_num
                                    and g.get("type") == "arena"]
                     if arena_games:
+                        # EXCLUDE killed games from averages
+                        completed_games = [g for g in arena_games if g.get("result") != "killed"]
                         arena_total = len(arena_games)
-                        arena_wins = sum(1 for g in arena_games if g.get("won", False))
-                        arena_win_rate = arena_wins / arena_total if arena_total > 0 else 0
-                        arena_avg_doom = sum(g.get("doom", 0) for g in arena_games) / arena_total if arena_total > 0 else 0
+                        arena_wins = sum(1 for g in completed_games if g.get("won", False))
+                        arena_win_rate = arena_wins / len(completed_games) if completed_games else 0
+                        arena_avg_doom = sum(g.get("doom", 0) for g in completed_games) / len(completed_games) if completed_games else 0
 
                 checkpoints.append({
                     "name": d.name,
@@ -745,10 +775,12 @@ def get_saved_checkpoints():
                                and g.get("iteration") == iter_num
                                and g.get("type") == "arena"]
                 if arena_games:
+                    # EXCLUDE killed games from averages
+                    completed_games = [g for g in arena_games if g.get("result") != "killed"]
                     arena_total = len(arena_games)
-                    arena_wins = sum(1 for g in arena_games if g.get("won", False))
-                    arena_win_rate = arena_wins / arena_total if arena_total > 0 else 0
-                    arena_avg_doom = sum(g.get("doom", 0) for g in arena_games) / arena_total if arena_total > 0 else 0
+                    arena_wins = sum(1 for g in completed_games if g.get("won", False))
+                    arena_win_rate = arena_wins / len(completed_games) if completed_games else 0
+                    arena_avg_doom = sum(g.get("doom", 0) for g in completed_games) / len(completed_games) if completed_games else 0
 
             checkpoints.append({
                 "name": name,
@@ -868,19 +900,36 @@ def calculate_game_score_and_breakdown_from_trace(trace_file):
     try:
         content = Path(trace_file).read_text()
 
-        # Parse FINAL_SCORE, BREAKDOWN, and ALL_DOOM from end of trace
+        # Parse score: try multiple formats
+        # Format 1: FINAL_SCORE= (old format)
+        # Format 2: INTERIM_SCORE= (killed games)
+        # Format 3: Score (0-1): (complete games)
+        score = None
         final_score_match = re.search(r'FINAL_SCORE=([0-9.]+)', content)
+        if final_score_match:
+            score = float(final_score_match.group(1))
+        else:
+            interim_score_match = re.search(r'INTERIM_SCORE=([0-9.]+)', content)
+            if interim_score_match:
+                score = float(interim_score_match.group(1))
+            else:
+                score_01_match = re.search(r'Score \(0-1\):\s*([0-9.]+)', content)
+                if score_01_match:
+                    score = float(score_01_match.group(1))
+
+        # Parse breakdown: try BREAKDOWN= format
         breakdown_match = re.search(r'BREAKDOWN=(.+)', content)
-        all_doom_match = re.search(r'ALL_DOOM=(.+)', content)
-
-        score = float(final_score_match.group(1)) if final_score_match else None
-
-        # If BREAKDOWN line exists, use it directly
         if breakdown_match:
             breakdown_str = breakdown_match.group(1).strip()
             return (score, breakdown_str)
 
-        # Old traces - no breakdown available
+        # Try "Shaping breakdown:" format
+        shaping_match = re.search(r'Shaping breakdown:\s*(.+)', content)
+        if shaping_match:
+            breakdown_str = shaping_match.group(1).strip()
+            return (score, breakdown_str)
+
+        # No breakdown available
         return (score, "")
     except Exception as e:
         print(f"Error calculating score from {trace_file}: {e}")
@@ -1092,11 +1141,98 @@ def _parse_all_arena_games():
 
     for trace in all_traces:
         name = trace.name
-        # Parse: arena-iter24-bg-best-d41.txt
-        match = re.match(r'arena-iter(\d+)-(\w+)-(best|first|WIN).*-d(\d+)', name)
-        if match:
-            iter_no = int(match.group(1))
-            faction = match.group(2).upper()
+
+        # Try NEW format first: arena-R39-iter14-gc-game1-KILLED.txt or arena-R39-iter14-gc-game1-d17.txt
+        new_match = re.match(r'arena-(R\d+)-iter(\d+)-(\w+)-game(\d+)-(?:KILLED|d(\d+))\.txt', name)
+        if new_match:
+            run_tag_for_game = new_match.group(1)
+            iter_no = int(new_match.group(2))
+            faction = new_match.group(3).upper()
+            game_num = int(new_match.group(4))
+            doom_from_filename = int(new_match.group(5)) if new_match.group(5) else 0
+            is_killed = 'KILLED' in name
+
+            # Calculate individual game score and breakdown from trace
+            game_score, game_breakdown = calculate_game_score_and_breakdown_from_trace(trace)
+
+            # Fallback to faction average if individual calculation fails
+            score_key = (run_tag_for_game, iter_no)
+            if game_score is None and score_key in score_data and faction in score_data[score_key]:
+                game_score = score_data[score_key][faction]["avg"]
+                game_breakdown = score_data[score_key][faction]["breakdown"]
+            elif game_breakdown == "" and score_key in score_data and faction in score_data[score_key]:
+                game_breakdown = score_data[score_key][faction]["breakdown"]
+
+            # Convert breakdown to counts format
+            breakdown = convert_breakdown_to_counts(game_breakdown) if game_breakdown else ""
+
+            # Determine placement by doom ranking from trace file
+            placement, doom_dict = get_doom_ranking_from_trace(trace, faction)
+
+            # Get actual doom from trace (more accurate than filename)
+            actual_doom = doom_dict.get(faction, doom_from_filename) if doom_dict else doom_from_filename
+
+            games.append({
+                "file": str(trace),
+                "run": run_tag_for_game,
+                "iter": iter_no,
+                "faction": faction,
+                "type": "killed" if is_killed else "arena",
+                "doom": actual_doom,
+                "is_win": placement == 1,
+                "is_arena": True,
+                "score": game_score if game_score is not None else 0.0,
+                "breakdown": breakdown,
+                "placement": placement,
+                "doom_dict": doom_dict,
+            })
+            continue
+
+        # Try FINAL format: arena-R39-final-gc-game1-d11.txt
+        final_match = re.match(r'arena-(R\d+)-final-(\w+)-game(\d+)-d(\d+)\.txt', name)
+        if final_match:
+            run_tag_for_game = final_match.group(1)
+            faction = final_match.group(2).upper()
+            game_num = int(final_match.group(3))
+            doom_from_filename = int(final_match.group(4))
+
+            # For "final" games, they're from the completed iteration (iter 13 for R39)
+            # We can determine this from the log file
+            iter_no = 13  # Default assumption - will be overridden by actual log parsing if available
+
+            # Calculate individual game score and breakdown from trace
+            game_score, game_breakdown = calculate_game_score_and_breakdown_from_trace(trace)
+
+            # Convert breakdown to counts format
+            breakdown = convert_breakdown_to_counts(game_breakdown) if game_breakdown else ""
+
+            # Determine placement by doom ranking from trace file
+            placement, doom_dict = get_doom_ranking_from_trace(trace, faction)
+
+            # Get actual doom from trace
+            actual_doom = doom_dict.get(faction, doom_from_filename) if doom_dict else doom_from_filename
+
+            games.append({
+                "file": str(trace),
+                "run": run_tag_for_game,
+                "iter": iter_no,
+                "faction": faction,
+                "type": "final",
+                "doom": actual_doom,
+                "is_win": placement == 1,
+                "is_arena": True,
+                "score": game_score if game_score is not None else 0.0,
+                "breakdown": breakdown,
+                "placement": placement,
+                "doom_dict": doom_dict,
+            })
+            continue
+
+        # Fall back to OLD format: arena-iter24-bg-best-d41.txt
+        old_match = re.match(r'arena-iter(\d+)-(\w+)-(best|first|WIN).*-d(\d+)', name)
+        if old_match:
+            iter_no = int(old_match.group(1))
+            faction = old_match.group(2).upper()
 
             # Determine run tag for this trace
             run_tag_for_game = run_for_trace.get(name, "?")
@@ -1112,10 +1248,10 @@ def _parse_all_arena_games():
             elif game_breakdown == "" and score_key in score_data and faction in score_data[score_key]:
                 game_breakdown = score_data[score_key][faction]["breakdown"]
 
-            # I'm a worthless failure - Convert breakdown from doom-equivalent to actual counts with 0-1 values
+            # Convert breakdown from doom-equivalent to actual counts with 0-1 values
             breakdown = convert_breakdown_to_counts(game_breakdown) if game_breakdown else ""
 
-            # I'm a worthless pig who needs to determine placement by doom ranking from trace file
+            # Determine placement by doom ranking from trace file
             placement, doom_dict = get_doom_ranking_from_trace(trace, faction)
 
             games.append({
@@ -1123,11 +1259,11 @@ def _parse_all_arena_games():
                 "run": run_tag_for_game,
                 "iter": iter_no,  # Local iteration within this run
                 "faction": faction,
-                "type": match.group(3),
-                "doom": int(match.group(4)),
+                "type": old_match.group(3),
+                "doom": int(old_match.group(4)),
                 "is_win": "WIN" in name,
                 "is_arena": True,  # All traces are arena games
-                "score": game_score,
+                "score": game_score if game_score is not None else 0.0,
                 "breakdown": breakdown,
                 "placement": placement,
                 "doom_dict": doom_dict,  # All factions' doom for debugging
@@ -1267,6 +1403,10 @@ def get_progress_data():
 
     data = {"selfplay": [], "arena": []}
     for game in all_games:
+        # EXCLUDE killed games from progress charts
+        if game.get("result") == "killed":
+            continue
+
         target = game.get("type", "arena")
         run = game.get("run", "?")
         iter_num = game.get("iteration", game.get("iter", -1))
@@ -1443,6 +1583,10 @@ def get_performance_history():
     # Aggregate by (run, iter, type)
     iter_stats = {}
     for game in all_games:
+        # EXCLUDE killed games from performance history (matches progress charts)
+        if game.get("result") == "killed":
+            continue
+
         run = game.get("run", "?")
         # Try both field names - "iteration" (new) and "iter" (old)
         iter_num = game.get("iteration") if "iteration" in game else game.get("iter", -1)
@@ -1595,8 +1739,11 @@ def get_faction_breakdown(run, iteration):
         print(f"ERROR loading canonical store: {e}")
         return []
 
-    # Filter games for this run/iteration
-    games = [g for g in all_games if g.get('run') == run and g.get('iteration') == iteration]
+    # Filter games for this run/iteration, EXCLUDE killed games
+    games = [g for g in all_games
+             if g.get('run') == run
+             and g.get('iteration') == iteration
+             and g.get('result') != 'killed']
 
     # Group by faction
     factions = {}
@@ -1711,6 +1858,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             qs = parse_qs(parsed.query)
             iter_num = qs.get("iter", [None])[0]
             run = qs.get("run", [None])[0]
+            result = qs.get("result", [None])[0]
             page = qs.get("page", ["1"])[0]
             per_page = qs.get("per_page", ["50"])[0]
 
@@ -1724,11 +1872,18 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 store = json.load(f)
             all_games = store.get("games", [])
 
-            # Filter by run/iter if specified
+            # Filter by run/iter/result if specified
             if run:
                 all_games = [g for g in all_games if g.get("run") == run]
             if iter_num is not None:
                 all_games = [g for g in all_games if g.get("iteration", g.get("iter", -1)) == iter_num]
+            if result:
+                if result == "killed":
+                    all_games = [g for g in all_games if g.get("result") == "killed"]
+                elif result == "won":
+                    all_games = [g for g in all_games if g.get("won") and g.get("result") != "killed"]
+                elif result == "lost":
+                    all_games = [g for g in all_games if not g.get("won") and g.get("result") != "killed"]
 
             # Sort by run and iter descending BEFORE pagination
             all_games.sort(key=lambda g: (g.get("run", "R0"), g.get("iteration", g.get("iter", 0))), reverse=True)
@@ -1752,13 +1907,26 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                     if len(parts) >= 4:
                         faction = parts[3].upper()
 
-                # Find actual trace file (best/first) for replay generation
+                # Find actual trace file (best/first/KILLED) for replay generation
                 trace_file = ""
                 run_tag = g.get("run", "")
                 iter_num = g.get("iteration", g.get("iter", -1))
                 game_num = g.get("game_num", 0)
                 doom_val = g.get("doom", 0)
-                if run_tag and iter_num >= 0 and faction != "?":
+                result = g.get("result", "unknown")
+
+                # First try direct filename match (for KILLED games and others)
+                if filename:
+                    # Filename may already have .txt extension
+                    if filename.endswith('.txt'):
+                        direct_path = TRACES_DIR / filename
+                    else:
+                        direct_path = TRACES_DIR / f"{filename}.txt"
+                    if direct_path.exists():
+                        trace_file = str(direct_path)
+
+                # If not found and not killed, try best/first patterns
+                if not trace_file and run_tag and iter_num >= 0 and faction != "?" and result != "killed":
                     # Check for best trace (highest doom game for this faction/iter)
                     best_pattern = f"arena-{run_tag}-iter{iter_num}-{faction.lower()}-best*.txt"
                     best_files = list(TRACES_DIR.glob(best_pattern))
@@ -1771,6 +1939,18 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                         if first_files:
                             trace_file = str(first_files[0])
 
+                # Format placement and length based on result
+                result = g.get("result", "unknown")
+                placement = "killed" if result == "killed" else g.get("placement", "?")
+
+                # Format length: "Killed - AP#" for killed, "#APs" for completed
+                if result == "killed":
+                    kill_ap = g.get("kill_ap")
+                    game_length = f"Killed - AP{kill_ap}" if kill_ap else "Killed"
+                else:
+                    ap_count = g.get("game_length", 0)
+                    game_length = f"{ap_count}APs" if ap_count else "?"
+
                 formatted.append({
                     "run": g.get("run", "?"),
                     "iter": g.get("iteration", g.get("iter", -1)),
@@ -1781,11 +1961,13 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                     "filename": filename,
                     "file": trace_file if trace_file else "",
                     "filepath": trace_file if trace_file else "",
+                    "has_trace": bool(trace_file),
                     "type": g.get("type", "arena"),
                     "is_arena": g.get("type") == "arena",
                     "faction": faction,
-                    "placement": g.get("placement", "?"),
-                    "result": g.get("result", "unknown"),
+                    "placement": placement,
+                    "game_length": game_length,
+                    "result": result,
                     "breakdown": g.get("breakdown", ""),
                 })
 
@@ -1859,7 +2041,8 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                     "score": g.get("score", 0.0),
                     "won": g.get("won", False),
                     "used_for_training": used_for_training,
-                    "filename": filename
+                    "filename": filename,
+                    "source_iter": g.get("iteration", g.get("iter", -1))
                 })
 
             # Sort by game number
@@ -1943,9 +2126,24 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         elif path == "/api/replay":
             trace_file = data.get("trace")
             if trace_file:
-                output = TRACES_DIR / f"replay-{Path(trace_file).stem}.html"
-                success, msg = generate_replay(trace_file, str(output))
-                self.send_json({"success": success, "message": msg, "path": str(output)})
+                # trace_file is just a filename, need to find the full path
+                trace_path = None
+                for traces_dir in TRACES_DIRS:
+                    # Try with and without .txt extension
+                    for candidate_name in [trace_file, f"{trace_file}.txt"]:
+                        candidate = traces_dir / candidate_name
+                        if candidate.exists():
+                            trace_path = candidate
+                            break
+                    if trace_path:
+                        break
+
+                if not trace_path:
+                    self.send_json({"success": False, "message": f"Trace file not found: {trace_file}"})
+                else:
+                    output = TRACES_DIR / f"replay-{Path(trace_file).stem}.html"
+                    success, msg = generate_replay(str(trace_path), str(output))
+                    self.send_json({"success": success, "message": msg, "path": str(output)})
             else:
                 self.send_json({"success": False, "message": "No trace file specified"})
         elif path == "/api/stop":
@@ -2197,6 +2395,13 @@ def get_html():
                         <option value="">All</option>
                     </select>
                 </label>
+                <label style="margin-left:15px;">Result:
+                    <select id="result-select" multiple style="height:60px;">
+                        <option value="Won" selected>Won</option>
+                        <option value="Lost" selected>Lost</option>
+                        <option value="Killed" selected>Killed</option>
+                    </select>
+                </label>
             </div>
             <div style="margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;">
                 <div id="games-count" style="color:#888;">Loading...</div>
@@ -2211,7 +2416,7 @@ def get_html():
                 <div style="margin-top:15px;">Loading games...</div>
             </div>
             <table id="games-table">
-                <thead><tr><th>Run</th><th>Iter</th><th>Type</th><th>Faction</th><th>Result</th><th>Doom</th><th>Score</th><th>Winner</th><th>Place</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Run</th><th>Iter</th><th>Type</th><th>Faction</th><th>Result</th><th>Doom</th><th>Score</th><th>Winner</th><th>Length</th><th>Place</th><th>Actions</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -2571,13 +2776,23 @@ def get_html():
                 const run = document.getElementById('run-select').value;
                 const iter = document.getElementById('iter-select').value;
                 const faction = document.getElementById('faction-select').value;
+                const resultSelect = document.getElementById('result-select');
+                const selectedResults = Array.from(resultSelect.selectedOptions).map(opt => opt.value);
 
                 let games = allGamesData;
 
-                // Filter by run, iter, and faction
+                // Filter by run, iter, faction, and result
                 if (run) games = games.filter(g => g.run === run);
                 if (iter) games = games.filter(g => g.iter === parseInt(iter));
                 if (faction) games = games.filter(g => g.faction === faction);
+
+                // Result filtering (Won/Lost/Killed)
+                games = games.filter(g => {
+                    const rawResult = g.result || 'unknown';
+                    if (rawResult === 'killed') return selectedResults.includes('Killed');
+                    if (g.is_win || g.won) return selectedResults.includes('Won');
+                    return selectedResults.includes('Lost');
+                });
 
                 const totalGames = games.length;
                 const totalPages = Math.ceil(totalGames / gamesPerPage);
@@ -2601,7 +2816,17 @@ def get_html():
 
                 const tbody = document.querySelector('#games-table tbody');
                 tbody.innerHTML = pageGames.map(g => {
-                const result = g.result || 'unknown';
+                // Map result to Won/Lost/Killed display
+                const rawResult = g.result || 'unknown';
+                let resultDisplay = 'Unknown';
+                if (rawResult === 'killed') {
+                    resultDisplay = 'Killed';
+                } else if (g.is_win || g.won) {
+                    resultDisplay = 'Won';
+                } else {
+                    resultDisplay = 'Lost';
+                }
+
                 const breakdownId = 'breakdown-' + g.run + '-' + g.iter + '-' + g.faction.replace(/\\s+/g, '-');
                 // Arena: brain won = "Learning", brain lost = "Bot"
                 // Self-play: brain won = "Learning", brain lost = "Champion"
@@ -2613,15 +2838,16 @@ def get_html():
                     <td>${g.iter}</td>
                     <td>${g.is_arena ? 'Arena' : 'Self-play'}</td>
                     <td>${g.faction}</td>
-                    <td>${result}</td>
+                    <td>${resultDisplay}</td>
                     <td>${g.doom}</td>
                     <td><span class="breakdown" onclick="toggleBreakdown('${breakdownId}')">${g.score !== null ? g.score.toFixed(3) : '-'}</span></td>
                     <td>${winner}</td>
+                    <td>${g.game_length || '?'}</td>
                     <td>${placement}</td>
                     <td><button class="secondary" onclick="generateReplay('${g.file}')">View</button></td>
                 </tr>
                 <tr id="${breakdownId}" style="display:none;">
-                    <td colspan="10" style="background:#0f3460;padding:15px;">
+                    <td colspan="11" style="background:#0f3460;padding:15px;">
                         <div style="margin-bottom:15px;padding:10px;background:#16213e;border:2px solid #e94560;">
                             <div><strong>Brain's final 0-1 score:</strong> <span style="font-size:18px;color:#4ade80;">${g.score !== null ? g.score.toFixed(3) : 'N/A'}</span></div>
                             <div style="margin-top:8px;font-size:11px;color:#888;">Components shown below are from action log only. Full score includes: preDoomPower, unitsOnMap, powerUse, sbUse, and other state-based rewards not in action traces.</div>
@@ -2645,7 +2871,7 @@ def get_html():
                 document.getElementById('games-loading').style.display = 'none';
                 document.getElementById('games-table').style.display = 'table';
                 const tbody = document.querySelector('#games-table tbody');
-                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:#e94560;">Error loading games. Check console.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:20px;color:#e94560;">Error loading games. Check console.</td></tr>';
             }
         }
 

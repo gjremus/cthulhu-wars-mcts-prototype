@@ -1,0 +1,5 @@
+Brain seat: GC
+Result: LOSS
+Doom: 9
+Score (0-1): 0.138
+Shaping breakdown: GC=0.20, BG=0.67, YS=0.79, CC=0.67

@@ -1,0 +1,13 @@
+Brain seat: GC
+Result: KILLED
+Doom: 16
+Interim Score (0-1): 0.415
+Actions taken: 480
+Estimated APs: 15
+Shaping breakdown: GC=0.41, BG=0.64, YS=0.69, CC=0.53
+
+EARLY TERMINATION REASON:
+  Doom too low at AP~15: 16 < 25 (threshold)
+
+This game was killed before completion because it fell below
+quality thresholds. Training on hopeless games adds noise.

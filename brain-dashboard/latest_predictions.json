@@ -1,0 +1,11 @@
+{
+  "run": "R34",
+  "current_iter": 7,
+  "doom_slope": 0.008432539682539795,
+  "doom_intercept": 3.158730158730158,
+  "score_slope": 0.08374509934756076,
+  "score_intercept": -0.0818218426510692,
+  "iters_to_doom_40": null,
+  "iters_to_score_07": 2,
+  "timestamp": "2026-09-03T08:34:53.571817"
+}

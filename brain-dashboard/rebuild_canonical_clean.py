@@ -84,7 +84,7 @@ def parse_all_games_file(filepath):
                 'score': score,
                 'won': won,
                 'game_num': game_num,
-                'filename': filename.replace('-all-games.txt', f"-{faction.lower()}-game{game_num}"),
+                'filename': filename.replace(f"-{faction.lower()}-all-games.txt", f"-{faction.lower()}-game{game_num}"),
                 'filepath': str(filepath),
                 'timestamp': timestamp,
                 'game_length': 0,
@@ -127,9 +127,12 @@ def parse_individual_trace_files():
             ap_match = re.search(r'Estimated APs: (\d+)', content)
             score_match = re.search(r'Interim Score \(0-1\): ([0-9.]+)', content)
             breakdown_match = re.search(r'Shaping breakdown: ([^\n]+)', content)
+            # Extract kill_ap from reason: "Doom too low at AP~15: 23 < 25"
+            kill_reason_match = re.search(r'at AP~(\d+)', content)
 
             doom = int(doom_match.group(1)) if doom_match else 0
             ap_length = int(ap_match.group(1)) if ap_match else 0
+            kill_ap = int(kill_reason_match.group(1)) if kill_reason_match else None
             score = float(score_match.group(1)) if score_match else 0.0
             breakdown = breakdown_match.group(1) if breakdown_match else ''
         except Exception as e:
@@ -156,7 +159,8 @@ def parse_individual_trace_files():
             'era': 'new',
             'placement': 'N/A',
             'breakdown': breakdown,
-            'result': 'killed'
+            'result': 'killed',
+            'kill_ap': kill_ap
         })
 
     # Process completed games
@@ -194,6 +198,9 @@ def parse_individual_trace_files():
             score = float(score_match.group(1))
             won = result_match.group(1) == 'WIN' if result_match else False
             breakdown = breakdown_match.group(1) if breakdown_match else ''
+
+            # Count ActionPhaseAction occurrences for game length
+            game_length = content.count('ActionPhaseAction')
 
             # Calculate placement from breakdown or ALL_DOOM
             placement = "?"
@@ -256,7 +263,7 @@ def parse_individual_trace_files():
                 'filename': filename.replace('.txt', ''),
                 'filepath': str(filepath),
                 'timestamp': int(filepath.stat().st_mtime),
-                'game_length': 0,
+                'game_length': game_length,
                 'era': 'new',
                 'placement': placement,
                 'breakdown': breakdown
@@ -504,6 +511,29 @@ if __name__ == '__main__':
     print(f"\nGames by run/iteration:")
     for key in sorted(by_run_iter.keys())[:20]:
         print(f"  {key[0]} iter {key[1]}: {by_run_iter[key]} games")
+
+    # Fill in game_length for games from all-games.txt files (game_length=0)
+    print(f"\nFilling in game_length from individual trace files...")
+    trace_dir = Path('/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces')
+    filled_count = 0
+    for g in all_games:
+        if g.get('game_length', 0) == 0 and g.get('result') != 'killed':
+            # Construct individual trace filename
+            # Format: arena-R39-iter12-bg-game1-d11.txt
+            faction_match = re.search(r'-(gc|bg|ys|cc)-', g['filename'])
+            if faction_match:
+                faction = faction_match.group(1)
+                # Try to find the trace file
+                pattern = f"arena-{g['run']}-iter{g['iteration']}-{faction}-game{g['game_num']}-d*.txt"
+                matches = list(trace_dir.glob(pattern))
+                if matches:
+                    try:
+                        content = matches[0].read_text()
+                        g['game_length'] = content.count('ActionPhaseAction')
+                        filled_count += 1
+                    except:
+                        pass
+    print(f"  Filled game_length for {filled_count} games")
 
     # Calculate "result" field for each game
     print(f"\nCalculating result field (best/worst/included/excluded)...")
