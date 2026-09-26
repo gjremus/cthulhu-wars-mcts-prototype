@@ -369,7 +369,7 @@ object PolicyRun {
      * RL ARENA GAME COLLECTION: brain plays vs bots using policy sampling (not MCTS).
      * Records trajectory, calculates advantages from game outcome.
      */
-    def collectRLArenaGames(policy : PolicyModel, value : MLPModel, nGames : Int, iterNum : Int) : Seq[(Seq[PolicyExample], Seq[Example], Double, Faction)] = {
+    def collectRLArenaGames(policy : PolicyModel, value : MLPModel, nGames : Int, iterNum : Int, maxDecisions : Int = 8000) : Seq[(Seq[PolicyExample], Seq[Example], Double, Faction)] = {
         val seats = SelfPlay.fixedSeating.toArray
         val sims = {
             val e = System.getenv("CW_SIMS")
@@ -450,7 +450,7 @@ object PolicyRun {
             val s0 = Engine.start(g)
             val adaptiveConfig = AdaptiveRollout.loadConfig()
             val (winners, wasKilled, killReason, actionCount, actions, undoCount) = AdaptiveRollout.rolloutWithAdaptiveUndo(
-                g, s0, recording, brainSeat, traj, earlyTermThresholds, adaptiveConfig, 8000)
+                g, s0, recording, brainSeat, traj, earlyTermThresholds, adaptiveConfig, maxDecisions)
 
             // Handle killed games
             if (wasKilled) {
@@ -484,17 +484,40 @@ object PolicyRun {
 
             vals.foreach(e => e.label = gameScore)
 
-            // Save trace immediately after game completes
+            // Save FULL trace immediately after game completes (R40+ format)
             traceDir.foreach { dir =>
                 val brainWon = winners.contains(brainSeat)
                 val brainDoom = g.players(brainSeat).doom
+                val brainSBs = g.players(brainSeat).spellbookCount
+                val brainAPs = g.turnNum
+
+                // Serialize full action sequence
+                val serializer = new Serialize(g)
+                val actionLines = actions.map(serializer.write)
+
                 val pw = new java.io.PrintWriter(new java.io.File(s"$dir/arena-$runTag-iter$iterNum-${brainSeat.short.toLowerCase}-game${factionGameNumber}-d$brainDoom.txt"))
+
+                // Write full action log first (like R39 format)
+                actionLines.foreach(pw.println)
+                pw.println()
+                pw.println()
+
+                // Then write metadata summary at end
                 pw.println(f"Brain seat: ${brainSeat.short}")
                 pw.println(f"Result: ${if (brainWon) "WIN" else "LOSS"}")
                 pw.println(f"Doom: $brainDoom")
+                pw.println(f"Spellbooks: $brainSBs")
+                pw.println(f"Action Phases: $brainAPs")
                 pw.println(f"Score (0-1): $gameScore%.3f")
                 pw.println(f"Adaptive undos: $undoCount")
                 pw.println(f"Shaping breakdown: ${shaping.map { case (f, v) => f"${f.short}=$v%.2f" }.mkString(", ")}")
+
+                // Add all-faction doom data for placement calculation
+                val allDoom = SelfPlay.fixedSeating.map(f => (f, g.players(f).doom)).sortBy(-_._2)
+                val allDoomStr = allDoom.map { case (f, d) => f"${f.short}=$d" }.mkString(" ")
+                pw.println(f"ALL_DOOM=$allDoomStr")
+                pw.println(f"FINAL_SCORE=$gameScore%.3f")
+
                 pw.close()
             }
 
@@ -519,7 +542,7 @@ object PolicyRun {
     }
 
     def collectArenaGames(policy : PolicyModel, value : MLPModel, sims : Int,
-                          nGames : Int, parallel : Boolean) : Seq[(Seq[PolicyExample], Seq[Example], Double)] = {
+                          nGames : Int, parallel : Boolean, maxDecisions : Int = 8000) : Seq[(Seq[PolicyExample], Seq[Example], Double)] = {
         val seats = SelfPlay.fixedSeating.toArray
 
         def one(i : Int) : (Seq[PolicyExample], Seq[Example], Double) = {
@@ -552,7 +575,7 @@ object PolicyRun {
             }
 
             val s0 = Engine.start(g)
-            val (winners, _) = Engine.rolloutCapped(g, s0, recording, 8000, throwOnCap = false)
+            val (winners, _) = Engine.rolloutCapped(g, s0, recording, maxDecisions, throwOnCap = false)
 
             // Convert recorder's PolicyTargets to PolicyExamples with SOFT TARGETS (visit distribution).
             // This teaches policy to match what MCTS learned, providing negative reinforcement for bad moves.
@@ -593,8 +616,15 @@ object PolicyRun {
                           iters : Int, gamesPerIter : Int, runTag : String = null) : Unit = {
         // Read run tag dynamically from file or env - allows mid-run renumbering
         def effectiveRunTag : String = if (runTag != null) runTag else currentRunTag("R28")
+
+        // CONFIGURABLE DECISION CAP (user 2026-09-26): curriculum training needs faster iteration
+        // Default 4000 (was 8000 in R39). Configurable via CW_MAX_DECISIONS env var.
+        val maxDecisions = sys.env.get("CW_MAX_DECISIONS").flatMap(s =>
+            try Some(s.toInt) catch { case _: Exception => None }
+        ).getOrElse(4000)  // R39 used 8000; default changed to 4000 for curriculum training
+
         println("========== ITERATIVE ARENA TRAINING ==========")
-        println(f"Target: $iters arena iterations of $gamesPerIter games (sims=$sims)\n")
+        println(f"Target: $iters arena iterations of $gamesPerIter games (sims=$sims, maxDecisions=$maxDecisions)\n")
 
         // --- CHECK FOR CHECKPOINT FIRST (to skip bootstrap if resuming) -----
         val forceFresh = sys.env.get("CW_FRESH").exists(v => v == "1" || v.equalsIgnoreCase("true"))
@@ -789,7 +819,7 @@ object PolicyRun {
             println(f"iter $effectiveIter%d | arena $gamesPerIter games")
 
             // Play arena games
-            val arenaGames = collectRLArenaGames(policy, value, gamesPerIter, effectiveIter)
+            val arenaGames = collectRLArenaGames(policy, value, gamesPerIter, effectiveIter, maxDecisions)
 
             // R39 QUALITY FILTERING: Faction-specific filtering to prevent catastrophic forgetting
             // Only train on successful games - bad games teach bad habits
@@ -851,11 +881,23 @@ object PolicyRun {
             val polExamples = (bootstrapPolicyExamples ++ arenaPolExamples ++ arenaPolExamples ++ arenaPolExamples ++ arenaPolExamples).toArray  // 1 bot : 4 arena copies = 80:20
             val valExamples = (bootstrapValueExamples ++ arenaValExamples ++ arenaValExamples ++ arenaValExamples ++ arenaValExamples).toArray
 
-            println(f"  corpus: ${arenaPolExamples.length}%d arena decisions (${filteredGames.length}/${arenaGames.length} games kept) + ${bootstrapPolicyExamples.length}%d bot decisions mixed 80:20 (avg score=$avgScore%.3f)")
+            // ADAPTIVE TRAINING WEIGHTS (user 2026-09-26): Calculate per-iteration mean + std dev,
+            // use relative thresholds to ensure ALL games contribute signal (not just top 28%).
+            // Games above (mean + 1σ) get positive weight; games below mean get NEGATIVE weight.
+            val arenaScores = arenaGames.map(_._3)
+            val scoreMean = if (arenaScores.nonEmpty) arenaScores.sum / arenaScores.length else 0.5
+            val scoreStdDev = if (arenaScores.length > 1) {
+                val variance = arenaScores.map(s => math.pow(s - scoreMean, 2)).sum / (arenaScores.length - 1)
+                math.sqrt(variance)
+            } else 0.2  // Default if too few games
+
+            val positiveThreshold = scoreMean + scoreStdDev
+            println(f"  corpus: ${arenaPolExamples.length}%d arena decisions (${filteredGames.length}/${arenaGames.length} games kept) + ${bootstrapPolicyExamples.length}%d bot decisions mixed 80:20 (avg score=$avgScore%.3f, mean=$scoreMean%.3f, stddev=$scoreStdDev%.3f, threshold=${positiveThreshold}%.3f)")
 
             if (polExamples.nonEmpty) {
-                // POLICY GRADIENT TRAINING: advantages scale the gradient
-                // Better-than-expected outcomes strengthen actions, worse weaken them
+                // POLICY GRADIENT TRAINING with ADAPTIVE WEIGHTS and NEGATIVE REINFORCEMENT
+                // Fixes baseline mismatch: old system used 0.5 baseline, actual mean=0.17, ignored 72% of games
+                // New system: games above threshold → strong positive, games below mean → negative (scaled by distance)
                 val trainingEpochs = sys.env.getOrElse("CW_TRAINING_EPOCHS", "3").toInt
                 var ep = 0
                 while (ep < trainingEpochs) {
@@ -864,9 +906,23 @@ object PolicyRun {
                     while (k < order.length) {
                         val ex = polExamples(order(k))
                         if (!ex.advantage.isNaN) {
-                            // Use policy gradient with advantage-scaled gradient weighted by game quality
-                            // Higher-scoring games get more weight: 0.15→0.09x, 0.50→1.0x, 0.70→1.96x
-                            val scoreWeight = math.pow(ex.gameScore / 0.5, 2.0)
+                            // ADAPTIVE WEIGHT: relative to iteration mean + 1σ
+                            // Above threshold: positive squared weight (stronger the higher)
+                            // Between mean and threshold: linear positive weight
+                            // Below mean: NEGATIVE weight (stronger the lower) to teach "don't do this"
+                            val scoreWeight = if (ex.gameScore >= positiveThreshold) {
+                                // Strong positive: square the excess above threshold
+                                val excess = (ex.gameScore - positiveThreshold) / scoreStdDev
+                                1.0 + math.pow(excess, 2.0)
+                            } else if (ex.gameScore >= scoreMean) {
+                                // Mild positive: linear from threshold down to mean
+                                0.5 + 0.5 * (ex.gameScore - scoreMean) / scoreStdDev
+                            } else {
+                                // NEGATIVE: square the deficit below mean (more negative the worse)
+                                val deficit = (scoreMean - ex.gameScore) / scoreStdDev
+                                -math.pow(deficit, 2.0)
+                            }
+
                             policy.trainPolicyGradient(ex.state, ex.actions, ex.chosen, ex.advantage, scoreWeight, lr)
                         } else if (ex.softTarget != null) {
                             // Fall back to supervised (MCTS visit distribution) if no advantage
