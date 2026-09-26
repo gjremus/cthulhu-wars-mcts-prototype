@@ -81,7 +81,7 @@ def parse_trace_file(trace_file):
                     brain_faction = part.upper()
                     break
 
-        # Parse doom from ALL_DOOM= line
+        # Parse doom from ALL_DOOM= line (old format) or Doom: line (new format)
         doom = 0
         all_doom_match = re.search(r'ALL_DOOM=(.+)', content)
         if all_doom_match:
@@ -102,12 +102,41 @@ def parse_trace_file(trace_file):
                         faction, d = pair.split('=')
                         doom = int(d)
                         break
+        else:
+            # Try new summary format: "Doom: 7"
+            doom_match = re.search(r'Doom:\s*(\d+)', content)
+            if doom_match:
+                doom = int(doom_match.group(1))
 
-        # Parse score from FINAL_SCORE= line
+        # Parse spellbooks from "Spellbooks: N" line (R40+ format)
+        brain_spellbooks = 0
+        sb_match = re.search(r'Spellbooks:\s*(\d+)', content)
+        if sb_match:
+            brain_spellbooks = int(sb_match.group(1))
+        elif brain_faction:
+            # Fallback: count SpellbookAction for brain's faction (old format)
+            sb_pattern = rf'SpellbookAction\({brain_faction},'
+            brain_spellbooks = len(re.findall(sb_pattern, content))
+
+        # Parse Action Phases from "Action Phases: N" line (R40+ format)
+        game_length = 0
+        ap_match = re.search(r'Action Phases:\s*(\d+)', content)
+        if ap_match:
+            game_length = int(ap_match.group(1))
+        else:
+            # Fallback: count ActionPhaseAction occurrences (old format)
+            game_length = content.count('ActionPhaseAction')
+
+        # Parse score from FINAL_SCORE= line (old format) or Score (0-1): line (new format)
         score = 0.0
         score_match = re.search(r'FINAL_SCORE=([0-9.]+)', content)
         if score_match:
             score = float(score_match.group(1))
+        else:
+            # Try new summary format: "Score (0-1): 0.700"
+            score_match = re.search(r'Score \(0-1\):\s*([0-9.]+)', content)
+            if score_match:
+                score = float(score_match.group(1))
 
         # Check if brain won
         won = False
@@ -137,8 +166,6 @@ def parse_trace_file(trace_file):
         # Game type determined by filename prefix only
         game_type = "arena" if is_arena else "selfplay"
 
-        # Parse game length (count ActionPhaseAction occurrences)
-        game_length = content.count('ActionPhaseAction')
 
         # Check if game was killed (early termination)
         is_killed = 'KILLED' in stem
@@ -159,6 +186,7 @@ def parse_trace_file(trace_file):
             "type": game_type,
             "doom": doom,
             "score": score,
+            "spellbooks": brain_spellbooks,
             "won": won,
             "result": result,
             "game_length": game_length,

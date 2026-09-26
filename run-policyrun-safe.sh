@@ -49,10 +49,11 @@ cd /Users/gremus/cthulhu-wars-mcts-prototype/build
 
 # DEBUG: Show what we're about to run
 echo "DEBUG SCRIPT: \$@ = [$@]" | tee -a "$LOG_FILE"
-echo "DEBUG SCRIPT: Full command: sbt \"runMain cws.PolicyRun $@\"" | tee -a "$LOG_FILE"
+echo "DEBUG SCRIPT: Full command: sbt \"runMain cws.PolicyRun $*\"" | tee -a "$LOG_FILE"
 
 # Run with sbt, unbuffered output
-sbt "runMain cws.PolicyRun $@" 2>&1 | tee "$LOG_FILE"
+# Use $* instead of $@ to treat all args as a single string inside quotes
+sbt "runMain cws.PolicyRun $*" 2>&1 | tee "$LOG_FILE"
 
 echo ""
 echo "Run $RUN_TAG completed"

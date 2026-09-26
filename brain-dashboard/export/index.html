@@ -55,938 +55,988 @@
 // BAKED DATA - DO NOT CALL APIS
 const STATIC_STATUS = {
   "running": true,
-  "run_tag": "R39",
+  "run_tag": "R40_trace",
   "run_mode": "arena",
-  "current_iter": 13,
-  "current_game": 1346,
+  "current_iter": 1,
+  "current_game": 224,
   "total_games": 1600,
   "target_iters": 100,
-  "phase_elapsed_seconds": 4640,
-  "phase_elapsed_human": "1h 17m",
-  "phase_label": "Iter 13",
-  "run_elapsed_seconds": 111159,
-  "run_elapsed_human": "1d 6h",
+  "phase_elapsed_seconds": 11901,
+  "phase_elapsed_human": "3h 18m",
+  "phase_label": "Iter 1",
+  "run_elapsed_seconds": 12036,
+  "run_elapsed_human": "3h 20m",
   "disk_free": "97Gi",
   "claude_storage_gb": 3,
   "disk_available_gb": 97,
-  "time_per_iter": 41464.22090729784,
-  "iter_eta_seconds": 31175,
-  "iter_eta_human": "8h 39m",
-  "run_eta_seconds": 3638562,
-  "run_eta_human": "6w 2h",
+  "time_per_iter": 88360.0,
+  "iter_eta_seconds": 76379,
+  "iter_eta_human": "21h 12m",
+  "run_eta_seconds": 8824019,
+  "run_eta_human": "14w 4d",
   "arena_wins": 0,
-  "arena_total": 4351,
+  "arena_total": 75,
   "arena_win_rate": 0.0,
-  "avg_doom": 8.158561643835617,
-  "best_score": 0.630255,
-  "best_run_iter": "R39 I12",
-  "log_file": "/tmp/sp_R39_iter13_start.log",
+  "avg_doom": 8.16,
+  "best_score": 0.8,
+  "best_run_iter": "R39 I11",
+  "log_file": "/tmp/sp_R40_trace.log",
   "bootstrap_phase": false,
   "bootstrap_epoch": 0,
   "bootstrap_total_epochs": 0,
   "bootstrap_phase_name": "",
-  "run_config": "Arena mode: 400 games/faction, 1600 total"
+  "run_config": "Arena mode: 5 games/faction, 1600 total"
 };
 const STATIC_GAMES = [
   {
-    "run": "R39",
-    "iter": 13,
-    "doom": 3,
-    "score": 0.107,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-ys-game615-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "YS",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.31, BG=0.35, YS=0.11, CC=0.26"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 4,
-    "score": 0.069,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-cc-game204-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "CC",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.25, BG=0.19, YS=0.29, CC=0.07"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 5,
-    "score": 0.073,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-bg-game706-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "BG",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.19, BG=0.07, YS=0.27, CC=0.15"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 5,
-    "score": 0.072,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-bg-game1254-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "BG",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.30, BG=0.07, YS=0.29, CC=0.14"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 5,
-    "score": 0.074,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-bg-game458-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "BG",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.19, BG=0.07, YS=0.24, CC=0.16"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 5,
-    "score": 0.08,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-bg-game66-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "BG",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.19, BG=0.08, YS=0.17, CC=0.15"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 6,
-    "score": 0.15,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-gc-game61-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "GC",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.15, BG=0.26, YS=0.34, CC=0.28"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 2,
-    "score": 0.078,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-cc-game472-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "CC",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.21, BG=0.24, YS=0.25, CC=0.08"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 9,
-    "score": 0.289,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-gc-game817-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "GC",
-    "placement": "killed",
-    "game_length": "Killed - AP10",
-    "result": "killed",
-    "breakdown": "GC=0.29, BG=0.50, YS=0.42, CC=0.66"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 5,
-    "score": 0.111,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-bg-game170-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "BG",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.19, BG=0.11, YS=0.32, CC=0.24"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 3,
-    "score": 0.106,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-ys-game115-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "YS",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.37, BG=0.26, YS=0.11, CC=0.21"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 3,
-    "score": 0.099,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-cc-game1084-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "CC",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.20, BG=0.28, YS=0.23, CC=0.10"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 2,
-    "score": 0.075,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-cc-game504-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "CC",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.21, BG=0.20, YS=0.28, CC=0.07"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 14,
-    "score": 0.359,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-gc-game961-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "GC",
-    "placement": "killed",
-    "game_length": "Killed - AP10",
-    "result": "killed",
-    "breakdown": "GC=0.36, BG=0.39, YS=0.58, CC=0.30"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 5,
-    "score": 0.073,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-bg-game358-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "BG",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.34, BG=0.07, YS=0.30, CC=0.24"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 3,
-    "score": 0.112,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-ys-game763-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "YS",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.29, BG=0.25, YS=0.11, CC=0.30"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 2,
-    "score": 0.041,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-cc-game372-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "CC",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.19, BG=0.28, YS=0.20, CC=0.04"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 2,
-    "score": 0.231,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-bg-game670-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "BG",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.36, BG=0.23, YS=0.30, CC=0.21"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 2,
-    "score": 0.077,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-cc-game60-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "CC",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.21, BG=0.23, YS=0.32, CC=0.08"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 2,
-    "score": 0.102,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-bg-game1322-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "BG",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.18, BG=0.10, YS=0.26, CC=0.25"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 2,
-    "score": 0.071,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-cc-game692-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "CC",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.29, BG=0.25, YS=0.33, CC=0.07"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 5,
-    "score": 0.079,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-bg-game390-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "BG",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.30, BG=0.08, YS=0.22, CC=0.19"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 4,
-    "score": 0.113,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-cc-game856-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "CC",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.21, BG=0.22, YS=0.23, CC=0.11"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 3,
-    "score": 0.103,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-ys-game283-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "YS",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.25, BG=0.29, YS=0.10, CC=0.17"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 7,
-    "score": 0.17,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-gc-game433-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "GC",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.17, BG=0.29, YS=0.17, CC=0.25"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 2,
-    "score": 0.028,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-cc-game1312-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "CC",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.20, BG=0.21, YS=0.33, CC=0.03"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 3,
-    "score": 0.106,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-ys-game1227-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "YS",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.31, BG=0.21, YS=0.11, CC=0.21"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 5,
-    "score": 0.232,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-ys-game1179-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "YS",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.27, BG=0.23, YS=0.23, CC=0.21"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 11,
-    "score": 0.286,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-gc-game1021-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "GC",
-    "placement": "killed",
-    "game_length": "Killed - AP10",
-    "result": "killed",
-    "breakdown": "GC=0.29, BG=0.56, YS=0.50, CC=0.18"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 12,
-    "score": 0.344,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-gc-game245-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "GC",
-    "placement": "killed",
-    "game_length": "Killed - AP10",
-    "result": "killed",
-    "breakdown": "GC=0.34, BG=0.48, YS=0.43, CC=0.42"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 7,
-    "score": 0.124,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-cc-game192-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "CC",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.19, BG=0.18, YS=0.23, CC=0.12"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
+    "run": "R40",
+    "iter": 1,
     "doom": 16,
-    "score": 0.47,
+    "score": 0.8,
     "won": false,
     "is_win": false,
-    "filename": "arena-R39-iter13-gc-game1157-KILLED.txt",
-    "file": "",
-    "filepath": "",
+    "filename": "arena-R40-iter1-gc-game1-d16",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game1-d16.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game1-d16.txt",
+    "has_trace": true,
     "type": "arena",
     "is_arena": true,
     "faction": "GC",
-    "placement": "killed",
-    "game_length": "Killed - AP15",
-    "result": "killed",
-    "breakdown": "GC=0.47, BG=0.39, YS=0.58, CC=0.54"
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
   },
   {
-    "run": "R39",
-    "iter": 13,
-    "doom": 3,
-    "score": 0.124,
+    "run": "R40",
+    "iter": 1,
+    "doom": 7,
+    "score": 0.7,
     "won": false,
     "is_win": false,
-    "filename": "arena-R39-iter13-bg-game490-KILLED.txt",
-    "file": "",
-    "filepath": "",
+    "filename": "arena-R40-iter1-bg-game1-d7",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game1-d7.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game1-d7.txt",
+    "has_trace": true,
     "type": "arena",
     "is_arena": true,
     "faction": "BG",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.19, BG=0.12, YS=0.22, CC=0.10"
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
   },
   {
-    "run": "R39",
-    "iter": 13,
-    "doom": 3,
-    "score": 0.156,
+    "run": "R40",
+    "iter": 1,
+    "doom": 4,
+    "score": 0.63,
     "won": false,
     "is_win": false,
-    "filename": "arena-R39-iter13-ys-game583-KILLED.txt",
-    "file": "",
-    "filepath": "",
+    "filename": "arena-R40-iter1-ys-game1-d4",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game1-d4.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game1-d4.txt",
+    "has_trace": true,
     "type": "arena",
     "is_arena": true,
     "faction": "YS",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.21, BG=0.28, YS=0.16, CC=0.18"
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
   },
   {
-    "run": "R39",
-    "iter": 13,
+    "run": "R40",
+    "iter": 1,
+    "doom": 4,
+    "score": 0.63,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-cc-game1-d4",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game1-d4.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game1-d4.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "CC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 8,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-gc-game2-d8",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game2-d8.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game2-d8.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "GC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 4,
+    "score": 0.28,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-bg-game2-d4",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game2-d4.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game2-d4.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "BG",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
     "doom": 14,
-    "score": 0.366,
+    "score": 0.7,
     "won": false,
     "is_win": false,
-    "filename": "arena-R39-iter13-gc-game333-KILLED.txt",
-    "file": "",
-    "filepath": "",
+    "filename": "arena-R40-iter1-ys-game2-d14",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game2-d14.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game2-d14.txt",
+    "has_trace": true,
     "type": "arena",
     "is_arena": true,
-    "faction": "GC",
-    "placement": "killed",
-    "game_length": "Killed - AP10",
-    "result": "killed",
-    "breakdown": "GC=0.37, BG=0.75, YS=0.53, CC=0.29"
+    "faction": "YS",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
   },
   {
-    "run": "R39",
-    "iter": 13,
-    "doom": 4,
-    "score": 0.109,
+    "run": "R40",
+    "iter": 1,
+    "doom": 7,
+    "score": 0.7,
     "won": false,
     "is_win": false,
-    "filename": "arena-R39-iter13-cc-game920-KILLED.txt",
-    "file": "",
-    "filepath": "",
+    "filename": "arena-R40-iter1-cc-game2-d7",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game2-d7.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game2-d7.txt",
+    "has_trace": true,
     "type": "arena",
     "is_arena": true,
     "faction": "CC",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.19, BG=0.19, YS=0.28, CC=0.11"
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
   },
   {
-    "run": "R39",
-    "iter": 13,
-    "doom": 21,
-    "score": 0.418,
+    "run": "R40",
+    "iter": 1,
+    "doom": 18,
+    "score": 0.8,
     "won": false,
     "is_win": false,
-    "filename": "arena-R39-iter13-gc-game545-KILLED.txt",
-    "file": "",
-    "filepath": "",
+    "filename": "arena-R40-iter1-gc-game3-d18",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game3-d18.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game3-d18.txt",
+    "has_trace": true,
     "type": "arena",
     "is_arena": true,
     "faction": "GC",
-    "placement": "killed",
-    "game_length": "Killed - AP15",
-    "result": "killed",
-    "breakdown": "GC=0.42, BG=0.36, YS=0.50, CC=0.95"
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
   },
   {
-    "run": "R39",
-    "iter": 13,
-    "doom": 21,
-    "score": 0.407,
+    "run": "R40",
+    "iter": 1,
+    "doom": 7,
+    "score": 0.7,
     "won": false,
     "is_win": false,
-    "filename": "arena-R39-iter13-gc-game1209-KILLED.txt",
-    "file": "",
-    "filepath": "",
+    "filename": "arena-R40-iter1-bg-game3-d7",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game3-d7.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game3-d7.txt",
+    "has_trace": true,
     "type": "arena",
     "is_arena": true,
-    "faction": "GC",
-    "placement": "killed",
-    "game_length": "Killed - AP15",
-    "result": "killed",
-    "breakdown": "GC=0.41, BG=0.37, YS=0.72, CC=0.65"
+    "faction": "BG",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
   },
   {
-    "run": "R39",
-    "iter": 13,
-    "doom": 4,
-    "score": 0.112,
+    "run": "R40",
+    "iter": 1,
+    "doom": 8,
+    "score": 0.7,
     "won": false,
     "is_win": false,
-    "filename": "arena-R39-iter13-ys-game1351-KILLED.txt",
-    "file": "",
-    "filepath": "",
+    "filename": "arena-R40-iter1-ys-game3-d8",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game3-d8.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game3-d8.txt",
+    "has_trace": true,
     "type": "arena",
     "is_arena": true,
     "faction": "YS",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.28, BG=0.26, YS=0.11, CC=0.20"
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
   },
   {
-    "run": "R39",
-    "iter": 13,
-    "doom": 2,
-    "score": 0.076,
+    "run": "R40",
+    "iter": 1,
+    "doom": 1,
+    "score": 0.7,
     "won": false,
     "is_win": false,
-    "filename": "arena-R39-iter13-cc-game1264-KILLED.txt",
-    "file": "",
-    "filepath": "",
+    "filename": "arena-R40-iter1-cc-game3-d1",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game3-d1.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game3-d1.txt",
+    "has_trace": true,
     "type": "arena",
     "is_arena": true,
     "faction": "CC",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.23, BG=0.19, YS=0.27, CC=0.08"
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
   },
   {
-    "run": "R39",
-    "iter": 13,
-    "doom": 3,
-    "score": 0.098,
+    "run": "R40",
+    "iter": 1,
+    "doom": 20,
+    "score": 0.7,
     "won": false,
     "is_win": false,
-    "filename": "arena-R39-iter13-ys-game819-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "YS",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.38, BG=0.18, YS=0.10, CC=0.20"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 13,
-    "score": 0.385,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-gc-game485-KILLED.txt",
-    "file": "",
-    "filepath": "",
+    "filename": "arena-R40-iter1-gc-game4-d20",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game4-d20.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game4-d20.txt",
+    "has_trace": true,
     "type": "arena",
     "is_arena": true,
     "faction": "GC",
-    "placement": "killed",
-    "game_length": "Killed - AP10",
-    "result": "killed",
-    "breakdown": "GC=0.38, BG=0.30, YS=0.59, CC=0.43"
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
   },
   {
-    "run": "R39",
-    "iter": 13,
-    "doom": 4,
-    "score": 0.113,
+    "run": "R40",
+    "iter": 1,
+    "doom": 11,
+    "score": 0.7,
     "won": false,
     "is_win": false,
-    "filename": "arena-R39-iter13-ys-game235-KILLED.txt",
-    "file": "",
-    "filepath": "",
+    "filename": "arena-R40-iter1-bg-game4-d11",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game4-d11.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game4-d11.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "BG",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 6,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-ys-game4-d6",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game4-d6.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game4-d6.txt",
+    "has_trace": true,
     "type": "arena",
     "is_arena": true,
     "faction": "YS",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.33, BG=0.29, YS=0.11, CC=0.21"
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
   },
   {
-    "run": "R39",
-    "iter": 13,
-    "doom": 3,
-    "score": 0.156,
+    "run": "R40",
+    "iter": 1,
+    "doom": 1,
+    "score": 0.7,
     "won": false,
     "is_win": false,
-    "filename": "arena-R39-iter13-ys-game1291-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "YS",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.27, BG=0.28, YS=0.16, CC=0.20"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 2,
-    "score": 0.027,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-cc-game624-KILLED.txt",
-    "file": "",
-    "filepath": "",
+    "filename": "arena-R40-iter1-cc-game4-d1",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game4-d1.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game4-d1.txt",
+    "has_trace": true,
     "type": "arena",
     "is_arena": true,
     "faction": "CC",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.19, BG=0.32, YS=0.28, CC=0.03"
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
   },
   {
-    "run": "R39",
-    "iter": 13,
-    "doom": 2,
-    "score": 0.06,
+    "run": "R40",
+    "iter": 1,
+    "doom": 12,
+    "score": 0.7,
     "won": false,
     "is_win": false,
-    "filename": "arena-R39-iter13-bg-game326-KILLED.txt",
-    "file": "",
-    "filepath": "",
+    "filename": "arena-R40-iter1-gc-game5-d12",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game5-d12.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game5-d12.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "GC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 14,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-bg-game5-d14",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game5-d14.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game5-d14.txt",
+    "has_trace": true,
     "type": "arena",
     "is_arena": true,
     "faction": "BG",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.27, BG=0.06, YS=0.25, CC=0.18"
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
   },
   {
-    "run": "R39",
-    "iter": 13,
-    "doom": 3,
-    "score": 0.106,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-ys-game443-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "YS",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.31, BG=0.37, YS=0.11, CC=0.25"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 2,
-    "score": 0.092,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-bg-game1002-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "BG",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.38, BG=0.09, YS=0.27, CC=0.09"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
-    "doom": 5,
-    "score": 0.075,
-    "won": false,
-    "is_win": false,
-    "filename": "arena-R39-iter13-bg-game550-KILLED.txt",
-    "file": "",
-    "filepath": "",
-    "type": "arena",
-    "is_arena": true,
-    "faction": "BG",
-    "placement": "killed",
-    "game_length": "Killed - AP5",
-    "result": "killed",
-    "breakdown": "GC=0.28, BG=0.08, YS=0.30, CC=0.19"
-  },
-  {
-    "run": "R39",
-    "iter": 13,
+    "run": "R40",
+    "iter": 1,
     "doom": 17,
-    "score": 0.412,
+    "score": 0.7,
     "won": false,
     "is_win": false,
-    "filename": "arena-R39-iter13-gc-game385-KILLED.txt",
-    "file": "",
-    "filepath": "",
+    "filename": "arena-R40-iter1-ys-game5-d17",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game5-d17.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game5-d17.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "YS",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 6,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-cc-game5-d6",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game5-d6.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game5-d6.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "CC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 18,
+    "score": 0.8,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-gc-game6-d18",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game6-d18.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game6-d18.txt",
+    "has_trace": true,
     "type": "arena",
     "is_arena": true,
     "faction": "GC",
-    "placement": "killed",
-    "game_length": "Killed - AP15",
-    "result": "killed",
-    "breakdown": "GC=0.41, BG=0.66, YS=0.66, CC=0.50"
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 16,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-bg-game6-d16",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game6-d16.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game6-d16.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "BG",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 4,
+    "score": 0.63,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-ys-game6-d4",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game6-d4.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game6-d4.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "YS",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 4,
+    "score": 0.63,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-cc-game6-d4",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game6-d4.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game6-d4.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "CC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 10,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-gc-game7-d10",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game7-d10.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game7-d10.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "GC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 10,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-bg-game7-d10",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game7-d10.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game7-d10.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "BG",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 4,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-ys-game7-d4",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game7-d4.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game7-d4.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "YS",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 4,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-cc-game7-d4",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game7-d4.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game7-d4.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "CC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 6,
+    "score": 0.8,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-gc-game8-d6",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game8-d6.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game8-d6.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "GC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 13,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-bg-game8-d13",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game8-d13.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game8-d13.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "BG",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 11,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-ys-game8-d11",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game8-d11.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game8-d11.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "YS",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 5,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-cc-game8-d5",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game8-d5.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game8-d5.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "CC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 15,
+    "score": 0.8,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-gc-game9-d15",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game9-d15.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game9-d15.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "GC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 11,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-bg-game9-d11",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game9-d11.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game9-d11.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "BG",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 8,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-ys-game9-d8",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game9-d8.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game9-d8.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "YS",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 7,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-cc-game9-d7",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game9-d7.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game9-d7.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "CC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 7,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-gc-game10-d7",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game10-d7.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game10-d7.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "GC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 9,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-bg-game10-d9",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game10-d9.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game10-d9.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "BG",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 4,
+    "score": 0.63,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-ys-game10-d4",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game10-d4.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game10-d4.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "YS",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 2,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-cc-game10-d2",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game10-d2.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game10-d2.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "CC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 5,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-gc-game11-d5",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game11-d5.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game11-d5.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "GC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 11,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-bg-game11-d11",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game11-d11.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game11-d11.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "BG",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 5,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-ys-game11-d5",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game11-d5.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game11-d5.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "YS",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 1,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-cc-game11-d1",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game11-d1.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game11-d1.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "CC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 10,
+    "score": 0.8,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-gc-game12-d10",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game12-d10.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game12-d10.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "GC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 8,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-bg-game12-d8",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game12-d8.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game12-d8.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "BG",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 8,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-ys-game12-d8",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game12-d8.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-ys-game12-d8.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "YS",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 4,
+    "score": 0.63,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-cc-game12-d4",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game12-d4.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-cc-game12-d4.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "CC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 12,
+    "score": 0.7,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-gc-game13-d12",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game13-d12.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-gc-game13-d12.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "GC",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
+  },
+  {
+    "run": "R40",
+    "iter": 1,
+    "doom": 2,
+    "score": 0.14,
+    "won": false,
+    "is_win": false,
+    "filename": "arena-R40-iter1-bg-game13-d2",
+    "file": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game13-d2.txt",
+    "filepath": "/Users/gremus/cthulhu-wars-mcts-prototype/arena-traces/arena-R40-iter1-bg-game13-d2.txt",
+    "has_trace": true,
+    "type": "arena",
+    "is_arena": true,
+    "faction": "BG",
+    "placement": "?",
+    "game_length": "?",
+    "result": "lost",
+    "breakdown": ""
   }
 ];
 
@@ -1089,6 +1139,7 @@ window.fetch = function(url) {
                             <th style="padding:8px;text-align:left;border-bottom:2px solid #0f3460;">Run</th>
                             <th style="padding:8px;text-align:left;border-bottom:2px solid #0f3460;">Iter</th>
                             <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Avg Doom</th>
+                            <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Avg SBs</th>
                             <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Avg Score</th>
                             <th style="padding:8px;text-align:left;border-bottom:2px solid #0f3460;">Type</th>
                             <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Wins</th>
@@ -1096,7 +1147,7 @@ window.fetch = function(url) {
                         </tr>
                     </thead>
                     <tbody id="performance-history-body">
-                        <tr><td colspan="7" style="padding:20px;text-align:center;color:#666;">Loading...</td></tr>
+                        <tr><td colspan="8" style="padding:20px;text-align:center;color:#666;">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1123,6 +1174,14 @@ window.fetch = function(url) {
                         <option value="">All</option>
                     </select>
                 </label>
+                <label style="margin-left:15px;">Result:
+                    <select id="result-select" onchange="loadGames()">
+                        <option value="">All</option>
+                        <option value="won">Won</option>
+                        <option value="lost">Lost</option>
+                        <option value="killed">Killed</option>
+                    </select>
+                </label>
             </div>
             <div style="margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;">
                 <div id="games-count" style="color:#888;">Loading...</div>
@@ -1137,7 +1196,7 @@ window.fetch = function(url) {
                 <div style="margin-top:15px;">Loading games...</div>
             </div>
             <table id="games-table">
-                <thead><tr><th>Run</th><th>Iter</th><th>Type</th><th>Faction</th><th>Result</th><th>Doom</th><th>Score</th><th>Length</th><th>Winner</th><th>Place</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Run</th><th>Iter</th><th>Type</th><th>Faction</th><th>Result</th><th>Doom</th><th>SBs</th><th>Score</th><th>Length</th><th>Winner</th><th>Place</th><th>Actions</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -1173,7 +1232,7 @@ window.fetch = function(url) {
             </div>
             <div id="corpus-count" style="color:#888;margin-bottom:10px;">Loading...</div>
             <table id="corpus-table">
-                <thead><tr><th>Game #</th><th>Brain Faction</th><th>Result</th><th>Doom</th><th>Score</th><th>Used for Training</th></tr></thead>
+                <thead><tr><th>Game #</th><th>Brain Faction</th><th>Result</th><th>Doom</th><th>SBs</th><th>Score</th><th>Source Iter</th><th>Used for Training</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -1256,6 +1315,31 @@ window.fetch = function(url) {
                 </div>
             </div>
             <canvas id="wins-chart" width="1000" height="400" style="width:1000px;height:400px;background:#1a1a2e;display:block;"></canvas>
+        </div>
+
+        <div class="card">
+            <h3>Spellbooks per Game</h3>
+            <div style="margin-bottom:15px;display:flex;gap:15px;align-items:center;flex-wrap:wrap;">
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Runs:</label>
+                    <select id="sbs-run-filter" multiple style="width:150px;height:80px;">
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Iters:</label>
+                    <select id="sbs-iter-filter" multiple style="width:150px;height:80px;">
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Type:</label>
+                    <div>
+                        <button class="secondary" onclick="setSbsTypeFilter('both')" id="sbs-type-both">Both</button>
+                        <button class="secondary" onclick="setSbsTypeFilter('selfplay')" id="sbs-type-selfplay">Self-play</button>
+                        <button class="secondary" onclick="setSbsTypeFilter('arena')" id="sbs-type-arena">Arena</button>
+                    </div>
+                </div>
+            </div>
+            <canvas id="sbs-chart" width="1000" height="400" style="width:1000px;height:400px;background:#1a1a2e;display:block;"></canvas>
         </div>
     </div>
 
@@ -1422,7 +1506,7 @@ window.fetch = function(url) {
             const tbody = document.getElementById('performance-history-body');
 
             if (!allPerformanceData || allPerformanceData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="padding:20px;text-align:center;color:#666;">No data</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="padding:20px;text-align:center;color:#666;">No data</td></tr>';
                 document.getElementById('performance-page-info').textContent = 'No data';
                 return;
             }
@@ -1440,13 +1524,14 @@ window.fetch = function(url) {
                         <td style="padding:8px;">${row.run}</td>
                         <td style="padding:8px;">I${String(row.iter).padStart(2, '0')}</td>
                         <td style="padding:8px;text-align:right;">${row.avg_doom.toFixed(1)}</td>
+                        <td style="padding:8px;text-align:right;">${row.avg_sbs !== undefined ? row.avg_sbs.toFixed(1) : '-'}</td>
                         <td style="padding:8px;text-align:right;">${row.avg_score.toFixed(2)}</td>
                         <td style="padding:8px;">${row.type}</td>
                         <td style="padding:8px;text-align:right;">${row.wins}/${row.total} (${winRate})</td>
                         <td style="padding:8px;text-align:right;">${row.total}</td>
                     </tr>
                     <tr id="${expandId}" style="display:none;background:#0f3460;">
-                        <td colspan="7" style="padding:15px;">
+                        <td colspan="8" style="padding:15px;">
                             <div style="padding:10px;background:#16213e;border-radius:4px;">
                                 <strong style="color:#e94560;">Per-Faction Breakdown:</strong>
                                 <div id="${expandId}-content" style="margin-top:10px;color:#ccc;">Loading...</div>
@@ -1616,11 +1701,13 @@ window.fetch = function(url) {
             try {
                 const run = document.getElementById('run-select').value;
                 const iter = document.getElementById('iter-select').value;
+                const result = document.getElementById('result-select').value;
 
                 // Build API URL with pagination parameters
                 let apiUrl = `/api/games?page=${currentPage}&per_page=${gamesPerPage}`;
                 if (run) apiUrl += `&run=${run}`;
                 if (iter) apiUrl += `&iter=${iter}`;
+                if (result) apiUrl += `&result=${result}`;
 
                 // Fetch paginated games from server
                 const res = await fetch(apiUrl);
@@ -1651,12 +1738,9 @@ window.fetch = function(url) {
 
                 const tbody = document.querySelector('#games-table tbody');
                 tbody.innerHTML = pageGames.map(g => {
-                // Map result type to user-friendly labels
-                const typeLabel = g.type === 'best' ? 'Best' :
-                                (g.type === 'worst' ? 'Worst' :
-                                (g.type === 'first' ? 'Worst' :  // legacy: "first" meant lowest doom = worst
-                                (g.type === 'top5' ? 'Top 5%' :
-                                (g.type === 'middle' ? 'Middle' : g.type))));
+                // Map result to user-friendly labels
+                const resultLabel = g.result === 'killed' ? 'Killed' :
+                                   (g.is_win ? 'Won' : 'Lost');
                 const breakdownId = 'breakdown-' + g.run + '-' + g.iter + '-' + g.faction.replace(/\s+/g, '-');
                 // Arena: brain won = "Learning", brain lost = "Bot"
                 // Self-play: brain won = "Learning", brain lost = "Champion"
@@ -1668,16 +1752,20 @@ window.fetch = function(url) {
                     <td>${g.iter}</td>
                     <td>${g.is_arena ? 'Arena' : 'Self-play'}</td>
                     <td>${g.faction}</td>
-                    <td>${typeLabel}</td>
+                    <td>${resultLabel}</td>
                     <td>${g.doom}</td>
+                    <td>${g.spellbooks !== undefined ? g.spellbooks : '-'}</td>
                     <td><span class="breakdown" onclick="toggleBreakdown('${breakdownId}')">${g.score !== null ? g.score.toFixed(2) : '-'}</span></td>
                     <td>${g.game_length !== undefined && g.game_length !== null ? g.game_length : '?'}
                     <td>${winner}</td>
                     <td>${placement}</td>
-                    <td><button class="secondary" onclick="generateReplay('${g.filename}')">View</button></td>
+                    <td>${g.has_trace ?
+                        `<button class="secondary" onclick="generateReplay('${g.filename}')">View</button>` :
+                        `<button class="secondary" disabled style="opacity:0.4;cursor:not-allowed;">No Trace</button>`
+                    }</td>
                 </tr>
                 <tr id="${breakdownId}" style="display:none;">
-                    <td colspan="11" style="background:#0f3460;padding:15px;">
+                    <td colspan="12" style="background:#0f3460;padding:15px;">
                         <div style="padding:10px;background:#16213e;border:2px solid #e94560;">
                             <div><strong>Brain's final 0-1 score:</strong> <span style="font-size:18px;color:#4ade80;">${g.score !== null ? g.score.toFixed(2) : 'N/A'}</span></div>
                             <div style="margin-top:12px;font-size:13px;">
@@ -1837,11 +1925,14 @@ window.fetch = function(url) {
         let doomTypeFilter = 'both';
         let scoreTypeFilter = 'both';
         let winsTypeFilter = 'both';
+        let sbsTypeFilter = 'both';
         let doomRunsFilter = [];
         let scoreRunsFilter = [];
         let winsRunsFilter = [];
+        let sbsRunsFilter = [];
         let doomItersFilter = [];
         let scoreItersFilter = [];
+        let sbsItersFilter = [];
 
         async function loadProgress() {
             try {
@@ -1857,25 +1948,31 @@ window.fetch = function(url) {
                 const doomRunSelect = document.getElementById('doom-run-filter');
                 const scoreRunSelect = document.getElementById('score-run-filter');
                 const winsRunSelect = document.getElementById('wins-run-filter');
+                const sbsRunSelect = document.getElementById('sbs-run-filter');
                 const doomIterSelect = document.getElementById('doom-iter-filter');
                 const scoreIterSelect = document.getElementById('score-iter-filter');
+                const sbsIterSelect = document.getElementById('sbs-iter-filter');
 
                 // Select only the LATEST run by default
                 const latestRun = uniqueRuns[uniqueRuns.length - 1];
                 doomRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" ${r === latestRun ? 'selected' : ''}>${r}</option>`).join('');
                 scoreRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" ${r === latestRun ? 'selected' : ''}>${r}</option>`).join('');
                 winsRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" ${r === latestRun ? 'selected' : ''}>${r}</option>`).join('');
+                sbsRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" ${r === latestRun ? 'selected' : ''}>${r}</option>`).join('');
 
                 // Select all iters by default
                 doomIterSelect.innerHTML = uniqueIters.map(i => `<option value="${i}" selected>${i}</option>`).join('');
                 scoreIterSelect.innerHTML = uniqueIters.map(i => `<option value="${i}" selected>${i}</option>`).join('');
+                sbsIterSelect.innerHTML = uniqueIters.map(i => `<option value="${i}" selected>${i}</option>`).join('');
 
                 // Initialize with only latest run selected, all iters
                 doomRunsFilter = [latestRun];
                 scoreRunsFilter = [latestRun];
                 winsRunsFilter = [latestRun];
+                sbsRunsFilter = [latestRun];
                 doomItersFilter = uniqueIters;
                 scoreItersFilter = uniqueIters;
+                sbsItersFilter = uniqueIters;
 
                 doomRunSelect.onchange = () => {
                     doomRunsFilter = Array.from(doomRunSelect.selectedOptions).map(o => o.value);
@@ -1897,10 +1994,19 @@ window.fetch = function(url) {
                     winsRunsFilter = Array.from(winsRunSelect.selectedOptions).map(o => o.value);
                     drawWinsChart();
                 };
+                sbsRunSelect.onchange = () => {
+                    sbsRunsFilter = Array.from(sbsRunSelect.selectedOptions).map(o => o.value);
+                    drawSbsChart();
+                };
+                sbsIterSelect.onchange = () => {
+                    sbsItersFilter = Array.from(sbsIterSelect.selectedOptions).map(o => parseInt(o.value));
+                    drawSbsChart();
+                };
 
                 drawDoomChart();
                 drawScoreChart();
                 drawWinsChart();
+                drawSbsChart();
             } catch (e) {
                 console.error('Failed to load progress:', e);
             }
@@ -1925,6 +2031,13 @@ window.fetch = function(url) {
             document.querySelectorAll('[id^="wins-type-"]').forEach(b => b.style.background = '#0f3460');
             document.getElementById('wins-type-' + filter).style.background = '#e94560';
             drawWinsChart();
+        }
+
+        function setSbsTypeFilter(filter) {
+            sbsTypeFilter = filter;
+            document.querySelectorAll('[id^="sbs-type-"]').forEach(b => b.style.background = '#0f3460');
+            document.getElementById('sbs-type-' + filter).style.background = '#e94560';
+            drawSbsChart();
         }
 
         function drawDoomChart() {
@@ -2422,6 +2535,90 @@ window.fetch = function(url) {
             });
         }
 
+        function drawSbsChart() {
+            const canvas = document.getElementById('sbs-chart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            let data = [];
+            if (sbsTypeFilter === 'both') data = [...progressData.selfplay, ...progressData.arena];
+            else if (sbsTypeFilter === 'selfplay') data = progressData.selfplay;
+            else data = progressData.arena;
+
+            // Filter by runs and iters
+            data = data.filter(d => sbsRunsFilter.includes(d.run) && sbsItersFilter.includes(d.iter));
+
+            if (!data.length) {
+                ctx.fillStyle = '#888';
+                ctx.font = '16px sans-serif';
+                ctx.fillText('No data', w/2 - 30, h/2);
+                return;
+            }
+
+            // Fixed Y-axis range 0-6
+            const minY = 0, maxY = 6, rangeY = 6;
+            const rangeX = Math.max(1, data.length - 1);
+
+            // Axes
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(60, 20);
+            ctx.lineTo(60, h-60);
+            ctx.lineTo(w-20, h-60);
+            ctx.stroke();
+
+            // Horizontal gridlines (every 1 SB)
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 2]);
+            for (let sb = 1; sb <= 6; sb++) {
+                const y = h - 60 - (sb / rangeY) * (h - 80);
+                ctx.beginPath();
+                ctx.moveTo(60, y);
+                ctx.lineTo(w - 20, y);
+                ctx.stroke();
+                ctx.fillStyle = '#666';
+                ctx.font = '9px sans-serif';
+                ctx.fillText(sb.toString(), 35, y + 3);
+            }
+            ctx.setLineDash([]);
+
+            // Y-axis labels
+            ctx.fillStyle = '#888';
+            ctx.font = '11px sans-serif';
+            ctx.fillText('SBs', 20, 15);
+
+            // X-axis labels
+            const labelStep = Math.max(1, Math.ceil(data.length / 20));
+            ctx.fillStyle = '#888';
+            ctx.font = '7px sans-serif';
+            data.filter((_, i) => i % labelStep === 0).forEach((d, idx) => {
+                const realIdx = idx * labelStep;
+                const x = 60 + (realIdx / rangeX) * (w - 80);
+                const label = d.run_iter_game;
+                ctx.save();
+                ctx.translate(x, h-42);
+                ctx.rotate(-Math.PI/4);
+                ctx.fillText(label, 0, 0);
+                ctx.restore();
+            });
+
+            // Plot points
+            const runColors = {'R39': '#e94560', 'R40': '#4ade80', 'R38': '#ffd700', 'R27': '#888'};
+            data.forEach((d, idx) => {
+                const x = 60 + (idx / rangeX) * (w - 80);
+                const sbs = d.spellbooks || 0;
+                const y = h - 60 - (sbs / rangeY) * (h - 80);
+                ctx.fillStyle = runColors[d.run] || '#888';
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+        }
+
         let corpusInitialized = false;
 
         async function initCorpus() {
@@ -2481,12 +2678,15 @@ window.fetch = function(url) {
                         const row = tbody.insertRow();
                         const usedText = g.used_for_training ? 'Yes' : 'No';
                         const usedColor = g.used_for_training ? '#4ade80' : '#888';
+                        const sourceIter = g.source_iter >= 0 ? g.source_iter : '?';
                         row.innerHTML = `
                             <td>Game ${g.game_num}</td>
                             <td>${g.faction}</td>
                             <td>${g.result}</td>
                             <td>${g.doom}</td>
+                            <td>${g.spellbooks !== undefined ? g.spellbooks : '-'}</td>
                             <td>${g.score.toFixed(3)}</td>
+                            <td>${sourceIter}</td>
                             <td style="color:${usedColor};">${usedText}</td>
                         `;
                     });

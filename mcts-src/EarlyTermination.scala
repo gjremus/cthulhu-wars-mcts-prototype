@@ -30,10 +30,10 @@ object EarlyTermination {
         }
 
         Thresholds(
-            scoreGC = getEnvDouble("CW_MIN_SCORE_GC", 0.28),
-            scoreCC = getEnvDouble("CW_MIN_SCORE_CC", 0.10),
-            scoreYS = getEnvDouble("CW_MIN_SCORE_YS", 0.16),
-            scoreBG = getEnvDouble("CW_MIN_SCORE_BG", 0.14)
+            scoreGC = getEnvDouble("CW_MIN_SCORE_GC", 0.0),
+            scoreCC = getEnvDouble("CW_MIN_SCORE_CC", 0.0),
+            scoreYS = getEnvDouble("CW_MIN_SCORE_YS", 0.0),
+            scoreBG = getEnvDouble("CW_MIN_SCORE_BG", 0.0)
         )
     }
 

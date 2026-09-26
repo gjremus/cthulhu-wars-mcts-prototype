@@ -690,6 +690,17 @@ final class Trajectory(factions : $[Faction]) {
         val onMap      = c01(p.allInPlay.num.toDouble / rosterTot.toDouble)  // [0,1], units-in-play / faction total
         val sbUse      = math.min(3.0, sbUses(f).toDouble)               // cap 3
         val powUse     = math.min(3.0, powerUses(f).toDouble)            // cap 3
+        // PROGRESSIVE SPELLBOOK WEIGHTING: 5th SB = 1.5x first, 6th SB = 2x first (user 2026-09-26)
+        // Pushes brain hard to complete all 6 SBs (currently 0.0 avg across all training games).
+        val sbookScore = sbooks.toInt match {
+            case 0 => 0.0
+            case 1 => 8.0
+            case 2 => 16.0
+            case 3 => 24.0
+            case 4 => 32.0
+            case 5 => 44.0   // 4×8 + 1×12 (5th worth 1.5x)
+            case _ => 60.0   // 4×8 + 1×12 + 1×16 (6th worth 2x)
+        }
         // ── PENALTIES (raw, subtract) ───────────────────────────────────────────────
         val lossPts    = unitLossCostTotal(f)                            // sum of replacement costs lost
         val abandonN   = math.min(6.0, gatesAbandoned(f).toDouble)       // cap 6
@@ -712,7 +723,7 @@ final class Trajectory(factions : $[Faction]) {
         // is clamped to [0,1] in score() and then held below a win by NonWinnerCeiling.
         List(
             // ── RESULTS — dominant, counted once, linear ───────────────────────────────
-            "spellbooks"   ->  D(8.00 * sbooks),    // 8 doom / SB. Hard win condition; a single SB outweighs all behavior.
+            "spellbooks"   ->  D(sbookScore),       // PROGRESSIVE: 1-4th = 8 doom each, 5th = 12 doom (1.5x), 6th = 16 doom (2x). Pushes completion.
             "doomEarned"   ->  D(1.00 * doom),      // 1 doom / doom. THE objective; realized doom from EVERY path. Doom is scored ONLY here.
             "elderSigns"   ->  D(1.66 * esE),       // 1.66 doom / ES EARNED (incl. later spent). The doom accelerant from GOOs.
             "ritualValue"  ->  D(1.00 * ritY),      // 1 doom / unit of ritual yield (gates+ES the ritual made). Act-of-ritualing credit.
@@ -760,7 +771,50 @@ final class Trajectory(factions : $[Faction]) {
     /** Per-faction shaping score in [0,1] at game end: the doom-equivalent reward terms
      *  minus the penalties, clamped to [0,1] (single source of truth, so the reward and its
      *  reported breakdown can never drift apart). Held below a true win by NonWinnerCeiling
-     *  in Outcome.valueShaped, so 1.0 is unreachable without actually winning. */
-    def score(g : Game) : Map[Faction, Double] =
-        factions.map(f => f -> c01(scoreBreakdown(g, f).map(_._2).sum)).toMap
+     *  in Outcome.valueShaped, so 1.0 is unreachable without actually winning.
+     *
+     *  CURRICULUM MODE (user 2026-09-26): If CW_CURRICULUM_STAGE is set (1-12), overrides
+     *  normal scoring with milestone-based scoring. Stages 1-6 target spellbook completion,
+     *  stages 7-11 add doom/placement requirements, stage 12 is full game win. */
+    def score(g : Game) : Map[Faction, Double] = {
+        val curriculumStage = sys.env.get("CW_CURRICULUM_STAGE").flatMap(s =>
+            try Some(s.toInt) catch { case _: Exception => None }
+        )
+
+        curriculumStage match {
+            case Some(stage) if stage >= 1 && stage <= 12 =>
+                // CURRICULUM SCORING: milestone-based with graded progress
+                factions.map { f =>
+                    val p = g.players(f)
+                    val sbs = p.spellbooks.num
+                    val doom = p.doom
+                    val placement = g.factions.sortBy(faction => -g.players(faction).doom).indexOf(f) + 1  // 1=winner, 2=2nd, etc.
+
+                    val milestoneScore = stage match {
+                        // Stages 1-6: spellbook completion
+                        case 1 => if (sbs >= 1 && doom >= 5) 1.0 else c01((sbs.toDouble / 1.0) * 0.5 + (doom.toDouble / 5.0) * 0.5)
+                        case 2 => if (sbs >= 2 && doom >= 8) 1.0 else c01((sbs.toDouble / 2.0) * 0.5 + (doom.toDouble / 8.0) * 0.5)
+                        case 3 => if (sbs >= 3 && doom >= 12) 1.0 else c01((sbs.toDouble / 3.0) * 0.5 + (doom.toDouble / 12.0) * 0.5)
+                        case 4 => if (sbs >= 4 && doom >= 15) 1.0 else c01((sbs.toDouble / 4.0) * 0.5 + (doom.toDouble / 15.0) * 0.5)
+                        case 5 => if (sbs >= 5 && doom >= 18) 1.0 else c01((sbs.toDouble / 5.0) * 0.5 + (doom.toDouble / 18.0) * 0.5)
+                        case 6 => if (sbs >= 6 && doom >= 20) 1.0 else c01((sbs.toDouble / 6.0) * 0.5 + (doom.toDouble / 20.0) * 0.5)
+                        // Stages 7-11: doom and placement requirements (all need 6 SBs)
+                        case 7 => if (sbs >= 6 && doom >= 10) 1.0 else c01((sbs.toDouble / 6.0) * 0.4 + (doom.toDouble / 10.0) * 0.6)
+                        case 8 => if (sbs >= 6 && doom >= 15) 1.0 else c01((sbs.toDouble / 6.0) * 0.4 + (doom.toDouble / 15.0) * 0.6)
+                        case 9 => if (sbs >= 6 && doom >= 20) 1.0 else c01((sbs.toDouble / 6.0) * 0.3 + (doom.toDouble / 20.0) * 0.7)
+                        case 10 => if (sbs >= 6 && placement <= 3) 1.0 else c01((sbs.toDouble / 6.0) * 0.3 + (if (placement <= 3) 1.0 else (4.0 - placement) / 4.0) * 0.7)
+                        case 11 => if (sbs >= 6 && placement <= 2) 1.0 else c01((sbs.toDouble / 6.0) * 0.3 + (if (placement <= 2) 1.0 else (3.0 - placement) / 3.0) * 0.7)
+                        // Stage 12: full game (actual win with 6 SBs)
+                        case 12 => if (placement == 1 && sbs >= 6) 1.0 else c01((sbs.toDouble / 6.0) * 0.2 + (doom.toDouble / 30.0) * 0.5 + (if (placement == 1) 1.0 else (5.0 - placement) / 4.0) * 0.3)
+                        case _ => 0.0  // Invalid stage
+                    }
+
+                    f -> milestoneScore
+                }.toMap
+
+            case _ =>
+                // NORMAL SCORING: sum of all shaping components
+                factions.map(f => f -> c01(scoreBreakdown(g, f).map(_._2).sum)).toMap
+        }
+    }
 }

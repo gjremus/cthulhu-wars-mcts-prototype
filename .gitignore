@@ -7,3 +7,4 @@ engine-copy/
 # logs / scratch
 *.log
 /tmp/
+brain-dashboard/export/

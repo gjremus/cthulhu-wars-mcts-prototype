@@ -1442,6 +1442,7 @@ def get_progress_data():
             "run_iter_game_num": run_num * 1000000 + iter_num * 1000 + game_num,
             "doom": doom,
             "score": score if score is not None else 0.0,
+            "spellbooks": game.get("spellbooks", 0),
             "type": target,
             "faction": faction
         })
@@ -1538,10 +1539,11 @@ def _parse_performance_history():
             key = (run_str, iter_num, game_type)
 
             if key not in iter_stats:
-                iter_stats[key] = {"dooms": [], "scores": [], "wins": 0, "total": 0}
+                iter_stats[key] = {"dooms": [], "scores": [], "spellbooks": [], "wins": 0, "total": 0}
 
             iter_stats[key]["dooms"].append(doom)
             iter_stats[key]["scores"].append(score)
+            iter_stats[key]["spellbooks"].append(0)  # TODO: parse from trace file
             iter_stats[key]["total"] += 1
             if won:
                 iter_stats[key]["wins"] += 1
@@ -1554,11 +1556,13 @@ def _parse_performance_history():
         if stats["total"] > 0:
             avg_doom = sum(stats["dooms"]) / len(stats["dooms"])
             avg_score = sum(stats["scores"]) / len(stats["scores"])
+            avg_sbs = sum(stats["spellbooks"]) / len(stats["spellbooks"]) if stats.get("spellbooks") else 0.0
             history.append({
                 "run": run,
                 "iter": iter_num,
                 "avg_doom": round(avg_doom, 1),
                 "avg_score": round(avg_score, 3),
+                "avg_sbs": round(avg_sbs, 1),
                 "type": game_type,
                 "wins": stats["wins"],
                 "total": stats["total"]
@@ -1598,10 +1602,11 @@ def get_performance_history():
 
         key = (run, iter_num, game_type)
         if key not in iter_stats:
-            iter_stats[key] = {"dooms": [], "scores": [], "wins": 0, "total": 0}
+            iter_stats[key] = {"dooms": [], "scores": [], "spellbooks": [], "wins": 0, "total": 0}
 
         iter_stats[key]["dooms"].append(doom)
         iter_stats[key]["scores"].append(score)
+        iter_stats[key]["spellbooks"].append(game.get("spellbooks", 0))
         iter_stats[key]["total"] += 1
         if is_win:
             iter_stats[key]["wins"] += 1
@@ -1679,6 +1684,7 @@ def get_performance_history():
                                 _live_log_cache[key] = {
                                     "dooms": [avg_doom_live] * total_games,  # Replicate avg for each game
                                     "scores": [0.0] * total_games,  # No score data in log
+                                    "spellbooks": [0.0] * total_games,  # No SB data in log
                                     "wins": win_count,
                                     "total": total_games
                                 }
@@ -1704,9 +1710,12 @@ def get_performance_history():
 
             # Determine PLANNED total for arena games (not completed count)
             if game_type == "Arena":
+                # For R40: 1600 games (400 per faction) curriculum training
                 # For R39 iter 11+: 1600 games (400 per faction)
                 # For R39 iter 10 and earlier: 100 games (25 per faction)
-                if run == "R39" and iter_num >= 11:
+                if run == "R40":
+                    planned_total = 1600
+                elif run == "R39" and iter_num >= 11:
                     planned_total = 1600
                 else:
                     planned_total = 100
@@ -1955,6 +1964,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                     "run": g.get("run", "?"),
                     "iter": g.get("iteration", g.get("iter", -1)),
                     "doom": g.get("doom", 0),
+                    "spellbooks": g.get("spellbooks", 0),
                     "score": g.get("score", 0.0),
                     "won": g.get("won", False),
                     "is_win": g.get("won", False),
@@ -2039,6 +2049,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                     "result": result,
                     "doom": g.get("doom", 0),
                     "score": g.get("score", 0.0),
+                    "spellbooks": g.get("spellbooks", 0),
                     "won": g.get("won", False),
                     "used_for_training": used_for_training,
                     "filename": filename,

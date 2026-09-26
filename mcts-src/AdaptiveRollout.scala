@@ -54,12 +54,15 @@ object AdaptiveRollout {
         maxDecisions: Int = 8000
     ): ($[Faction], Boolean, Option[String], Int, List[Action], Int) = {
 
-        if (!config.enabled) {
-            // Undo disabled - use standard rollout
-            val (w, k, r, ac, al) = EarlyTermination.rolloutWithTerminationCheck(
-                initialGame, initialSit, policy, brainSeat, trajectory, earlyTermThresholds, maxDecisions)
-            return (w, k, r, ac, al, 0)
-        }
+        // ADAPTIVE UNDO DISABLED: did not improve R39 performance, added complexity
+        // Undo system bypassed - use standard rollout with early termination only
+        val (w, k, r, ac, al) = EarlyTermination.rolloutWithTerminationCheck(
+            initialGame, initialSit, policy, brainSeat, trajectory, earlyTermThresholds, maxDecisions)
+        return (w, k, r, ac, al, 0)  // Last value = undoCount (always 0 now)
+
+        /* COMMENTED OUT: Adaptive undo with checkpoint/restore
+        // NOTE: This code is preserved but disabled. To re-enable, uncomment this block
+        // and comment out the return statement above.
 
         // Core loop with checkpointing
         var game = initialGame
@@ -217,5 +220,6 @@ object AdaptiveRollout {
             }
         }
         throw new IllegalStateException("unreachable")
+        */  // END OF COMMENTED OUT ADAPTIVE UNDO CODE
     }
 }

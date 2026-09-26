@@ -488,8 +488,8 @@ object PolicyRun {
             traceDir.foreach { dir =>
                 val brainWon = winners.contains(brainSeat)
                 val brainDoom = g.players(brainSeat).doom
-                val brainSBs = g.players(brainSeat).spellbookCount
-                val brainAPs = g.turnNum
+                val brainSBs = g.players(brainSeat).spellbooks.num
+                val brainAPs = g.turn
 
                 // Serialize full action sequence
                 val serializer = new Serialize(g)
