@@ -4,8 +4,8 @@
 
 set -e
 
-SSH_KEY="/Users/gremus/My Drive/Personal/Games/Cthulhu Wars/Maps/Library at Celaeno/Server Deployment/oracle_cw_ed25519"
-HOST="oracle-cw-server@35.255.125.91"
+SSH_KEY="/Users/gremus/Library/CloudStorage/GoogleDrive-gremus@salesforce.com/My Drive/Personal/Games/Cthulhu Wars/Maps/Library at Celaeno/Server Deployment/oracle_cw_ed25519"
+HOST="oracle-cw-server@34.27.40.209"
 LOCAL_DASH="/Users/gremus/cthulhu-wars-mcts-prototype/brain-dashboard"
 TRACES_DIR="/Users/gremus/cthulhu-wars-mcts-prototype/selfplay-traces"
 

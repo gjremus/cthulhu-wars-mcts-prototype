@@ -56,7 +56,6 @@
         <button class="tab active" onclick="showTab('status')">Run Status</button>
         <button class="tab" onclick="showTab('control')">Run Control</button>
         <button class="tab" onclick="showTab('games')">Game Browser</button>
-        <button class="tab" onclick="showTab('corpus')">Training Corpus</button>
         <button class="tab" onclick="showTab('weights')">Reward Weights</button>
         <button class="tab" onclick="showTab('progress')">Progress Charts</button>
     </div>
@@ -70,35 +69,27 @@
             </div>
             <div class="stat">
                 <div class="stat-label">Progress</div>
-                <div class="stat-value" id="progress-status" style="cursor:pointer;color:#4ade80;" onclick="toggleProgressFactionBreakdown()" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">-</div>
-                <div id="progress-expansion" style="display:none;margin-top:15px;padding:15px;background:#0f3460;border-radius:4px;">
-                    <strong style="color:#e94560;">Per-Faction Progress:</strong>
-                    <div id="progress-expansion-content" style="margin-top:10px;color:#ccc;">Loading...</div>
-                </div>
+                <div class="stat-value" id="progress-status">-</div>
             </div>
             <div class="stat">
-                <div class="stat-label">Elapsed Time</div>
-                <div class="stat-value" id="elapsed">-</div>
+                <div class="stat-label" id="phase-elapsed-label">Phase Elapsed</div>
+                <div class="stat-value" id="phase-elapsed">-</div>
             </div>
             <div class="stat">
-                <div class="stat-label">Iter ETA</div>
-                <div class="stat-value" id="iter-eta">-</div>
+                <div class="stat-label">Run Elapsed Time</div>
+                <div class="stat-value" id="run-elapsed">-</div>
             </div>
             <div class="stat">
-                <div class="stat-label">Full Run ETA</div>
-                <div class="stat-value" id="full-run-eta">-</div>
-            </div>
-            <div class="stat" style="width:100%;margin-top:10px;">
-                <div class="stat-label">Configuration</div>
-                <div class="stat-value" id="run-config" style="font-size:16px;color:#4ade80;">-</div>
+                <div class="stat-label">Disk Free</div>
+                <div class="stat-value" id="disk-free">-</div>
             </div>
             <div class="stat">
-                <div class="stat-label">Claude Storage Used</div>
-                <div class="stat-value" id="claude-storage">-</div>
+                <div class="stat-label">Current ETA</div>
+                <div class="stat-value" id="current-eta">-</div>
             </div>
             <div class="stat">
-                <div class="stat-label">Available Disk Space</div>
-                <div class="stat-value" id="disk-available">-</div>
+                <div class="stat-label">20-Iter Milestone</div>
+                <div class="stat-value" id="milestone-eta">-</div>
             </div>
         </div>
         <div class="card">
@@ -131,6 +122,7 @@
                             <th style="padding:8px;text-align:left;border-bottom:2px solid #0f3460;">Iter</th>
                             <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Avg Doom</th>
                             <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Avg SBs</th>
+                            <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Avg APs</th>
                             <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Avg Score</th>
                             <th style="padding:8px;text-align:left;border-bottom:2px solid #0f3460;">Type</th>
                             <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Wins</th>
@@ -138,7 +130,7 @@
                         </tr>
                     </thead>
                     <tbody id="performance-history-body">
-                        <tr><td colspan="8" style="padding:20px;text-align:center;color:#666;">Loading...</td></tr>
+                        <tr><td colspan="9" style="padding:20px;text-align:center;color:#666;">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -159,7 +151,7 @@
         <div class="card">
             <h3>Saved Checkpoints</h3>
             <table id="checkpoints-table">
-                <thead><tr><th>Name</th><th>Tag</th><th>Iter</th><th>Win Rate</th><th>Best 0-1</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Name</th><th>Score</th><th>Tag</th><th>Actions</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -211,12 +203,16 @@
                         <option value="">All</option>
                     </select>
                 </label>
-                <label style="margin-left:15px;">Result:
-                    <select id="result-select" onchange="loadGames()">
+                <label style="margin-left:15px;">Faction:
+                    <select id="faction-select" onchange="loadGames()">
                         <option value="">All</option>
-                        <option value="won">Won</option>
-                        <option value="lost">Lost</option>
-                        <option value="killed">Killed</option>
+                    </select>
+                </label>
+                <label style="margin-left:15px;">Result:
+                    <select id="result-select" multiple style="height:60px;">
+                        <option value="Won" selected>Won</option>
+                        <option value="Lost" selected>Lost</option>
+                        <option value="Killed" selected>Killed</option>
                     </select>
                 </label>
             </div>
@@ -233,45 +229,13 @@
                 <div style="margin-top:15px;">Loading games...</div>
             </div>
             <table id="games-table">
-                <thead><tr><th>Run</th><th>Iter</th><th>Type</th><th>Faction</th><th>Result</th><th>Doom</th><th>SBs</th><th>Score</th><th>Length</th><th>Winner</th><th>Place</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Run</th><th>Iter</th><th>Type</th><th>Faction</th><th>Result</th><th>Doom</th><th>SBs</th><th>Score</th><th>Winner</th><th>Length</th><th>Place</th><th>Actions</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
         <div class="card" id="breakdown-detail" style="display:none;">
             <h3>Score Breakdown</h3>
             <div id="breakdown-content"></div>
-        </div>
-    </div>
-
-    <div id="corpus" class="content">
-        <div class="card">
-            <h3>Training Corpus</h3>
-            <p style="color:#888;margin-bottom:15px;">View games used for training in each iteration</p>
-            <div style="margin-bottom:15px;">
-                <label>Run:
-                    <select id="corpus-run-select" onchange="loadCorpus()">
-                        <option value="R39">R39</option>
-                    </select>
-                </label>
-                <label style="margin-left:15px;">Iteration:
-                    <select id="corpus-iter-select" onchange="loadCorpus()">
-                        <option value="">Loading...</option>
-                    </select>
-                </label>
-                <label style="margin-left:15px;">Faction:
-                    <select id="corpus-faction-select" onchange="loadCorpus()">
-                        <option value="GC">GC (Great Cthulhu)</option>
-                        <option value="BG">BG (Black Goat)</option>
-                        <option value="YS">YS (Yellow Sign)</option>
-                        <option value="CC">CC (Crawling Chaos)</option>
-                    </select>
-                </label>
-            </div>
-            <div id="corpus-count" style="color:#888;margin-bottom:10px;">Loading...</div>
-            <table id="corpus-table">
-                <thead><tr><th>Game #</th><th>Brain Faction</th><th>Result</th><th>Doom</th><th>SBs</th><th>Score</th><th>Source Iter</th><th>Used for Training</th></tr></thead>
-                <tbody></tbody>
-            </table>
         </div>
     </div>
 
@@ -307,6 +271,11 @@
                         <button class="secondary" onclick="setDoomTypeFilter('arena')" id="doom-type-arena">Arena</button>
                     </div>
                 </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Factions:</label>
+                    <select id="doom-faction-filter" multiple style="width:150px;height:80px;">
+                    </select>
+                </div>
             </div>
             <canvas id="doom-chart" width="1000" height="400" style="width:1000px;height:400px;background:#1a1a2e;display:block;"></canvas>
         </div>
@@ -331,6 +300,11 @@
                         <button class="secondary" onclick="setScoreTypeFilter('arena')" id="score-type-arena">Arena</button>
                     </div>
                 </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;">Factions:</label>
+                    <select id="score-faction-filter" multiple style="width:150px;height:80px;">
+                    </select>
+                </div>
             </div>
             <canvas id="score-chart" width="1000" height="400" style="width:1000px;height:400px;background:#1a1a2e;display:block;"></canvas>
         </div>
@@ -352,31 +326,6 @@
                 </div>
             </div>
             <canvas id="wins-chart" width="1000" height="400" style="width:1000px;height:400px;background:#1a1a2e;display:block;"></canvas>
-        </div>
-
-        <div class="card">
-            <h3>Spellbooks per Game</h3>
-            <div style="margin-bottom:15px;display:flex;gap:15px;align-items:center;flex-wrap:wrap;">
-                <div>
-                    <label style="display:block;margin-bottom:5px;">Runs:</label>
-                    <select id="sbs-run-filter" multiple style="width:150px;height:80px;">
-                    </select>
-                </div>
-                <div>
-                    <label style="display:block;margin-bottom:5px;">Iters:</label>
-                    <select id="sbs-iter-filter" multiple style="width:150px;height:80px;">
-                    </select>
-                </div>
-                <div>
-                    <label style="display:block;margin-bottom:5px;">Type:</label>
-                    <div>
-                        <button class="secondary" onclick="setSbsTypeFilter('both')" id="sbs-type-both">Both</button>
-                        <button class="secondary" onclick="setSbsTypeFilter('selfplay')" id="sbs-type-selfplay">Self-play</button>
-                        <button class="secondary" onclick="setSbsTypeFilter('arena')" id="sbs-type-arena">Arena</button>
-                    </div>
-                </div>
-            </div>
-            <canvas id="sbs-chart" width="1000" height="400" style="width:1000px;height:400px;background:#1a1a2e;display:block;"></canvas>
         </div>
     </div>
 
@@ -444,10 +393,6 @@
                 console.log('Loading progress...');
                 loadProgress();
             }
-            if (name === 'corpus') {
-                console.log('Loading training corpus...');
-                initCorpus();
-            }
         }
 
         async function updateStatus() {
@@ -462,40 +407,43 @@
 
                 // Progress: show bootstrap or iteration progress
                 let progressText = '-';
-                if (data.bootstrap_phase === true) {
-                    progressText = `Bootstrap: epoch ${data.bootstrap_epoch}/${data.bootstrap_total_epochs}`;
+                if (data.bootstrap_phase) {
+                    const phaseName = data.bootstrap_phase_name === 'value' ? 'Value epoch' : 'Policy epoch';
+                    progressText = `${phaseName} ${data.bootstrap_epoch}/${data.bootstrap_total_epochs}`;
                 } else if (data.current_iter > 0) {
-                    progressText = `iter ${data.current_iter} (game ${data.current_game}/${data.total_games}) / ${data.target_iters}`;
-                } else if (data.current_game > 0) {
-                    progressText = `iter 1 starting (game ${data.current_game}/${data.total_games})`;
-                } else if (data.running && data.current_iter === 0) {
-                    // Brain is running but iter not started - likely in bootstrap
-                    progressText = 'Bootstrap starting...';
+                    if (data.current_game > 0) {
+                        progressText = `Iter ${data.current_iter}: game ${data.current_game}/${data.total_games}`;
+                    } else {
+                        progressText = `Iter ${data.current_iter}: game 1/${data.total_games} in progress`;
+                    }
+                } else if (data.current_iter === 0) {
+                    // Iter 0 is always arena evaluation
+                    if (data.current_game > 0) {
+                        progressText = `Iter 0 (Arena): game ${data.current_game}/20 complete`;
+                    } else {
+                        progressText = `Iter 0 (Arena): game 1/20 in progress`;
+                    }
+                } else {
+                    progressText = 'Starting';
                 }
                 document.getElementById('progress-status').textContent = progressText;
 
-                document.getElementById('elapsed').textContent = data.phase_elapsed_human || '-';
+                // Phase elapsed (with dynamic label)
+                const phaseLabel = data.phase_label || 'Phase';
+                document.getElementById('phase-elapsed-label').textContent = `${phaseLabel} Elapsed`;
+                document.getElementById('phase-elapsed').textContent = data.phase_elapsed_human || '-';
 
-                // Dual ETA display
-                if (data.bootstrap_phase) {
-                    // Bootstrap ETA
-                    const bootstrapRemaining = data.bootstrap_total_epochs - data.bootstrap_epoch;
-                    const timePerEpoch = data.phase_elapsed_seconds / data.bootstrap_epoch;
-                    const bootstrapETA = Math.round(bootstrapRemaining * timePerEpoch);
-                    document.getElementById('iter-eta').textContent = bootstrapETA > 0 ? formatDuration(bootstrapETA) : 'Calculating...';
-                    document.getElementById('full-run-eta').textContent = 'After bootstrap';
-                } else {
-                    document.getElementById('iter-eta').textContent = data.iter_eta_human || '-';
-                    document.getElementById('full-run-eta').textContent = data.run_eta_human || '-';
-                }
+                // Run elapsed
+                document.getElementById('run-elapsed').textContent = data.run_elapsed_human || '-';
 
-                function formatDuration(seconds) {
-                    if (seconds < 60) return `${seconds}s`;
-                    if (seconds < 3600) return `${Math.floor(seconds/60)}m ${seconds%60}s`;
-                    const hours = Math.floor(seconds/3600);
-                    const mins = Math.floor((seconds%3600)/60);
-                    return `${hours}h ${mins}m`;
-                }
+                // Disk free
+                document.getElementById('disk-free').textContent = data.disk_free || '-';
+
+                // Current ETA (epoch or current iteration)
+                document.getElementById('current-eta').textContent = data.iter_eta_human || '-';
+
+                // 20-Iter Milestone ETA
+                document.getElementById('milestone-eta').textContent = data.run_eta_human || '-';
 
                 document.getElementById('win-rate').textContent = data.arena_win_rate ? (data.arena_win_rate * 100).toFixed(1) + '%' : '-';
                 document.getElementById('arena-wins').textContent = data.arena_wins !== undefined ? `${data.arena_wins}/${data.arena_total}` : '-';
@@ -509,13 +457,6 @@
                 const scoreLabel = data.best_run_iter ? `Best Score (${data.best_run_iter})` : 'Best Score';
                 document.getElementById('best-score-label').textContent = scoreLabel;
                 document.getElementById('best-score').textContent = data.best_score ? data.best_score.toFixed(2) : '-';
-
-                // Configuration
-                document.getElementById('run-config').textContent = data.run_config || 'Unknown configuration';
-
-                // Disk space
-                document.getElementById('claude-storage').textContent = data.claude_storage_gb ? `${data.claude_storage_gb} GB` : '-';
-                document.getElementById('disk-available').textContent = data.disk_available_gb ? `${data.disk_available_gb} GB` : '-';
 
                 // Load performance history
                 await loadPerformanceHistory();
@@ -543,7 +484,7 @@
             const tbody = document.getElementById('performance-history-body');
 
             if (!allPerformanceData || allPerformanceData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="padding:20px;text-align:center;color:#666;">No data</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" style="padding:20px;text-align:center;color:#666;">No data</td></tr>';
                 document.getElementById('performance-page-info').textContent = 'No data';
                 return;
             }
@@ -553,118 +494,50 @@
             const end = start + performancePerPage;
             const pageData = allPerformanceData.slice(start, end);
 
-            const rows = pageData.map((row, idx) => {
-                const winRate = row.total > 0 ? ((row.wins / row.total) * 100).toFixed(0) + '%' : '-';
-                const expandId = `perf-expand-${start + idx}`;
+            const rows = pageData.map(row => {
+                const winRate = row.total_games > 0 ? ((row.wins / row.total_games) * 100).toFixed(0) + '%' : '-';
+                const avgSBs = row.avg_spellbooks !== undefined ? row.avg_spellbooks.toFixed(1) : '-';
+                const avgAPs = row.avg_length !== undefined ? row.avg_length.toFixed(1) : '-';
+                const avgDoom = row.avg_doom !== undefined ? row.avg_doom.toFixed(1) : '-';
+                const avgScore = row.avg_score !== undefined ? row.avg_score.toFixed(3) : '-';
+                const breakdownId = `perf-breakdown-${row.run}-${row.iter}`;
+
+                // Build faction breakdown HTML if factions data exists
+                let factionHtml = '';
+                if (row.factions && Object.keys(row.factions).length > 0) {
+                    factionHtml = Object.entries(row.factions).map(([faction, stats]) => `
+                        <div style="padding:8px;background:#16213e;border-radius:4px;margin:5px;">
+                            <div style="font-weight:bold;color:#4ade80;margin-bottom:5px;">${faction}</div>
+                            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px;">
+                                <div><span style="color:#888;">Games:</span> ${stats.games || 0}</div>
+                                <div><span style="color:#888;">Wins:</span> ${stats.wins || 0} (${stats.win_rate ? (stats.win_rate * 100).toFixed(0) : 0}%)</div>
+                                <div><span style="color:#888;">Avg Doom:</span> ${stats.avg_doom !== undefined ? stats.avg_doom.toFixed(1) : '-'}</div>
+                                <div><span style="color:#888;">Avg SBs:</span> ${stats.avg_sbs !== undefined ? stats.avg_sbs.toFixed(1) : '-'}</div>
+                                <div><span style="color:#888;">Total Doom:</span> ${stats.doom || 0}</div>
+                                <div><span style="color:#888;">Total SBs:</span> ${stats.sbs || 0}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
                 return `
-                    <tr style="border-bottom:1px solid #16213e;cursor:pointer;background:#1a1a2e;" onclick="togglePerformanceFactionBreakdown('${row.run}', ${row.iter}, '${expandId}')" onmouseover="this.style.background='#16213e'" onmouseout="this.style.background='#1a1a2e'">
+                    <tr style="border-bottom:1px solid #16213e;cursor:pointer;" onclick="toggleBreakdown('${breakdownId}')">
                         <td style="padding:8px;">${row.run}</td>
                         <td style="padding:8px;">I${String(row.iter).padStart(2, '0')}</td>
-                        <td style="padding:8px;text-align:right;">${row.avg_doom.toFixed(1)}</td>
-                        <td style="padding:8px;text-align:right;">${row.avg_sbs !== undefined ? row.avg_sbs.toFixed(1) : '-'}</td>
-                        <td style="padding:8px;text-align:right;">${row.avg_score.toFixed(2)}</td>
-                        <td style="padding:8px;">${row.type}</td>
-                        <td style="padding:8px;text-align:right;">${row.wins}/${row.total} (${winRate})</td>
-                        <td style="padding:8px;text-align:right;">${row.total}</td>
+                        <td style="padding:8px;text-align:right;">${avgDoom}</td>
+                        <td style="padding:8px;text-align:right;">${avgSBs}</td>
+                        <td style="padding:8px;text-align:right;">${avgAPs}</td>
+                        <td style="padding:8px;text-align:right;">${avgScore}</td>
+                        <td style="padding:8px;">${row.type || '-'}</td>
+                        <td style="padding:8px;text-align:right;">${row.wins}/${row.total_games} (${winRate})</td>
+                        <td style="padding:8px;text-align:right;">${row.total_games}</td>
                     </tr>
-                    <tr id="${expandId}" style="display:none;background:#0f3460;">
-                        <td colspan="8" style="padding:15px;">
-                            <div style="padding:10px;background:#16213e;border-radius:4px;">
-                                <strong style="color:#e94560;">Per-Faction Breakdown:</strong>
-                                <div id="${expandId}-content" style="margin-top:10px;color:#ccc;">Loading...</div>
-                            </div>
-                        </td>
-                    </tr>
+                    ${factionHtml ? `<tr id="${breakdownId}" style="display:none;"><td colspan="9" style="background:#0f3460;padding:15px;"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">${factionHtml}</div></td></tr>` : ''}
                 `;
             }).join('');
 
             tbody.innerHTML = rows;
             document.getElementById('performance-page-info').textContent = `Page ${performancePage} of ${totalPages}`;
-        }
-
-        async function togglePerformanceFactionBreakdown(run, iter, expandId) {
-            const expandRow = document.getElementById(expandId);
-            if (expandRow.style.display === 'none') {
-                expandRow.style.display = 'table-row';
-                // Load faction data
-                const contentDiv = document.getElementById(`${expandId}-content`);
-                try {
-                    const res = await fetch(`/api/faction-breakdown?run=${run}&iteration=${iter}`);
-                    const factions = await res.json();
-                    if (factions.length === 0) {
-                        contentDiv.innerHTML = '<p style="color:#888;">No faction data available</p>';
-                    } else {
-                        const factionHTML = factions.map(f => {
-                            const winRate = f.planned > 0 ? ((f.wins / f.planned) * 100).toFixed(0) + '%' : '-';
-                            const progress = f.planned > 0 ? ((f.games / f.planned) * 100).toFixed(0) + '%' : '-';
-                            return `
-                                <div style="padding:8px;border-bottom:1px solid #0f3460;display:flex;justify-content:space-between;align-items:center;">
-                                    <span style="font-weight:bold;color:#4ade80;min-width:60px;">${f.faction}</span>
-                                    <span style="min-width:120px;">Games: ${f.games}/${f.planned} (${progress})</span>
-                                    <span style="min-width:100px;">Wins: ${f.wins}</span>
-                                    <span style="min-width:120px;">Win Rate: ${winRate}</span>
-                                    <span style="min-width:120px;">Avg Doom: ${f.avg_doom}</span>
-                                    <span style="min-width:120px;">Avg Score: ${f.avg_score}</span>
-                                </div>
-                            `;
-                        }).join('');
-                        contentDiv.innerHTML = factionHTML;
-                    }
-                } catch (e) {
-                    contentDiv.innerHTML = `<p style="color:#e94560;">Error loading faction data: ${e.message}</p>`;
-                }
-            } else {
-                expandRow.style.display = 'none';
-            }
-        }
-
-        async function toggleProgressFactionBreakdown() {
-            const expandDiv = document.getElementById('progress-expansion');
-            if (expandDiv.style.display === 'none') {
-                expandDiv.style.display = 'block';
-                // Get current run and iter from status
-                const runTag = document.getElementById('run-tag').textContent;
-                const progressText = document.getElementById('progress-status').textContent;
-
-                // Extract iteration from progress text (e.g., "iter 12 (game 1289/1600) / 20")
-                const iterMatch = progressText.match(/iter (\d+)/);
-                if (!iterMatch || runTag === '-') {
-                    document.getElementById('progress-expansion-content').innerHTML = '<p style="color:#888;">No active iteration</p>';
-                    return;
-                }
-
-                const currentIter = parseInt(iterMatch[1]);
-                const contentDiv = document.getElementById('progress-expansion-content');
-                contentDiv.innerHTML = 'Loading...';
-
-                try {
-                    const res = await fetch(`/api/faction-breakdown?run=${runTag}&iteration=${currentIter}`);
-                    const factions = await res.json();
-                    if (factions.length === 0) {
-                        contentDiv.innerHTML = '<p style="color:#888;">No faction data available</p>';
-                    } else {
-                        const factionHTML = factions.map(f => {
-                            const winRate = f.planned > 0 ? ((f.wins / f.planned) * 100).toFixed(0) + '%' : '-';
-                            const progress = f.planned > 0 ? ((f.games / f.planned) * 100).toFixed(0) + '%' : '-';
-                            return `
-                                <div style="padding:8px;border-bottom:1px solid #0f3460;display:flex;justify-content:space-between;align-items:center;">
-                                    <span style="font-weight:bold;color:#4ade80;min-width:60px;">${f.faction}</span>
-                                    <span style="min-width:120px;">Games: ${f.games}/${f.planned} (${progress})</span>
-                                    <span style="min-width:100px;">Wins: ${f.wins}</span>
-                                    <span style="min-width:120px;">Win Rate: ${winRate}</span>
-                                    <span style="min-width:120px;">Avg Doom: ${f.avg_doom}</span>
-                                    <span style="min-width:120px;">Avg Score: ${f.avg_score}</span>
-                                </div>
-                            `;
-                        }).join('');
-                        contentDiv.innerHTML = factionHTML;
-                    }
-                } catch (e) {
-                    contentDiv.innerHTML = `<p style="color:#e94560;">Error loading faction data: ${e.message}</p>`;
-                }
-            } else {
-                expandDiv.style.display = 'none';
-            }
         }
 
         function changePerformancePage(delta) {
@@ -680,29 +553,37 @@
             tbody.innerHTML = data.map(c => `
                 <tr>
                     <td>${c.name}</td>
+                    <td>${c.score.toFixed(2)}</td>
                     <td>${c.tag}</td>
-                    <td>${c.iter || '-'}</td>
-                    <td>${(c.score * 100).toFixed(1)}%</td>
-                    <td>${c.best_game_score ? c.best_game_score.toFixed(3) : '-'}</td>
                     <td><button class="secondary" onclick="loadCheckpoint('${c.path}')">Load</button></td>
                 </tr>
             `).join('');
         }
 
+        let allGamesData = [];
         let currentPage = 1;
         const gamesPerPage = 50;
 
         async function loadIters() {
-            const res = await fetch('/api/games/metadata');
-            const metadata = await res.json();
+            const res = await fetch('/api/games');
+            allGamesData = await res.json();
+
+            // Get unique runs, iters, and factions
+            const runs = [...new Set(allGamesData.map(g => g.run))].sort();
+            const iters = [...new Set(allGamesData.map(g => g.iter))].sort((a,b) => b-a);
+            const factions = [...new Set(allGamesData.map(g => g.faction))].sort();
 
             const runSelect = document.getElementById('run-select');
             runSelect.innerHTML = '<option value="">All</option>' +
-                metadata.runs.map(r => `<option value="${r}">${r}</option>`).join('');
+                runs.map(r => `<option value="${r}">${r}</option>`).join('');
 
             const iterSelect = document.getElementById('iter-select');
             iterSelect.innerHTML = '<option value="">All</option>' +
-                metadata.iters.map(i => `<option value="${i}">${i}</option>`).join('');
+                iters.map(i => `<option value="${i}">${i}</option>`).join('');
+
+            const factionSelect = document.getElementById('faction-select');
+            factionSelect.innerHTML = '<option value="">All</option>' +
+                factions.map(f => `<option value="${f}">${f}</option>`).join('');
 
             currentPage = 1;
             loadGames();
@@ -715,22 +596,18 @@
             }
         }
 
-        let cachedTotalPages = 1;
-
         function nextPage() {
-            if (currentPage < cachedTotalPages) {
+            const run = document.getElementById('run-select').value;
+            const iter = document.getElementById('iter-select').value;
+            const faction = document.getElementById('faction-select').value;
+            let filtered = allGamesData;
+            if (run) filtered = filtered.filter(g => g.run === run);
+            if (iter) filtered = filtered.filter(g => g.iter === parseInt(iter));
+            if (faction) filtered = filtered.filter(g => g.faction === faction);
+            const totalPages = Math.ceil(filtered.length / gamesPerPage);
+            if (currentPage < totalPages) {
                 currentPage++;
                 loadGames();
-            }
-        }
-
-        function jumpToPage(page, totalPages) {
-            const pageNum = parseInt(page);
-            if (pageNum >= 1 && pageNum <= totalPages) {
-                currentPage = pageNum;
-                loadGames();
-            } else {
-                alert(`Please enter a page between 1 and ${totalPages}`);
             }
         }
 
@@ -738,31 +615,35 @@
             try {
                 const run = document.getElementById('run-select').value;
                 const iter = document.getElementById('iter-select').value;
-                const result = document.getElementById('result-select').value;
+                const faction = document.getElementById('faction-select').value;
+                const resultSelect = document.getElementById('result-select');
+                const selectedResults = Array.from(resultSelect.selectedOptions).map(opt => opt.value);
 
-                // Build API URL with pagination parameters
-                let apiUrl = `/api/games?page=${currentPage}&per_page=${gamesPerPage}`;
-                if (run) apiUrl += `&run=${run}`;
-                if (iter) apiUrl += `&iter=${iter}`;
-                if (result) apiUrl += `&result=${result}`;
+                let games = allGamesData;
 
-                // Fetch paginated games from server
-                const res = await fetch(apiUrl);
-                const data = await res.json();
+                // Filter by run, iter, faction, and result
+                if (run) games = games.filter(g => g.run === run);
+                if (iter) games = games.filter(g => g.iter === parseInt(iter));
+                if (faction) games = games.filter(g => g.faction === faction);
 
-                const pageGames = data.games;
-                const totalGames = data.total_count;
-                const totalPages = data.total_pages;
+                // Result filtering (Won/Lost/Killed)
+                games = games.filter(g => {
+                    const rawResult = g.result || 'unknown';
+                    if (rawResult === 'killed') return selectedResults.includes('Killed');
+                    if (g.is_win || g.won) return selectedResults.includes('Won');
+                    return selectedResults.includes('Lost');
+                });
+
+                const totalGames = games.length;
+                const totalPages = Math.ceil(totalGames / gamesPerPage);
                 const startIdx = (currentPage - 1) * gamesPerPage;
-                const endIdx = Math.min(startIdx + gamesPerPage, totalGames);
-
-                // Cache total pages for pagination controls
-                cachedTotalPages = totalPages;
+                const endIdx = startIdx + gamesPerPage;
+                const pageGames = games.slice(startIdx, endIdx);
 
                 // Update count and page info
                 document.getElementById('games-count').textContent =
                     `Showing ${startIdx + 1}-${Math.min(endIdx, totalGames)} of ${totalGames} games`;
-                document.getElementById('page-info').innerHTML = `Page <input type="number" id="page-input" min="1" max="${totalPages}" value="${currentPage}" style="width:60px;text-align:center;background:#0f3460;color:#fff;border:1px solid #e94560;padding:2px;" onchange="jumpToPage(this.value, ${totalPages})"> of ${totalPages}`;
+                document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
                 document.getElementById('prev-btn').disabled = currentPage === 1;
                 document.getElementById('next-btn').disabled = currentPage >= totalPages;
 
@@ -775,9 +656,17 @@
 
                 const tbody = document.querySelector('#games-table tbody');
                 tbody.innerHTML = pageGames.map(g => {
-                // Map result to user-friendly labels
-                const resultLabel = g.result === 'killed' ? 'Killed' :
-                                   (g.is_win ? 'Won' : 'Lost');
+                // Map result to Won/Lost/Killed display
+                const rawResult = g.result || 'unknown';
+                let resultDisplay = 'Unknown';
+                if (rawResult === 'killed') {
+                    resultDisplay = 'Killed';
+                } else if (g.is_win || g.won) {
+                    resultDisplay = 'Won';
+                } else {
+                    resultDisplay = 'Lost';
+                }
+
                 const breakdownId = 'breakdown-' + g.run + '-' + g.iter + '-' + g.faction.replace(/\s+/g, '-');
                 // Arena: brain won = "Learning", brain lost = "Bot"
                 // Self-play: brain won = "Learning", brain lost = "Champion"
@@ -789,34 +678,26 @@
                     <td>${g.iter}</td>
                     <td>${g.is_arena ? 'Arena' : 'Self-play'}</td>
                     <td>${g.faction}</td>
-                    <td>${resultLabel}</td>
+                    <td>${resultDisplay}</td>
                     <td>${g.doom}</td>
-                    <td>${g.spellbooks !== undefined ? g.spellbooks : '-'}</td>
-                    <td><span class="breakdown" onclick="toggleBreakdown('${breakdownId}')">${g.score !== null ? g.score.toFixed(2) : '-'}</span></td>
-                    <td>${g.game_length !== undefined && g.game_length !== null ? g.game_length : '?'}
+                    <td>${g.spellbooks || 0}</td>
+                    <td><span class="breakdown" onclick="toggleBreakdown('${breakdownId}')">${g.score !== null ? g.score.toFixed(3) : '-'}</span></td>
                     <td>${winner}</td>
+                    <td>${g.game_length || '?'}</td>
                     <td>${placement}</td>
-                    <td>${g.has_trace ?
-                        `<button class="secondary" onclick="generateReplay('${g.filename}')">View</button>` :
-                        `<button class="secondary" disabled style="opacity:0.4;cursor:not-allowed;">No Trace</button>`
-                    }</td>
+                    <td><button class="secondary" onclick="generateReplay('${g.file}')">View</button></td>
                 </tr>
                 <tr id="${breakdownId}" style="display:none;">
                     <td colspan="12" style="background:#0f3460;padding:15px;">
-                        <div style="padding:10px;background:#16213e;border:2px solid #e94560;">
-                            <div><strong>Brain's final 0-1 score:</strong> <span style="font-size:18px;color:#4ade80;">${g.score !== null ? g.score.toFixed(2) : 'N/A'}</span></div>
-                            <div style="margin-top:12px;font-size:13px;">
-                                ${g.is_win ? `
-                                    <div style="color:#4ade80;margin-bottom:4px;">✓ <strong>WIN</strong> = 1.00</div>
-                                ` : g.placement ? `
-                                    <div style="color:#888;margin-bottom:4px;">Placement: ${g.placement}</div>
-                                    <div style="color:#888;margin-bottom:4px;">Doom: ${g.doom}</div>
-                                    <div style="color:#666;font-size:11px;margin-top:6px;">Raw shaping and placement bonus not logged in traces</div>
-                                ` : `
-                                    <div style="color:#888;">Doom: ${g.doom}</div>
-                                    <div style="color:#666;font-size:11px;margin-top:6px;">Component breakdown not available</div>
-                                `}
-                            </div>
+                        <div style="margin-bottom:15px;padding:10px;background:#16213e;border:2px solid #e94560;">
+                            <div><strong>Brain's final 0-1 score:</strong> <span style="font-size:18px;color:#4ade80;">${g.score !== null ? g.score.toFixed(3) : 'N/A'}</span></div>
+                            <div style="margin-top:8px;font-size:11px;color:#888;">Components shown below are from action log only. Full score includes: preDoomPower, unitsOnMap, powerUse, sbUse, and other state-based rewards not in action traces.</div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;font-size:13px;">
+                            ${g.breakdown.split(/\s+/).filter(x => x.includes('=')).map(item => {
+                                const [name, count] = item.split('=');
+                                return `<div><span style="color:#888;">${name}:</span> <span style="font-weight:bold;">${count}</span></div>`;
+                            }).join('')}
                         </div>
                     </td>
                 </tr>
@@ -1005,14 +886,13 @@
         let doomTypeFilter = 'both';
         let scoreTypeFilter = 'both';
         let winsTypeFilter = 'both';
-        let sbsTypeFilter = 'both';
         let doomRunsFilter = [];
         let scoreRunsFilter = [];
         let winsRunsFilter = [];
-        let sbsRunsFilter = [];
         let doomItersFilter = [];
         let scoreItersFilter = [];
-        let sbsItersFilter = [];
+        let doomFactionsFilter = [];
+        let scoreFactionsFilter = [];
 
         async function loadProgress() {
             try {
@@ -1020,39 +900,36 @@
                 progressData = await res.json();
                 console.log('Progress data loaded:', progressData);
 
-                // Populate run and iter filters
+                // Populate run, iter, and faction filters
                 const allData = [...progressData.selfplay, ...progressData.arena];
                 const uniqueRuns = [...new Set(allData.map(d => d.run))].sort();
                 const uniqueIters = [...new Set(allData.map(d => d.iter))].sort((a,b) => a-b);
+                const uniqueFactions = [...new Set(allData.map(d => d.faction))].sort();
 
                 const doomRunSelect = document.getElementById('doom-run-filter');
                 const scoreRunSelect = document.getElementById('score-run-filter');
                 const winsRunSelect = document.getElementById('wins-run-filter');
-                const sbsRunSelect = document.getElementById('sbs-run-filter');
                 const doomIterSelect = document.getElementById('doom-iter-filter');
                 const scoreIterSelect = document.getElementById('score-iter-filter');
-                const sbsIterSelect = document.getElementById('sbs-iter-filter');
+                const doomFactionSelect = document.getElementById('doom-faction-filter');
+                const scoreFactionSelect = document.getElementById('score-faction-filter');
 
-                // Select only the LATEST run by default
-                const latestRun = uniqueRuns[uniqueRuns.length - 1];
-                doomRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" ${r === latestRun ? 'selected' : ''}>${r}</option>`).join('');
-                scoreRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" ${r === latestRun ? 'selected' : ''}>${r}</option>`).join('');
-                winsRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" ${r === latestRun ? 'selected' : ''}>${r}</option>`).join('');
-                sbsRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" ${r === latestRun ? 'selected' : ''}>${r}</option>`).join('');
-
-                // Select all iters by default
+                doomRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" selected>${r}</option>`).join('');
+                scoreRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" selected>${r}</option>`).join('');
+                winsRunSelect.innerHTML = uniqueRuns.map(r => `<option value="${r}" selected>${r}</option>`).join('');
                 doomIterSelect.innerHTML = uniqueIters.map(i => `<option value="${i}" selected>${i}</option>`).join('');
                 scoreIterSelect.innerHTML = uniqueIters.map(i => `<option value="${i}" selected>${i}</option>`).join('');
-                sbsIterSelect.innerHTML = uniqueIters.map(i => `<option value="${i}" selected>${i}</option>`).join('');
+                doomFactionSelect.innerHTML = uniqueFactions.map(f => `<option value="${f}" selected>${f}</option>`).join('');
+                scoreFactionSelect.innerHTML = uniqueFactions.map(f => `<option value="${f}" selected>${f}</option>`).join('');
 
-                // Initialize with only latest run selected, all iters
-                doomRunsFilter = [latestRun];
-                scoreRunsFilter = [latestRun];
-                winsRunsFilter = [latestRun];
-                sbsRunsFilter = [latestRun];
+                // Initialize with all runs, iters, and factions selected
+                doomRunsFilter = uniqueRuns;
+                scoreRunsFilter = uniqueRuns;
+                winsRunsFilter = uniqueRuns;
                 doomItersFilter = uniqueIters;
                 scoreItersFilter = uniqueIters;
-                sbsItersFilter = uniqueIters;
+                doomFactionsFilter = uniqueFactions;
+                scoreFactionsFilter = uniqueFactions;
 
                 doomRunSelect.onchange = () => {
                     doomRunsFilter = Array.from(doomRunSelect.selectedOptions).map(o => o.value);
@@ -1070,23 +947,22 @@
                     scoreItersFilter = Array.from(scoreIterSelect.selectedOptions).map(o => parseInt(o.value));
                     drawScoreChart();
                 };
+                doomFactionSelect.onchange = () => {
+                    doomFactionsFilter = Array.from(doomFactionSelect.selectedOptions).map(o => o.value);
+                    drawDoomChart();
+                };
+                scoreFactionSelect.onchange = () => {
+                    scoreFactionsFilter = Array.from(scoreFactionSelect.selectedOptions).map(o => o.value);
+                    drawScoreChart();
+                };
                 winsRunSelect.onchange = () => {
                     winsRunsFilter = Array.from(winsRunSelect.selectedOptions).map(o => o.value);
                     drawWinsChart();
-                };
-                sbsRunSelect.onchange = () => {
-                    sbsRunsFilter = Array.from(sbsRunSelect.selectedOptions).map(o => o.value);
-                    drawSbsChart();
-                };
-                sbsIterSelect.onchange = () => {
-                    sbsItersFilter = Array.from(sbsIterSelect.selectedOptions).map(o => parseInt(o.value));
-                    drawSbsChart();
                 };
 
                 drawDoomChart();
                 drawScoreChart();
                 drawWinsChart();
-                drawSbsChart();
             } catch (e) {
                 console.error('Failed to load progress:', e);
             }
@@ -1113,13 +989,6 @@
             drawWinsChart();
         }
 
-        function setSbsTypeFilter(filter) {
-            sbsTypeFilter = filter;
-            document.querySelectorAll('[id^="sbs-type-"]').forEach(b => b.style.background = '#0f3460');
-            document.getElementById('sbs-type-' + filter).style.background = '#e94560';
-            drawSbsChart();
-        }
-
         function drawDoomChart() {
             const canvas = document.getElementById('doom-chart');
             if (!canvas) return;
@@ -1132,8 +1001,8 @@
             else if (doomTypeFilter === 'selfplay') data = progressData.selfplay;
             else data = progressData.arena;
 
-            // Filter by runs and iters
-            data = data.filter(d => doomRunsFilter.includes(d.run) && doomItersFilter.includes(d.iter));
+            // Filter by runs, iters, and factions
+            data = data.filter(d => doomRunsFilter.includes(d.run) && doomItersFilter.includes(d.iter) && doomFactionsFilter.includes(d.faction));
 
             if (!data.length) {
                 ctx.fillStyle = '#888';
@@ -1145,7 +1014,7 @@
             // Sort by run_iter_game_num to ensure proper ordering
             data.sort((a, b) => a.run_iter_game_num - b.run_iter_game_num);
 
-            // Fixed Y-axis range (0-60 for doom)
+            // Fixed Y-axis range
             const minY = 0;
             const maxY = 60;
             const rangeY = maxY - minY;
@@ -1199,11 +1068,11 @@
             ctx.lineTo(w-20, h-60);
             ctx.stroke();
 
-            // Horizontal gridlines (every 10 doom from 0 to 60)
+            // Horizontal gridlines (every 10 doom)
             ctx.strokeStyle = '#333';
             ctx.lineWidth = 1;
             ctx.setLineDash([2, 2]);
-            for (let doom = 0; doom <= maxY; doom += 10) {
+            for (let doom = 20; doom < maxY; doom += 10) {
                 const y = h - 60 - ((doom - minY) / rangeY) * (h - 80);
                 ctx.beginPath();
                 ctx.moveTo(60, y);
@@ -1296,6 +1165,41 @@
                     ctx.fill();
                 });
             });
+
+            // Draw overall run regression lines
+            const uniqueRuns = [...new Set(positionedData.map(d => d.run))];
+            uniqueRuns.forEach(run => {
+                const runData = positionedData.filter(d => d.run === run);
+                if (runData.length < 2) return;
+
+                // Calculate regression across entire run
+                const n = runData.length;
+                const sx = runData.reduce((s, d) => s + d.xPos, 0);
+                const sy = runData.reduce((s, d) => s + d.doom, 0);
+                const sxy = runData.reduce((s, d) => s + d.xPos * d.doom, 0);
+                const sx2 = runData.reduce((s, d) => s + d.xPos * d.xPos, 0);
+                const m = (n * sxy - sx * sy) / (n * sx2 - sx * sx);
+                const b = (sy - m * sx) / n;
+
+                // Draw overall regression line (solid, thicker, white)
+                const x1 = 60 + (runData[0].xPos / rangeX) * (w - 80);
+                const x2 = 60 + (runData[runData.length - 1].xPos / rangeX) * (w - 80);
+                const y1 = h - 60 - ((m * runData[0].xPos + b - minY) / rangeY) * (h - 80);
+                const y2 = h - 60 - ((m * runData[runData.length - 1].xPos + b - minY) / rangeY) * (h - 80);
+
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+
+                // Add to legend
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '11px sans-serif';
+                ctx.fillText(`${run} OVERALL m=${m.toFixed(2)}`, w - 200, 25);
+            });
         }
 
         function drawScoreChart() {
@@ -1310,8 +1214,8 @@
             else if (scoreTypeFilter === 'selfplay') data = progressData.selfplay;
             else data = progressData.arena;
 
-            // Filter by runs and iters
-            data = data.filter(d => scoreRunsFilter.includes(d.run) && scoreItersFilter.includes(d.iter));
+            // Filter by runs, iters, and factions
+            data = data.filter(d => scoreRunsFilter.includes(d.run) && scoreItersFilter.includes(d.iter) && scoreFactionsFilter.includes(d.faction));
 
             if (!data.length) {
                 ctx.fillStyle = '#888';
@@ -1474,6 +1378,41 @@
                     ctx.fill();
                 });
             });
+
+            // Draw overall run regression lines
+            const uniqueRuns = [...new Set(positionedData.map(d => d.run))];
+            uniqueRuns.forEach(run => {
+                const runData = positionedData.filter(d => d.run === run);
+                if (runData.length < 2) return;
+
+                // Calculate regression across entire run
+                const n = runData.length;
+                const sx = runData.reduce((s, d) => s + d.xPos, 0);
+                const sy = runData.reduce((s, d) => s + d.score, 0);
+                const sxy = runData.reduce((s, d) => s + d.xPos * d.score, 0);
+                const sx2 = runData.reduce((s, d) => s + d.xPos * d.xPos, 0);
+                const m = (n * sxy - sx * sy) / (n * sx2 - sx * sx);
+                const b = (sy - m * sx) / n;
+
+                // Draw overall regression line (solid, thicker, white)
+                const x1 = 60 + (runData[0].xPos / rangeX) * (w - 80);
+                const x2 = 60 + (runData[runData.length - 1].xPos / rangeX) * (w - 80);
+                const y1 = h - 60 - ((m * runData[0].xPos + b - minY) / rangeY) * (h - 80);
+                const y2 = h - 60 - ((m * runData[runData.length - 1].xPos + b - minY) / rangeY) * (h - 80);
+
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+
+                // Add to legend
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '11px sans-serif';
+                ctx.fillText(`${run} OVERALL m=${m.toFixed(4)}`, w - 200, 25);
+            });
         }
 
         function drawWinsChart() {
@@ -1615,167 +1554,23 @@
             });
         }
 
-        function drawSbsChart() {
-            const canvas = document.getElementById('sbs-chart');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const w = canvas.width, h = canvas.height;
-            ctx.clearRect(0, 0, w, h);
+        function refreshActiveTab() {
+            // Refresh data for the currently active tab
+            const activeContent = document.querySelector('.content.active');
+            if (!activeContent) return;
 
-            let data = [];
-            if (sbsTypeFilter === 'both') data = [...progressData.selfplay, ...progressData.arena];
-            else if (sbsTypeFilter === 'selfplay') data = progressData.selfplay;
-            else data = progressData.arena;
+            const tabId = activeContent.id;
+            console.log('Refreshing tab:', tabId);
 
-            // Filter by runs and iters
-            data = data.filter(d => sbsRunsFilter.includes(d.run) && sbsItersFilter.includes(d.iter));
-
-            if (!data.length) {
-                ctx.fillStyle = '#888';
-                ctx.font = '16px sans-serif';
-                ctx.fillText('No data', w/2 - 30, h/2);
-                return;
-            }
-
-            // Fixed Y-axis range 0-6
-            const minY = 0, maxY = 6, rangeY = 6;
-            const rangeX = Math.max(1, data.length - 1);
-
-            // Axes
-            ctx.strokeStyle = '#555';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(60, 20);
-            ctx.lineTo(60, h-60);
-            ctx.lineTo(w-20, h-60);
-            ctx.stroke();
-
-            // Horizontal gridlines (every 1 SB)
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 1;
-            ctx.setLineDash([2, 2]);
-            for (let sb = 1; sb <= 6; sb++) {
-                const y = h - 60 - (sb / rangeY) * (h - 80);
-                ctx.beginPath();
-                ctx.moveTo(60, y);
-                ctx.lineTo(w - 20, y);
-                ctx.stroke();
-                ctx.fillStyle = '#666';
-                ctx.font = '9px sans-serif';
-                ctx.fillText(sb.toString(), 35, y + 3);
-            }
-            ctx.setLineDash([]);
-
-            // Y-axis labels
-            ctx.fillStyle = '#888';
-            ctx.font = '11px sans-serif';
-            ctx.fillText('SBs', 20, 15);
-
-            // X-axis labels
-            const labelStep = Math.max(1, Math.ceil(data.length / 20));
-            ctx.fillStyle = '#888';
-            ctx.font = '7px sans-serif';
-            data.filter((_, i) => i % labelStep === 0).forEach((d, idx) => {
-                const realIdx = idx * labelStep;
-                const x = 60 + (realIdx / rangeX) * (w - 80);
-                const label = d.run_iter_game;
-                ctx.save();
-                ctx.translate(x, h-42);
-                ctx.rotate(-Math.PI/4);
-                ctx.fillText(label, 0, 0);
-                ctx.restore();
-            });
-
-            // Plot points
-            const runColors = {'R39': '#e94560', 'R40': '#4ade80', 'R38': '#ffd700', 'R27': '#888'};
-            data.forEach((d, idx) => {
-                const x = 60 + (idx / rangeX) * (w - 80);
-                const sbs = d.spellbooks || 0;
-                const y = h - 60 - (sbs / rangeY) * (h - 80);
-                ctx.fillStyle = runColors[d.run] || '#888';
-                ctx.beginPath();
-                ctx.arc(x, y, 3, 0, 2 * Math.PI);
-                ctx.fill();
-            });
-        }
-
-        let corpusInitialized = false;
-
-        async function initCorpus() {
-            if (corpusInitialized) {
-                loadCorpus();
-                return;
-            }
-
-            try {
-                // Fetch enough games to get all R39 iterations (R39 has ~1000 games across 12 iterations)
-                // Using 500 games should cover most/all iterations
-                const r39Res = await fetch('/api/games?run=R39&page=1&per_page=500');
-                const r39Data = await r39Res.json();
-                const r39Iters = [...new Set(r39Data.games.map(g => g.iter))].sort((a,b) => b-a);
-
-                // Populate iteration dropdown with R39 iterations found
-                const iterSelect = document.getElementById('corpus-iter-select');
-                if (r39Iters.length > 0) {
-                    iterSelect.innerHTML = r39Iters.map(i =>
-                        `<option value="${i}">${i}${i === r39Iters[0] ? ' (most recent)' : ''}</option>`
-                    ).join('');
-                } else {
-                    // Fallback if no games found
-                    iterSelect.innerHTML = '<option value="11">11 (most recent)</option><option value="10">10</option>';
-                }
-
-                corpusInitialized = true;
-                loadCorpus();
-            } catch (e) {
-                console.error('Failed to initialize corpus:', e);
-                // Fallback to default
-                const iterSelect = document.getElementById('corpus-iter-select');
-                iterSelect.innerHTML = '<option value="11">11 (most recent)</option><option value="10">10</option>';
-                loadCorpus();
-            }
-        }
-
-        async function loadCorpus() {
-            const run = document.getElementById('corpus-run-select').value;
-            const iter = document.getElementById('corpus-iter-select').value;
-            const faction = document.getElementById('corpus-faction-select').value;
-
-            const countDiv = document.getElementById('corpus-count');
-            const tbody = document.querySelector('#corpus-table tbody');
-
-            countDiv.textContent = 'Loading...';
-            tbody.innerHTML = '';
-
-            try {
-                const res = await fetch(`/api/training-corpus?run=${run}&iter=${iter}&faction=${faction}`);
-                const data = await res.json();
-
-                if (data.games && data.games.length > 0) {
-                    countDiv.textContent = `${data.games.length} games used for training (${data.selected_count} selected from ${data.total_played} played)`;
-
-                    data.games.forEach(g => {
-                        const row = tbody.insertRow();
-                        const usedText = g.used_for_training ? 'Yes' : 'No';
-                        const usedColor = g.used_for_training ? '#4ade80' : '#888';
-                        const sourceIter = g.source_iter >= 0 ? g.source_iter : '?';
-                        row.innerHTML = `
-                            <td>Game ${g.game_num}</td>
-                            <td>${g.faction}</td>
-                            <td>${g.result}</td>
-                            <td>${g.doom}</td>
-                            <td>${g.spellbooks !== undefined ? g.spellbooks : '-'}</td>
-                            <td>${g.score.toFixed(3)}</td>
-                            <td>${sourceIter}</td>
-                            <td style="color:${usedColor};">${usedText}</td>
-                        `;
-                    });
-                } else {
-                    countDiv.textContent = 'No training data found for this iteration/faction';
-                }
-            } catch (e) {
-                countDiv.textContent = 'Error loading corpus data';
-                console.error('Failed to load corpus:', e);
+            if (tabId === 'status') {
+                updateStatus();
+                loadPerformanceHistory();
+            } else if (tabId === 'control') {
+                loadCheckpoints();
+            } else if (tabId === 'games') {
+                loadIters();
+            } else if (tabId === 'progress') {
+                loadProgress();
             }
         }
 
@@ -1784,8 +1579,9 @@
             if (hash) {
                 showTab(hash);
             }
+            // Initial load
             updateStatus();
-            setInterval(updateStatus, 30000);
+            loadPerformanceHistory();
         }
 
         // Run immediately AND on DOMContentLoaded

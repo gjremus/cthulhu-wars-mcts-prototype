@@ -1575,16 +1575,21 @@ def _parse_performance_history():
 
 def get_performance_history():
     """Get performance history from canonical store."""
-    # Load games from canonical store
+    # Load performance history directly from canonical store
     try:
         with open('/Users/gremus/cthulhu-wars-mcts-prototype/brain-dashboard/canonical_games.json', 'r') as f:
             store = json.load(f)
+        performance_history = store.get("performanceHistory", [])
+        if performance_history:
+            # Return the pre-built performance history with faction breakdowns
+            return performance_history
+        # Fallback to old aggregation if performanceHistory is missing
         all_games = store.get("games", [])
     except Exception as e:
         print(f"ERROR loading canonical store: {e}")
         return []
 
-    # Aggregate by (run, iter, type)
+    # LEGACY: Aggregate by (run, iter, type) if performanceHistory not in store
     iter_stats = {}
     for game in all_games:
         # EXCLUDE killed games from performance history (matches progress charts)
@@ -1908,15 +1913,15 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             # Format ONLY the paginated subset
             formatted = []
             for g in page_games:
-                # Extract faction from filename (e.g., "arena-R34-iter6-gc-game1" -> "GC")
-                filename = g.get("filename", "")
-                faction = "?"
-                if filename:
-                    parts = filename.split("-")
+                # Get faction from canonical store (or extract from trace_file as fallback)
+                trace_filename = g.get("trace_file", g.get("filename", ""))
+                faction = g.get("faction", "?")
+                if faction == "?" and trace_filename:
+                    parts = trace_filename.split("-")
                     if len(parts) >= 4:
                         faction = parts[3].upper()
 
-                # Find actual trace file (best/first/KILLED) for replay generation
+                # Find actual trace file path
                 trace_file = ""
                 run_tag = g.get("run", "")
                 iter_num = g.get("iteration", g.get("iter", -1))
@@ -1924,13 +1929,13 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 doom_val = g.get("doom", 0)
                 result = g.get("result", "unknown")
 
-                # First try direct filename match (for KILLED games and others)
-                if filename:
-                    # Filename may already have .txt extension
-                    if filename.endswith('.txt'):
-                        direct_path = TRACES_DIR / filename
+                # First try trace_file field from canonical store
+                if trace_filename:
+                    # trace_filename may already have .txt extension
+                    if trace_filename.endswith('.txt'):
+                        direct_path = TRACES_DIR / trace_filename
                     else:
-                        direct_path = TRACES_DIR / f"{filename}.txt"
+                        direct_path = TRACES_DIR / f"{trace_filename}.txt"
                     if direct_path.exists():
                         trace_file = str(direct_path)
 
@@ -1950,14 +1955,14 @@ class DashboardHandler(SimpleHTTPRequestHandler):
 
                 # Format placement and length based on result
                 result = g.get("result", "unknown")
-                placement = "killed" if result == "killed" else g.get("placement", "?")
+                placement = "killed" if result == "killed" else g.get("place", g.get("placement", "?"))
 
                 # Format length: "Killed - AP#" for killed, "#APs" for completed
                 if result == "killed":
                     kill_ap = g.get("kill_ap")
                     game_length = f"Killed - AP{kill_ap}" if kill_ap else "Killed"
                 else:
-                    ap_count = g.get("game_length", 0)
+                    ap_count = g.get("length", g.get("game_length", 0))
                     game_length = f"{ap_count}APs" if ap_count else "?"
 
                 formatted.append({
@@ -1968,7 +1973,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                     "score": g.get("score", 0.0),
                     "won": g.get("won", False),
                     "is_win": g.get("won", False),
-                    "filename": filename,
+                    "filename": trace_filename,
                     "file": trace_file if trace_file else "",
                     "filepath": trace_file if trace_file else "",
                     "has_trace": bool(trace_file),
@@ -2321,6 +2326,8 @@ def get_html():
                             <th style="padding:8px;text-align:left;border-bottom:2px solid #0f3460;">Run</th>
                             <th style="padding:8px;text-align:left;border-bottom:2px solid #0f3460;">Iter</th>
                             <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Avg Doom</th>
+                            <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Avg SBs</th>
+                            <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Avg APs</th>
                             <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Avg Score</th>
                             <th style="padding:8px;text-align:left;border-bottom:2px solid #0f3460;">Type</th>
                             <th style="padding:8px;text-align:right;border-bottom:2px solid #0f3460;">Wins</th>
@@ -2328,7 +2335,7 @@ def get_html():
                         </tr>
                     </thead>
                     <tbody id="performance-history-body">
-                        <tr><td colspan="7" style="padding:20px;text-align:center;color:#666;">Loading...</td></tr>
+                        <tr><td colspan="9" style="padding:20px;text-align:center;color:#666;">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -2427,7 +2434,7 @@ def get_html():
                 <div style="margin-top:15px;">Loading games...</div>
             </div>
             <table id="games-table">
-                <thead><tr><th>Run</th><th>Iter</th><th>Type</th><th>Faction</th><th>Result</th><th>Doom</th><th>Score</th><th>Winner</th><th>Length</th><th>Place</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Run</th><th>Iter</th><th>Type</th><th>Faction</th><th>Result</th><th>Doom</th><th>SBs</th><th>Score</th><th>Winner</th><th>Length</th><th>Place</th><th>Actions</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -2682,7 +2689,7 @@ def get_html():
             const tbody = document.getElementById('performance-history-body');
 
             if (!allPerformanceData || allPerformanceData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="padding:20px;text-align:center;color:#666;">No data</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" style="padding:20px;text-align:center;color:#666;">No data</td></tr>';
                 document.getElementById('performance-page-info').textContent = 'No data';
                 return;
             }
@@ -2693,17 +2700,44 @@ def get_html():
             const pageData = allPerformanceData.slice(start, end);
 
             const rows = pageData.map(row => {
-                const winRate = row.total > 0 ? ((row.wins / row.total) * 100).toFixed(0) + '%' : '-';
+                const winRate = row.total_games > 0 ? ((row.wins / row.total_games) * 100).toFixed(0) + '%' : '-';
+                const avgSBs = row.avg_spellbooks !== undefined ? row.avg_spellbooks.toFixed(1) : '-';
+                const avgAPs = row.avg_length !== undefined ? row.avg_length.toFixed(1) : '-';
+                const avgDoom = row.avg_doom !== undefined ? row.avg_doom.toFixed(1) : '-';
+                const avgScore = row.avg_score !== undefined ? row.avg_score.toFixed(3) : '-';
+                const breakdownId = `perf-breakdown-${row.run}-${row.iter}`;
+
+                // Build faction breakdown HTML if factions data exists
+                let factionHtml = '';
+                if (row.factions && Object.keys(row.factions).length > 0) {
+                    factionHtml = Object.entries(row.factions).map(([faction, stats]) => `
+                        <div style="padding:8px;background:#16213e;border-radius:4px;margin:5px;">
+                            <div style="font-weight:bold;color:#4ade80;margin-bottom:5px;">${faction}</div>
+                            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px;">
+                                <div><span style="color:#888;">Games:</span> ${stats.games || 0}</div>
+                                <div><span style="color:#888;">Wins:</span> ${stats.wins || 0} (${stats.win_rate ? (stats.win_rate * 100).toFixed(0) : 0}%)</div>
+                                <div><span style="color:#888;">Avg Doom:</span> ${stats.avg_doom !== undefined ? stats.avg_doom.toFixed(1) : '-'}</div>
+                                <div><span style="color:#888;">Avg SBs:</span> ${stats.avg_sbs !== undefined ? stats.avg_sbs.toFixed(1) : '-'}</div>
+                                <div><span style="color:#888;">Total Doom:</span> ${stats.doom || 0}</div>
+                                <div><span style="color:#888;">Total SBs:</span> ${stats.sbs || 0}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
                 return `
-                    <tr style="border-bottom:1px solid #16213e;">
+                    <tr style="border-bottom:1px solid #16213e;cursor:pointer;" onclick="toggleBreakdown('${breakdownId}')">
                         <td style="padding:8px;">${row.run}</td>
                         <td style="padding:8px;">I${String(row.iter).padStart(2, '0')}</td>
-                        <td style="padding:8px;text-align:right;">${row.avg_doom.toFixed(1)}</td>
-                        <td style="padding:8px;text-align:right;">${row.avg_score.toFixed(3)}</td>
-                        <td style="padding:8px;">${row.type}</td>
-                        <td style="padding:8px;text-align:right;">${row.wins}/${row.total} (${winRate})</td>
-                        <td style="padding:8px;text-align:right;">${row.total}</td>
+                        <td style="padding:8px;text-align:right;">${avgDoom}</td>
+                        <td style="padding:8px;text-align:right;">${avgSBs}</td>
+                        <td style="padding:8px;text-align:right;">${avgAPs}</td>
+                        <td style="padding:8px;text-align:right;">${avgScore}</td>
+                        <td style="padding:8px;">${row.type || '-'}</td>
+                        <td style="padding:8px;text-align:right;">${row.wins}/${row.total_games} (${winRate})</td>
+                        <td style="padding:8px;text-align:right;">${row.total_games}</td>
                     </tr>
+                    ${factionHtml ? `<tr id="${breakdownId}" style="display:none;"><td colspan="9" style="background:#0f3460;padding:15px;"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">${factionHtml}</div></td></tr>` : ''}
                 `;
             }).join('');
 
@@ -2851,6 +2885,7 @@ def get_html():
                     <td>${g.faction}</td>
                     <td>${resultDisplay}</td>
                     <td>${g.doom}</td>
+                    <td>${g.spellbooks || 0}</td>
                     <td><span class="breakdown" onclick="toggleBreakdown('${breakdownId}')">${g.score !== null ? g.score.toFixed(3) : '-'}</span></td>
                     <td>${winner}</td>
                     <td>${g.game_length || '?'}</td>
@@ -2858,7 +2893,7 @@ def get_html():
                     <td><button class="secondary" onclick="generateReplay('${g.file}')">View</button></td>
                 </tr>
                 <tr id="${breakdownId}" style="display:none;">
-                    <td colspan="11" style="background:#0f3460;padding:15px;">
+                    <td colspan="12" style="background:#0f3460;padding:15px;">
                         <div style="margin-bottom:15px;padding:10px;background:#16213e;border:2px solid #e94560;">
                             <div><strong>Brain's final 0-1 score:</strong> <span style="font-size:18px;color:#4ade80;">${g.score !== null ? g.score.toFixed(3) : 'N/A'}</span></div>
                             <div style="margin-top:8px;font-size:11px;color:#888;">Components shown below are from action log only. Full score includes: preDoomPower, unitsOnMap, powerUse, sbUse, and other state-based rewards not in action traces.</div>

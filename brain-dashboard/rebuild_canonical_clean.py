@@ -186,7 +186,7 @@ def parse_individual_trace_files():
             if not score_match:
                 score_match = re.search(r'Score \(0-1\): ([0-9.]+)', content)
 
-            result_match = re.search(r'Result: (WIN|LOSS)', content)
+            result_match = re.search(r'Result: (WIN|LOSS|win|loss)', content, re.IGNORECASE)
             # Try new format first (BREAKDOWN=), then old format (Shaping breakdown:)
             breakdown_match = re.search(r'BREAKDOWN=([^\n]+)', content)
             if not breakdown_match:
@@ -196,7 +196,7 @@ def parse_individual_trace_files():
                 continue
 
             score = float(score_match.group(1))
-            won = result_match.group(1) == 'WIN' if result_match else False
+            won = result_match.group(1).upper() == 'WIN' if result_match else False
             breakdown = breakdown_match.group(1) if breakdown_match else ''
 
             # Count ActionPhaseAction occurrences for game length
