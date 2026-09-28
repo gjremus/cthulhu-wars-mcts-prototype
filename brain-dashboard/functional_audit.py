@@ -159,9 +159,18 @@ def audit_game_browser():
         print(f"  Available fields: {list(game.keys())}")
         return False
 
-    # Verify field values are reasonable
-    if not isinstance(game['placement'], int) or game['placement'] < 1 or game['placement'] > 4:
-        print(f"✗ Invalid placement value: {game['placement']}")
+    # Verify field values are reasonable (placement can be int or string like "1st")
+    placement = game['placement']
+    if isinstance(placement, str):
+        if placement not in ['1st', '2nd', '3rd', '4th', 'N/A', '?']:
+            print(f"✗ Invalid placement string: {placement}")
+            return False
+    elif isinstance(placement, int):
+        if placement < 1 or placement > 4:
+            print(f"✗ Invalid placement int: {placement}")
+            return False
+    else:
+        print(f"✗ Invalid placement type: {type(placement)}")
         return False
 
     # game_length should be a string like "7APs"
@@ -187,7 +196,8 @@ def audit_canonical_store():
     with open(store_path, 'r') as f:
         data = json.load(f)
 
-    r40_games = [g for g in data['games'] if g.get('run') == 'R40' and g.get('iter') == 1]
+    # Handle both 'iter' and 'iteration' field names
+    r40_games = [g for g in data['games'] if g.get('run') == 'R40' and (g.get('iter') == 1 or g.get('iteration') == 1)]
 
     if not r40_games:
         print("✗ No R40 games in store")

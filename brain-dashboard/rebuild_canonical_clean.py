@@ -186,7 +186,7 @@ def parse_individual_trace_files():
             if not score_match:
                 score_match = re.search(r'Score \(0-1\): ([0-9.]+)', content)
 
-            result_match = re.search(r'Result: (WIN|LOSS|win|loss)', content, re.IGNORECASE)
+            result_match = re.search(r'Result: (WIN|LOSS|win|loss|best|worst|excluded)', content, re.IGNORECASE)
             # Try new format first (BREAKDOWN=), then old format (Shaping breakdown:)
             breakdown_match = re.search(r'BREAKDOWN=([^\n]+)', content)
             if not breakdown_match:
@@ -196,11 +196,27 @@ def parse_individual_trace_files():
                 continue
 
             score = float(score_match.group(1))
-            won = result_match.group(1).upper() == 'WIN' if result_match else False
+            # R40 arena uses "best" for wins, selfplay uses "win"
+            result_str = result_match.group(1).upper() if result_match else ''
+            won = result_str in ['WIN', 'BEST']
             breakdown = breakdown_match.group(1) if breakdown_match else ''
 
-            # Count ActionPhaseAction occurrences for game length
-            game_length = content.count('ActionPhaseAction')
+            # Extract game_length and spellbooks from metadata if present
+            game_length = 0
+            spellbooks = 0
+
+            # Try metadata section first (R40 format)
+            aps_meta_match = re.search(r'Action Phases:\s*(\d+)', content)
+            sbs_meta_match = re.search(r'Spellbooks:\s*(\d+)', content)
+
+            if aps_meta_match:
+                game_length = int(aps_meta_match.group(1))
+            else:
+                # Fallback: count ActionPhaseAction occurrences (older format)
+                game_length = content.count('ActionPhaseAction')
+
+            if sbs_meta_match:
+                spellbooks = int(sbs_meta_match.group(1))
 
             # Calculate placement from breakdown or ALL_DOOM
             placement = "?"
@@ -257,6 +273,7 @@ def parse_individual_trace_files():
                 'iteration': iteration,
                 'type': 'arena',
                 'doom': doom,
+                'spellbooks': spellbooks,
                 'score': score,
                 'won': won,
                 'game_num': game_num,
