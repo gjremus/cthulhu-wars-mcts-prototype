@@ -1568,8 +1568,14 @@ def _parse_performance_history():
                 "total": stats["total"]
             })
 
-    # Sort by run (descending) then iter (descending)
-    history.sort(key=lambda x: (x["run"], x["iter"]), reverse=True)
+    # Sort by run number (descending) then iter (descending)
+    # Extract numeric part from "R40" -> 40 for proper numeric sort
+    def get_run_number(run_str):
+        import re
+        match = re.search(r'R?(\d+)', run_str)
+        return int(match.group(1)) if match else 0
+
+    history.sort(key=lambda x: (get_run_number(x["run"]), x["iter"]), reverse=True)
 
     return history
 
@@ -1738,8 +1744,14 @@ def get_performance_history():
                 "total": planned_total
             })
 
-    # Sort by run (descending) then iter (descending)
-    history.sort(key=lambda x: (x["run"], x["iter"]), reverse=True)
+    # Sort by run number (descending) then iter (descending)
+    # Extract numeric part from "R40" -> 40 for proper numeric sort
+    def get_run_number(run_str):
+        import re
+        match = re.search(r'R?(\d+)', run_str)
+        return int(match.group(1)) if match else 0
+
+    history.sort(key=lambda x: (get_run_number(x["run"]), x["iter"]), reverse=True)
 
     return history
 

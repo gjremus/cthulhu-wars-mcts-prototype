@@ -17,9 +17,15 @@ for game in games:
     if run:
         by_run_iter[(run, iteration)].append(game)
 
+# Helper to extract run number for numeric sorting
+def get_run_number(run_str):
+    match = re.search(r'R?(\d+)', run_str)
+    return int(match.group(1)) if match else 0
+
 # Build performance history
 perf_hist = []
-for (run, iteration), games_group in sorted(by_run_iter.items()):
+# Sort by run number (descending) then iteration (descending) for newest-first
+for (run, iteration), games_group in sorted(by_run_iter.items(), key=lambda x: (get_run_number(x[0][0]), x[0][1]), reverse=True):
     # Skip killed games
     completed = [g for g in games_group if g.get('result') not in ['killed', 'KILLED']]
     if not completed:
