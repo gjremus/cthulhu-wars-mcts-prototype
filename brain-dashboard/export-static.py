@@ -23,17 +23,19 @@ def get_run_from_file(trace_file):
     """Extract run number from filename or file timestamp."""
     filename = trace_file.name
 
-    # Try parsing filename first - format: selfplay_025_001_GC_first.txt or selfplay_R25_01_GC_first.txt
-    if "_R" in filename:
-        match = re.search(r'_R(\d+)_', filename)
-        if match:
-            return int(match.group(1))
-    elif "_0" in filename:
+    # Try parsing filename first
+    # Format: arena-R40-iter1-... or selfplay_R25_01_GC_first.txt
+    match = re.search(r'[-_]R(\d+)[-_]', filename)
+    if match:
+        return int(match.group(1))
+
+    # Old format: selfplay_025_001_GC_first.txt
+    if "_0" in filename:
         match = re.search(r'_(\d{3})_', filename)
         if match:
             return int(match.group(1))
 
-    # Fallback: timestamp-based run assignment
+    # Fallback: timestamp-based run assignment (for very old files)
     file_time = trace_file.stat().st_mtime
     if file_time >= 1786770000:  # Aug 15, 2026
         return 25
