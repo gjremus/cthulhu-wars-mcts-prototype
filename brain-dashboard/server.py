@@ -2289,6 +2289,10 @@ def get_html():
                 <div class="stat-value" id="disk-free">-</div>
             </div>
             <div class="stat">
+                <div class="stat-label">Claude Storage</div>
+                <div class="stat-value" id="claude-storage">-</div>
+            </div>
+            <div class="stat">
                 <div class="stat-label">Current ETA</div>
                 <div class="stat-value" id="current-eta">-</div>
             </div>
@@ -2641,8 +2645,10 @@ def get_html():
                 // Run elapsed
                 document.getElementById('run-elapsed').textContent = data.run_elapsed_human || '-';
 
-                // Disk free
+                // Disk free and Claude storage
                 document.getElementById('disk-free').textContent = data.disk_free || '-';
+                const claudeStorage = data.claude_storage_gb !== undefined ? data.claude_storage_gb + ' GB' : '-';
+                document.getElementById('claude-storage').textContent = claudeStorage;
 
                 // Current ETA (epoch or current iteration)
                 document.getElementById('current-eta').textContent = data.iter_eta_human || '-';
