@@ -53,6 +53,7 @@ case class PsychosisPlaceAction(self : Faction, r : Region) extends BaseFactionA
 case class AnimateMatterAction(self : Faction) extends OptionFactionAction(AnimateMatter.styled(self)) with MainQuestion with Soft
 case class AnimateMatterFromAction(self : Faction, from : Region) extends BaseFactionAction("Move Chaos Gate from", from) with Soft
 case class AnimateMatterMoveAction(self : Faction, from : Region, to : Region) extends BaseFactionAction("Move Chaos Gate to", implicit g => to + self.iced(to))
+case class AnimateMatterDoneAction(self : Faction) extends BaseFactionAction(None, "Done")
 
 case class TraitorsAction(self : Faction) extends OptionFactionAction(Traitors.styled(self)) with MainQuestion with Soft
 case class TraitorsChaosGateAction(self : Faction, r : Region) extends BaseFactionAction("Convert Chaos Gate in", implicit g => r + self.iced(r))
@@ -500,8 +501,33 @@ object DSExpansion extends Expansion {
             DS.gates :+= to
             keeper.foreach(_.onGate = true)
 
-            self.oncePerTurn :+= AnimateMatter
             self.log("used", AnimateMatter.styled(self), "moving", ChaosGate.styled(self), "from", from, "to", to)
+
+            // Check if another move is possible
+            val allStarts = game.factions.%(fac => game.starting.contains(fac))./(fac => game.starting(fac))
+            val validGates = game.chaosGateRegions.distinct.%(cgr =>
+                DS.gates.has(cgr) &&
+                DS.at(cgr).%(_.onGate).any &&
+                game.board.connected(cgr).%(r => allStarts.has(r).not).%(r => game.chaosGateRegions.%(c => c != cgr).has(r).not).%(r => self.affords(1)(r)).any
+            )
+            if (validGates.any) {
+                // Player can move another gate
+                if (validGates.num == 1) {
+                    val cgr = validGates.head
+                    val otherChaosGates = game.chaosGateRegions.%(r => r != cgr)
+                    val dests = game.board.connected(cgr).%(r => allStarts.has(r).not).%(r => otherChaosGates.has(r).not).%(r => self.affords(1)(r))
+                    Ask(self).list(dests./(r => AnimateMatterMoveAction(self, cgr, r))).add(AnimateMatterDoneAction(self))
+                } else {
+                    Ask(self).list(validGates./(cgr => AnimateMatterFromAction(self, cgr))).add(AnimateMatterDoneAction(self))
+                }
+            } else {
+                // No more moves possible
+                self.oncePerTurn :+= AnimateMatter
+                EndAction(self)
+            }
+
+        case AnimateMatterDoneAction(self) =>
+            self.oncePerTurn :+= AnimateMatter
             EndAction(self)
 
         // CONSUMMATION
